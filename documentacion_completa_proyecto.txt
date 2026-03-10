@@ -1,0 +1,56 @@
+DOCUMENTACIÓN TÉCNICA Y FUNCIONAL: PROYECTO CHATROOM QR
+
+1. INTRODUCCIÓN
+CHATROOM QR es una plataforma de mensajería instantánea para Android diseñada para la gestión de chats temporales mediante códigos QR. El sistema integra seguridad por tiempo de estancia, geolocalización en tiempo real y perfiles de usuario enriquecidos con biometría fotográfica.
+
+2. ARQUITECTURA DEL SISTEMA
+- Cliente: Aplicación nativa Android (Java).
+- Comunicación: Retrofit 3.0 para consumo de servicios RESTful.
+- Backend: Servidor Apache con scripts PHP 8.x (XAMPP).
+- Base de Datos: MySQL Workbench (Puerto 3307).
+- Geolocalización: Google Play Services Location.
+- Visión Artificial: Google ML Kit (Barcode Scanning) + CameraX.
+
+3. MODELO DE DATOS (MySQL)
+- usuarios: Almacena el perfil completo (id_usuario, nombre, apellidos, edad, email, telefono, password, foto en Base64).
+- salas: Define las estancias de chat y su tiempo de vida (id_sala, nombre_sala, tiempo_max_minutos).
+- usuario_sala: Tabla de control de accesos que registra la hora exacta de entrada (TIMESTAMP) para el cálculo de permanencia.
+- log_mensajes_grupal: Historial de conversaciones en salas públicas.
+- chats_privados / log_mensajes_privados: Sistema de mensajería cifrada lógica uno a uno entre usuarios.
+
+4. FLUJO OPERATIVO DE LA APLICACIÓN
+A. Gestión de Acceso (Login/Register):
+   - La aplicación detecta si existe una sesión activa mediante SharedPreferences.
+   - Si es la primera vez, el usuario completa un registro exhaustivo (incluyendo captura de foto).
+   - El sistema de Login valida las credenciales contra la base de datos centralizada.
+B. Panel de Control (HomeActivity):
+   - Una vez autenticado, el usuario accede a un HUB central con tres funciones:
+     1. Activar GPS: Verifica y fuerza el encendido del sensor de ubicación mediante una ventana del sistema.
+     2. Modificar Registro: Permite la edición dinámica del perfil (carga datos actuales y permite sobrescribirlos).
+     3. Escanear QR: Puerta de acceso a las salas de chat.
+C. Escáner y Acceso (ScannerActivity):
+   - Procesa códigos QR para identificar la sala.
+   - Incluye un "Bypass de Prueba" (Botón Test) para entrar a una sala general sin necesidad de un código físico durante el desarrollo.
+D. Experiencia de Chat (MainActivity):
+   - Interfaz de burbujas dinámica (estilo WhatsApp): Verde para el emisor (derecha), Blanco para los receptores (izquierda).
+   - Inserción automática de coordenadas GPS en cada mensaje enviado.
+   - Sistema de "Click-to-Private": Al tocar a un usuario en el chat grupal, se genera un canal privado instantáneo.
+
+5. SISTEMA DE EXPULSIÓN POR TIEMPO (CRÍTICO)
+- Sincronización: Al entrar a una sala (unirse_sala.php), se marca el tiempo de inicio.
+- Verificación: La App ejecuta un hilo en segundo plano cada 3 segundos (verificar_sesion_sala.php).
+- Cálculo: El servidor utiliza TIMESTAMPDIFF entre NOW() y la entrada para comparar con el límite de la sala (120 min por defecto).
+- Ejecución: Al expirar, la App muestra un aviso persistente y finaliza la actividad de chat, devolviendo al usuario al Home.
+
+6. COMPONENTES DEL BACKEND (PHP)
+- db_config.php: Conexión persistente a MySQL.
+- registro.php / login.php / get_usuario.php / actualizar_usuario.php: Ciclo de vida del usuario.
+- unirse_sala.php: Gestión de entrada y reinicio de temporizador (ON DUPLICATE KEY UPDATE).
+- enviar_mensaje_grupal.php / get_mensajes_grupal.php: Sincronización de logs públicos.
+- crear_chat_privado.php / enviar_mensaje_privado.php / get_mensajes_privados.php: Motor de chat uno a uno.
+- verificar_sesion_sala.php: Algoritmo de decisión para la expulsión por tiempo.
+
+7. VALOR AÑADIDO Y SEGURIDAD
+- Prepared Statements: Prevención total contra Inyección SQL en todos los puntos de entrada.
+- UI Adaptativa: El chat se ajusta automáticamente según si el mensaje es propio o ajeno.
+- Eficiencia: Sistema de refresco inteligente para minimizar el consumo de datos y batería.

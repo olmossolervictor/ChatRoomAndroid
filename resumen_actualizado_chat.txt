@@ -1,0 +1,36 @@
+RESUMEN ACTUALIZADO DEL PROYECTO: CHAT GRUPAL CON QR Y TIEMPO LÍMITE
+
+1. ESTADO DEL BACKEND (PHP/MySQL):
+- Base de Datos 'chat_db' configurada con tablas: usuarios, salas, usuario_sala, log_mensajes_grupal, chats_privados.
+- Archivos PHP implementados y corregidos:
+  * db_config.php: Conexión centralizada (Puerto 3307).
+  * registro.php: Registro de nuevos usuarios.
+  * login.php: Validación de credenciales y retorno de id_usuario real.
+  * unirse_sala.php: Registro de entrada por QR con tiempo límite de 120 min (2h).
+  * enviar_mensaje_grupal.php: Guarda mensajes con ubicación opcional.
+  * get_mensajes_grupal.php: Recupera el historial de chat con nombres de usuario (JOIN).
+  * verificar_sesion_sala.php: Lógica de expulsión calculada en el servidor (TIMESTAMPDIFF).
+
+2. ESTADO DE LA APP ANDROID (JAVA):
+- Autenticación: Implementado LoginActivity con SharedPreferences para mantener la sesión activa.
+- Pantalla Principal (MainActivity):
+  * Lista de mensajes con auto-refresco cada 3 segundos.
+  * Envío de mensajes adjuntando Latitud y Longitud automáticamente.
+  * Verificación en segundo plano de la expiración del tiempo (2h).
+  * Sistema de expulsión automática que redirige a sala de espera si el tiempo agota.
+- Escáner QR: ScannerActivity integrada con CameraX y ML Kit para acceso a salas dinámicas.
+- Modelado: Clase Mensaje y MensajeAdapter para visualización de chat.
+- Red: RetrofitClient y ChatApiServices configurados con todos los endpoints.
+
+3. LOGROS ALCANZADOS HOY:
+- Sincronización total entre nombres de columnas de la BD y código Java/PHP.
+- Implementación de la lógica de expulsión por tiempo (2 horas).
+- Creación de la pantalla de Login y persistencia de usuario.
+- Corrección de errores en el Manifest (permisos de cámara y hardware).
+
+4. PENDIENTES / PRÓXIMOS PASOS:
+- Implementar RegistroActivity para permitir nuevos usuarios desde la app.
+- Desarrollar la lógica de Chats Privados entre usuarios de una misma sala.
+- Mejorar el diseño visual (UI) para que los mensajes parezcan burbujas de chat.
+- Añadir función de Cerrar Sesión (Logout).
+- Implementar borrado automático de logs antiguos en el servidor (limpieza).

@@ -1,0 +1,60 @@
+DOCUMENTACIÓN COMPLETA DEL PROYECTO: SISTEMA DE CHAT GRUPAL CON CONTROL DE ACCESO (QR) Y TIEMPO LÍMITE
+
+Este documento resume la arquitectura, funciones y
+componentes del proyecto para su estudio y exposición.
+
+---
+1. ARQUITECTURA GENERAL
+El sistema utiliza una arquitectura Cliente-Servidor:
+- Cliente: Aplicación Android nativa desarrollada en Java.
+- Servidor (Backend): Scripts PHP alojados en XAMPP.
+- Base de Datos: MySQL Workbench (Puerto 3307) para persistencia de datos.
+- Comunicación: Retrofit para peticiones HTTP y JSON para el intercambio de datos.
+
+---
+2. COMPONENTES DEL BACKEND (PHP)
+
+- db_config.php: Centraliza la conexión a MySQL usando mysqli. Define el host (127.0.0.1:3307), usuario, contraseña y base de datos 'chat_db'.
+- registro.php: Recibe datos por POST y crea nuevos usuarios en la tabla 'usuarios'.
+- login.php: Valida email y password. Devuelve un JSON con el 'id_usuario' y 'nombre' si el acceso es correcto.
+- unirse_sala.php: Registra el ingreso de un usuario a una sala específica (obtenida por QR). Guarda la 'hora_entrada' usando NOW() y crea la sala automáticamente si no existe.
+- enviar_mensaje_grupal.php: Inserta mensajes en 'log_mensajes_grupal'. Incluye lógica para asegurar que la sala exista con un tiempo límite por defecto (120 min).
+- get_mensajes_grupal.php: Recupera el historial de chat. Realiza un JOIN entre 'log_mensajes_grupal' y 'usuarios' para mostrar el nombre real de quien escribe, no solo su ID.
+- verificar_sesion_sala.php: Función crítica de seguridad. Calcula si la diferencia entre la hora actual y la entrada es mayor al 'tiempo_max_minutos' de la sala. Devuelve un booleano 'expirado'.
+
+---
+3. COMPONENTES DE LA APLICACIÓN ANDROID (JAVA)
+
+A. Actividades (Activities):
+- LoginActivity.java:
+  * Maneja la autenticación inicial.
+  * Almacena el ID del usuario en 'SharedPreferences' (sesión persistente).
+- MainActivity.java: Corazón de la app.
+  * iniciarAutoRefresco(): Hilo (Handler/Runnable) que actualiza mensajes y verifica la sesión cada 3 segundos.
+  * obtenerUbicacionYEnviar(): Usa FusedLocationProviderClient para obtener coordenadas GPS y adjuntarlas al mensaje.
+  * verificarYActivarGPS(): Usa SettingsClient para abrir la ventana del sistema y forzar el encendido del GPS si está apagado.
+  * verificarTiempoSesion(): Consulta al PHP si el tiempo acabó para ejecutar 'expulsarUsuario()'.
+- ScannerActivity.java: Implementa el escáner con ML Kit y CameraX. Analiza el flujo de la cámara en tiempo real para extraer el texto del código QR.
+
+B. Soporte y Modelado:
+- Mensaje.java: Clase POJO (Plain Old Java Object) que representa la estructura de un mensaje (id, nombre, texto, fecha).
+- MensajeAdapter.java: Adaptador personalizado para inflar 'item_mensaje.xml' y llenar el ListView con los datos del servidor.
+- RetrofitClient.java: Configura la instancia de Retrofit con la URL base (10.0.2.2 para el emulador) y el convertidor GSON.
+- ChatApiServices.java: Interfaz que define todos los endpoints de la API (POST/GET) y sus parámetros (@Field / @Query).
+
+---
+4. FLUJO DE TRABAJO DEL USUARIO (PARA LA EXPOSICIÓN)
+
+1. Inicio: El usuario abre la app y se loguea. Sus datos se guardan en el móvil.
+2. Acceso: Pulsa "Escanear QR" y apunta a un código. Esto le da acceso a una sala específica en la base de datos.
+3. Chat: Puede escribir mensajes. El sistema detecta su ubicación GPS y la envía junto al texto.
+4. Monitoreo: Mientras chatea, la app pregunta al servidor en segundo plano: "¿Sigue teniendo tiempo?".
+5. Expulsión: A las 2 horas de haber entrado, el servidor marca la sesión como expirada. La app muestra un aviso, limpia el chat y lo saca de la sala automáticamente.
+
+---
+5. SEGURIDAD Y PERMISOS (AndroidManifest.xml)
+- Internet: Para comunicación con el servidor.
+- Ubicación (Fine/Coarse): Para el rastreo GPS.
+- Cámara: Para el escaneo de códigos QR.
+- Hardware Feature: Se declara la cámara como opcional para mayor compatibilidad.
+- CleartextTraffic: Habilitado para permitir conexión HTTP local (XAMPP) sin necesidad de certificados SSL durante el desarrollo.

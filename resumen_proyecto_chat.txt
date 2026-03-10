@@ -1,0 +1,34 @@
+RESUMEN DEL PROYECTO: CHAT GRUPAL CON QR Y TIEMPO LÍMITE
+
+1. OBJETIVOS DEL PROYECTO:
+- Registro de usuarios en servidor online (MySQL Workbench).
+- Acceso a salas mediante escaneo de código QR.
+- Chat grupal con log de mensajes (borrado automático).
+- Posibilidad de crear chats privados.
+- Tiempo máximo de permanencia en la sala.
+
+2. CONFIGURACIÓN DEL SERVIDOR (BACKEND):
+- Servidor Web: XAMPP (Apache).
+- Base de Datos: MySQL Workbench (Puerto 3307).
+- Base de Datos creada: 'chat_db'.
+- Archivos PHP implementados:
+  * db_config.php: Conexión a MySQL usando IP 127.0.0.1:3307, usuario root y contraseña 421142Aa.
+  * registro.php: Guarda nuevos usuarios.
+  * enviar_mensaje_grupal.php: Guarda mensajes en la tabla log_mensajes_grupal.
+  * unirse_sala.php: Registra entrada por QR y hora.
+
+3. IMPLEMENTACIÓN EN ANDROID:
+- Interfaz (ChatApiServices.java): Métodos Retrofit para todos los requerimientos.
+- Conexión (RetrofitClient.java): Configurado para conectar al servidor local (10.0.2.2).
+- Permisos (AndroidManifest.xml): Añadido INTERNET y usesCleartextTraffic="true".
+- Diseño (activity_main.xml): Botón QR, ListView de mensajes, EditText y Botón Enviar.
+- Lógica (MainActivity.java): Implementado el envío de mensajes que se guardan exitosamente en Workbench.
+
+4. ESTADO ACTUAL:
+- La conexión Android-PHP-MySQL es exitosa (Usuario 'Juan' registrado correctamente).
+- El botón de enviar ya guarda datos en la tabla 'log_mensajes_grupal'.
+
+PRÓXIMOS PASOS SUGERIDOS:
+- Implementar el escáner QR real con la cámara (ML Kit).
+- Crear el adaptador para mostrar los mensajes en el ListView.
+- Implementar la lógica de expulsión por tiempo límite.
