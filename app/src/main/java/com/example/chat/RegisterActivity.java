@@ -8,13 +8,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONObject;
@@ -31,8 +34,9 @@ public class RegisterActivity extends AppCompatActivity {
 
     private EditText editNombre, editApellidos, editEdad, editEmail, editTelefono, editPassword;
     private ImageView imgUser;
+    private CheckBox checkTerminos;
+    private TextView textVerTerminos, textBackToLogin, textTitle;
     private Button btnSelectPhoto, btnRegister;
-    private TextView textBackToLogin, textTitle;
 
     private static final int PICK_IMAGE_REQUEST = 1;
     private String encodedImage = "";
@@ -44,8 +48,7 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Referencias
-        textTitle = findViewById(R.id.textTitle); // Corregido ID
+        textTitle = findViewById(R.id.textTitle);
         editNombre = findViewById(R.id.editRegNombre);
         editApellidos = findViewById(R.id.editRegApellidos);
         editEdad = findViewById(R.id.editRegEdad);
@@ -53,42 +56,59 @@ public class RegisterActivity extends AppCompatActivity {
         editTelefono = findViewById(R.id.editRegTelefono);
         editPassword = findViewById(R.id.editRegPassword);
         imgUser = findViewById(R.id.imgUser);
+        checkTerminos = findViewById(R.id.checkTerminos);
+        textVerTerminos = findViewById(R.id.textVerTerminos);
         btnSelectPhoto = findViewById(R.id.btnSelectPhoto);
         btnRegister = findViewById(R.id.btnRegister);
         textBackToLogin = findViewById(R.id.textBackToLogin);
 
-        // Detectar si venimos de "Modificar Registro"
         isEditMode = getIntent().getBooleanExtra("MODO_EDICION", false);
 
         if (isEditMode) {
             setupEditMode();
+            // En modo edición no hace falta aceptar términos de nuevo
+            findViewById(R.id.checkTerminos).setVisibility(View.GONE);
+            textVerTerminos.setVisibility(View.GONE);
         }
 
         btnSelectPhoto.setOnClickListener(v -> openGallery());
+        
+        textVerTerminos.setOnClickListener(v -> mostrarDialogoTerminos());
+
         btnRegister.setOnClickListener(v -> {
-            if (isEditMode) actualizar();
-            else registrar();
+            if (isEditMode) {
+                actualizar();
+            } else {
+                if (checkTerminos.isChecked()) {
+                    registrar();
+                } else {
+                    Toast.makeText(this, "Debes aceptar los términos legales", Toast.LENGTH_SHORT).show();
+                }
+            }
         });
         
         textBackToLogin.setOnClickListener(v -> finish());
     }
 
+    private void mostrarDialogoTerminos() {
+        new AlertDialog.Builder(this)
+                .setTitle("Términos y Condiciones")
+                .setMessage(getString(R.string.terminos_legales))
+                .setPositiveButton("Entendido", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
     private void setupEditMode() {
-        // Cambiar textos visuales
         if (textTitle != null) textTitle.setText("Modificar mi Perfil");
         btnRegister.setText("Guardar Cambios");
-        
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         currentUserId = pref.getInt("id_usuario", -1);
-
-        // Cargar datos actuales del servidor
         cargarDatosUsuario();
     }
 
     private void cargarDatosUsuario() {
         ChatApiServices api = RetrofitClient.getChatApiServices();
         Call<ResponseBody> call = api.getUsuario(currentUserId);
-
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -96,14 +116,12 @@ public class RegisterActivity extends AppCompatActivity {
                     try {
                         String result = response.body().string();
                         JSONObject json = new JSONObject(result);
-                        
                         editNombre.setText(json.getString("nombre"));
                         editApellidos.setText(json.getString("apellidos"));
                         editEdad.setText(String.valueOf(json.getInt("edad")));
                         editEmail.setText(json.getString("email"));
                         editTelefono.setText(json.getString("telefono"));
                         editPassword.setText(json.getString("password"));
-                        
                         String fotoBase64 = json.getString("foto");
                         if (fotoBase64 != null && !fotoBase64.isEmpty()) {
                             encodedImage = fotoBase64;
@@ -114,10 +132,43 @@ public class RegisterActivity extends AppCompatActivity {
                     } catch (Exception e) { e.printStackTrace(); }
                 }
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(RegisterActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void registrar() {
+        String nombre = editNombre.getText().toString().trim();
+        String apellidos = editApellidos.getText().toString().trim();
+        String edadStr = editEdad.getText().toString().trim();
+        String email = editEmail.getText().toString().trim();
+        String telefono = editTelefono.getText().toString().trim();
+        String password = editPassword.getText().toString().trim();
+
+        if (nombre.isEmpty() || apellidos.isEmpty() || edadStr.isEmpty() || email.isEmpty() || telefono.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ChatApiServices api = RetrofitClient.getChatApiServices();
+        // Enviamos 1 en aceptaTerminos porque el CheckBox está validado
+        Call<ResponseBody> call = api.registrarUsuario(nombre, apellidos, Integer.parseInt(edadStr), email, telefono, password, encodedImage, 1);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(RegisterActivity.this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Toast.makeText(RegisterActivity.this, "Error en el registro", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(RegisterActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -143,17 +194,11 @@ public class RegisterActivity extends AppCompatActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(RegisterActivity.this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
-                    
-                    // Actualizar nombre en SharedPreferences por si cambió
                     SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
                     pref.edit().putString("nombre", nombre).apply();
-                    
                     finish();
-                } else {
-                    Toast.makeText(RegisterActivity.this, "Error al actualizar", Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(RegisterActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
@@ -184,39 +229,5 @@ public class RegisterActivity extends AppCompatActivity {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
         byte[] b = baos.toByteArray();
         return Base64.encodeToString(b, Base64.DEFAULT);
-    }
-
-    private void registrar() {
-        String nombre = editNombre.getText().toString().trim();
-        String apellidos = editApellidos.getText().toString().trim();
-        String edadStr = editEdad.getText().toString().trim();
-        String email = editEmail.getText().toString().trim();
-        String telefono = editTelefono.getText().toString().trim();
-        String password = editPassword.getText().toString().trim();
-
-        if (nombre.isEmpty() || apellidos.isEmpty() || edadStr.isEmpty() || email.isEmpty() || telefono.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        ChatApiServices api = RetrofitClient.getChatApiServices();
-        Call<ResponseBody> call = api.registrarUsuario(nombre, apellidos, Integer.parseInt(edadStr), email, telefono, password, encodedImage);
-
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(RegisterActivity.this, "Usuario registrado", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(RegisterActivity.this, "Error en el registro", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(RegisterActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }

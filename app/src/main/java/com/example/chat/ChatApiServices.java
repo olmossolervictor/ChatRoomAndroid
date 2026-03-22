@@ -21,7 +21,8 @@ public interface ChatApiServices {
             @Field("email") String email,
             @Field("telefono") String telefono,
             @Field("password") String password,
-            @Field("foto") String foto
+            @Field("foto") String foto,
+            @Field("acepta_terminos") int aceptaTerminos
     );
 
     @FormUrlEncoded

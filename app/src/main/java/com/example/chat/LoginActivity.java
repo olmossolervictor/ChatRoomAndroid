@@ -5,10 +5,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONObject;
 
@@ -27,7 +30,6 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Si ya está logueado, ir directo al Home
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         if (pref.getInt("id_usuario", -1) != -1) {
             startActivity(new Intent(this, HomeActivity.class));
@@ -45,9 +47,36 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> login());
 
         textGoToRegister.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-            startActivity(intent);
+            // Primero mostramos los términos
+            mostrarTerminosAntesDeRegistro();
         });
+    }
+
+    private void mostrarTerminosAntesDeRegistro() {
+        // Creamos un TextView para el texto largo
+        TextView textView = new TextView(this);
+        textView.setText(getString(R.string.terminos_legales));
+        textView.setPadding(50, 40, 50, 40);
+        textView.setTextSize(14);
+        textView.setTextColor(ContextCompat.getColor(this, android.R.color.black));
+
+        // Lo metemos en un ScrollView para que se pueda mover
+        ScrollView scrollView = new ScrollView(this);
+        scrollView.addView(textView);
+
+        new AlertDialog.Builder(this)
+                .setTitle("TÉRMINOS Y CONDICIONES LEGALES")
+                .setView(scrollView) // Establecemos el scrollview como vista del diálogo
+                .setCancelable(false)
+                .setNegativeButton("Rechazar", (dialog, which) -> {
+                    Toast.makeText(this, "Debes aceptar los términos para registrarte", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                })
+                .setPositiveButton("Aceptar y Continuar", (dialog, which) -> {
+                    Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                    startActivity(intent);
+                })
+                .show();
     }
 
     private void login() {
@@ -77,7 +106,6 @@ public class LoginActivity extends AppCompatActivity {
                             SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
                             pref.edit().putInt("id_usuario", idUsuario).putString("nombre", nombre).apply();
 
-                            // Ir al HomeActivity en lugar de MainActivity
                             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                             startActivity(intent);
                             finish();
