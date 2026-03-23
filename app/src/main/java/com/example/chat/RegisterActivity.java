@@ -1,7 +1,9 @@
 package com.example.chat;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -16,9 +18,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONObject;
 
@@ -32,13 +37,14 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText editNombre, editApellidos, editEdad, editEmail, editTelefono, editPassword;
+    private EditText editNombre, editApellidos, editFechaNacimiento, editEmail, editTelefono, editPassword;
     private ImageView imgUser;
     private CheckBox checkTerminos;
     private TextView textVerTerminos, textBackToLogin, textTitle;
     private Button btnSelectPhoto, btnRegister;
 
-    private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int CAMERA_REQUEST = 1888;
+    private static final int CAMERA_PERMISSION_CODE = 100;
     private String encodedImage = "";
     private boolean isEditMode = false;
     private int currentUserId;
@@ -51,7 +57,7 @@ public class RegisterActivity extends AppCompatActivity {
         textTitle = findViewById(R.id.textTitle);
         editNombre = findViewById(R.id.editRegNombre);
         editApellidos = findViewById(R.id.editRegApellidos);
-        editEdad = findViewById(R.id.editRegEdad);
+        editFechaNacimiento = findViewById(R.id.editRegFechaNacimiento);
         editEmail = findViewById(R.id.editRegEmail);
         editTelefono = findViewById(R.id.editRegTelefono);
         editPassword = findViewById(R.id.editRegPassword);
@@ -66,12 +72,11 @@ public class RegisterActivity extends AppCompatActivity {
 
         if (isEditMode) {
             setupEditMode();
-            // En modo edición no hace falta aceptar términos de nuevo
-            findViewById(R.id.checkTerminos).setVisibility(View.GONE);
-            textVerTerminos.setVisibility(View.GONE);
+            findViewById(R.id.layoutTerminos).setVisibility(View.GONE);
         }
 
-        btnSelectPhoto.setOnClickListener(v -> openGallery());
+        btnSelectPhoto.setText("Hacer Foto");
+        btnSelectPhoto.setOnClickListener(v -> checkPermissionAndOpenCamera());
         
         textVerTerminos.setOnClickListener(v -> mostrarDialogoTerminos());
 
@@ -88,6 +93,35 @@ public class RegisterActivity extends AppCompatActivity {
         });
         
         textBackToLogin.setOnClickListener(v -> finish());
+    }
+
+    private void checkPermissionAndOpenCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        } else {
+            openCamera();
+        }
+    }
+
+    private void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(cameraIntent, CAMERA_REQUEST);
+        } else {
+            Toast.makeText(this, "No se encontró aplicación de cámara", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void mostrarDialogoTerminos() {
@@ -118,7 +152,7 @@ public class RegisterActivity extends AppCompatActivity {
                         JSONObject json = new JSONObject(result);
                         editNombre.setText(json.getString("nombre"));
                         editApellidos.setText(json.getString("apellidos"));
-                        editEdad.setText(String.valueOf(json.getInt("edad")));
+                        editFechaNacimiento.setText(json.getString("fecha_nacimiento"));
                         editEmail.setText(json.getString("email"));
                         editTelefono.setText(json.getString("telefono"));
                         editPassword.setText(json.getString("password"));
@@ -142,19 +176,18 @@ public class RegisterActivity extends AppCompatActivity {
     private void registrar() {
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
-        String edadStr = editEdad.getText().toString().trim();
+        String fechaNac = editFechaNacimiento.getText().toString().trim();
         String email = editEmail.getText().toString().trim();
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
-        if (nombre.isEmpty() || apellidos.isEmpty() || edadStr.isEmpty() || email.isEmpty() || telefono.isEmpty() || password.isEmpty()) {
+        if (nombre.isEmpty() || apellidos.isEmpty() || fechaNac.isEmpty() || email.isEmpty() || telefono.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
         ChatApiServices api = RetrofitClient.getChatApiServices();
-        // Enviamos 1 en aceptaTerminos porque el CheckBox está validado
-        Call<ResponseBody> call = api.registrarUsuario(nombre, apellidos, Integer.parseInt(edadStr), email, telefono, password, encodedImage, 1);
+        Call<ResponseBody> call = api.registrarUsuario(nombre, apellidos, fechaNac, email, telefono, password, encodedImage, 1);
 
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -176,18 +209,18 @@ public class RegisterActivity extends AppCompatActivity {
     private void actualizar() {
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
-        String edadStr = editEdad.getText().toString().trim();
+        String fechaNac = editFechaNacimiento.getText().toString().trim();
         String email = editEmail.getText().toString().trim();
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
-        if (nombre.isEmpty() || apellidos.isEmpty() || edadStr.isEmpty() || email.isEmpty() || telefono.isEmpty() || password.isEmpty()) {
+        if (nombre.isEmpty() || apellidos.isEmpty() || fechaNac.isEmpty() || email.isEmpty() || telefono.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
         ChatApiServices api = RetrofitClient.getChatApiServices();
-        Call<ResponseBody> call = api.actualizarUsuario(currentUserId, nombre, apellidos, Integer.parseInt(edadStr), email, telefono, password, encodedImage);
+        Call<ResponseBody> call = api.actualizarUsuario(currentUserId, nombre, apellidos, fechaNac, email, telefono, password, encodedImage);
 
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -206,21 +239,16 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri imageUri = data.getData();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                imgUser.setImageBitmap(bitmap);
-                encodedImage = encodeImage(bitmap);
-            } catch (IOException e) { e.printStackTrace(); }
+        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK && data != null) {
+            Bundle extras = data.getExtras();
+            if (extras != null) {
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
+                imgUser.setImageBitmap(imageBitmap);
+                encodedImage = encodeImage(imageBitmap);
+            }
         }
     }
 

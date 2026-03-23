@@ -55,11 +55,11 @@
             android:layout_marginBottom="8dp"/>
 
         <EditText
-            android:id="@+id/editRegEdad"
+            android:id="@+id/editRegFechaNacimiento"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Edad"
-            android:inputType="number"
+            android:hint="Fecha de Nacimiento (AAAA-MM-DD)"
+            android:inputType="text"
             android:layout_marginBottom="8dp"/>
 
         <EditText

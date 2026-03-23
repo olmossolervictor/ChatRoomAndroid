@@ -17,7 +17,7 @@ public interface ChatApiServices {
     Call<ResponseBody> registrarUsuario(
             @Field("nombre") String nombre,
             @Field("apellidos") String apellidos,
-            @Field("edad") int edad,
+            @Field("fecha_nacimiento") String fechaNacimiento,
             @Field("email") String email,
             @Field("telefono") String telefono,
             @Field("password") String password,
@@ -31,7 +31,7 @@ public interface ChatApiServices {
             @Field("id_usuario") int idUsuario,
             @Field("nombre") String nombre,
             @Field("apellidos") String apellidos,
-            @Field("edad") int edad,
+            @Field("fecha_nacimiento") String fechaNacimiento,
             @Field("email") String email,
             @Field("telefono") String telefono,
             @Field("password") String password,
