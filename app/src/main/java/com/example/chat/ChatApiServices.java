@@ -12,10 +12,10 @@ import retrofit2.http.Query;
 
 public interface ChatApiServices {
 
-    // --- USUARIOS ---
+
 
     @FormUrlEncoded
-    @POST("usuarios/registrar") // Antes era registro.php
+    @POST("usuarios/registrar")
     Call<ResponseBody> registrarUsuario(
             @Field("nombre") String nombre,
             @Field("apellidos") String apellidos,

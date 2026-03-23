@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         currentUserId = pref.getInt("id_usuario", -1);
 
+
+
         if (currentUserId == -1) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
