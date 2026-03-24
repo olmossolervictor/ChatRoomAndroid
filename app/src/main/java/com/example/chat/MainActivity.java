@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText editMessage;
     private Button btnSend;
     private ListView listMessages;
-    
+
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
 
@@ -54,11 +54,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         currentUserId = pref.getInt("id_usuario", -1);
-
-
 
         if (currentUserId == -1) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -76,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -108,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Al entrar, notificamos al servidor para el control de tiempo
         unirseASalaEnServidor(currentSalaId);
-        
+
         obtenerMensajes();
         iniciarAutoRefresco();
     }
@@ -229,17 +227,35 @@ public class MainActivity extends AppCompatActivity {
 
     private void enviarMensajeAlServidor(String mensaje) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
-        Call<ResponseBody> call = api.enviarMensajeGrupal(currentSalaId, currentUserId, mensaje);
+        String salaIdCorregida = currentSalaId.trim();
+
+
+
+        // Log para verificar qué datos estamos enviando antes de la petición
+        android.util.Log.d("DEBUG_CHAT", "Enviando a Sala: [" + currentSalaId + "] Usuario: " + currentUserId);
+
+        Call<ResponseBody> call = api.enviarMensajeGrupal(salaIdCorregida, currentUserId, mensaje);
+
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    editMessage.setText(""); 
+                    editMessage.setText("");
                     obtenerMensajes();
+                } else {
+                    // ESTO ES LO IMPORTANTE: Nos dirá si es 405, 404, etc.
+                    int code = response.code();
+                    String urlFallida = call.request().url().toString();
+
+                    android.util.Log.e("ERROR_SERVER", "Código: " + code + " | URL: " + urlFallida);
+
+                    Toast.makeText(MainActivity.this, "Error " + code + ": El servidor rechazó el mensaje", Toast.LENGTH_LONG).show();
                 }
             }
+
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                android.util.Log.e("ERROR_RED", "Fallo total: " + t.getMessage());
                 Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });

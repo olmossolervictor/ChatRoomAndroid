@@ -26,7 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         // Si ya está logueado, ir directo al Home
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         if (pref.getInt("id_usuario", -1) != -1) {

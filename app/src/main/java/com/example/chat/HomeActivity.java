@@ -24,7 +24,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private TextView textWelcome;
     private Button btnScanQR, btnGPS, btnEditProfile, btnLogout;
-    
+
     private static final int SCAN_QR_REQUEST_CODE = 2000;
     private static final int GPS_SETTINGS_REQUEST_CODE = 1001;
 
@@ -44,19 +44,18 @@ public class HomeActivity extends AppCompatActivity {
 
         textWelcome.setText("Bienvenido, " + nombre);
 
-
         btnScanQR.setOnClickListener(v -> {
-            // COMENTAMOS EL SALTO AL ESCÁNER:
-            // Intent intent = new Intent(HomeActivity.this, ScannerActivity.class);
-            // startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
-
-            // FORZAMOS EL SALTO DIRECTO AL CHAT (MainActivity):
+            // 1. Creamos el Intent para ir a MainActivity (la pantalla del chat)
             Intent intent = new Intent(HomeActivity.this, MainActivity.class);
 
-            // Le pasamos "GENERAL" como si el QR hubiera devuelto eso
+            // 2. FORZAMOS el valor "GENERAL" en el extra que espera el MainActivity
             intent.putExtra("ID_SALA_QR", "GENERAL");
 
+            // 3. Iniciamos la actividad directamente
             startActivity(intent);
+
+            // Opcional: Toast para saber que estamos forzando la entrada
+            Toast.makeText(HomeActivity.this, "Entrando a Sala General...", Toast.LENGTH_SHORT).show();
         });
 
         btnGPS.setOnClickListener(v -> verificarYActivarGPS());

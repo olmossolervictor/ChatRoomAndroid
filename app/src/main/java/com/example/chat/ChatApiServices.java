@@ -12,14 +12,14 @@ import retrofit2.http.Query;
 
 public interface ChatApiServices {
 
-
+    // --- USUARIOS ---
 
     @FormUrlEncoded
-    @POST("usuarios/registrar")
+    @POST("usuarios/registrar") // Antes era registro.php
     Call<ResponseBody> registrarUsuario(
             @Field("nombre") String nombre,
             @Field("apellidos") String apellidos,
-            @Field("edad") int edad,
+            @Field("fecha_nacimiento") String fecha_nacimiento,
             @Field("email") String email,
             @Field("telefono") String telefono,
             @Field("password") String password,
@@ -32,7 +32,7 @@ public interface ChatApiServices {
             @Path("id_usuario") int idUsuario,
             @Field("nombre") String nombre,
             @Field("apellidos") String apellidos,
-            @Field("edad") int edad,
+            @Field("fecha_nacimiento") String fecha_nacimiento,
             @Field("email") String email,
             @Field("telefono") String telefono,
             @Field("password") String password,
