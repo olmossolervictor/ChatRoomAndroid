@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -21,7 +20,7 @@
         android:theme="@style/Theme.Chat">
 
         <activity
-            android:name=".LoginActivity"
+            android:name="com.example.chat.activities.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,26 +29,27 @@
         </activity>
 
         <activity
-            android:name=".HomeActivity"
+            android:name="com.example.chat.activities.HomeActivity"
             android:exported="false" />
 
         <activity
-            android:name=".RegisterActivity"
+            android:name="com.example.chat.activities.RegisterActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ScannerActivity"
+            android:name="com.example.chat.activities.ScannerActivity"
             android:exported="false" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.chat.activities.MainActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".PrivateChatActivity"
+            android:name="com.example.chat.activities.PrivateChatActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

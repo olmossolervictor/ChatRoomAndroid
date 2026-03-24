@@ -1,4 +1,2 @@
 package com.example.chat;
-
-public @interface FormUrlEncoded {
-}
+// Moved to com.example.chat.network.FormUrlEncoded
