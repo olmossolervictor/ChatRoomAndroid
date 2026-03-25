@@ -48,7 +48,7 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 | `activities` | `LoginActivity`, `HomeActivity`, `RegisterActivity`, `ScannerActivity`, `MainActivity`, `PrivateChatActivity` |
 | `adapters` | `MensajeAdapter` (chat bubbles), `SalaAdapter` (room list) |
 | `models` | `Mensaje`, `Sala` |
-| `network` | `ChatApiServices` (Retrofit interface), `RetrofitClient` (singleton) |
+| `network` | `ChatApiServices` (Retrofit interface), `RetrofitClient` (singleton), `FormUrlEncoded` (custom annotation) |
 
 **Key class responsibilities:**
 
@@ -72,9 +72,15 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 
 **Geofence:** `SALA_RADIO = 0` means no location restriction for that room.
 
+**Message sending:** Every outgoing group message has the sender's GPS coordinates appended as `\n(Lat: X, Lon: Y)` by `obtenerUbicacionYEnviar`. If location permission is denied, the message is not sent.
+
+**Private chat trigger:** Tapping another user's message bubble in `MainActivity` calls `crearChatPrivado` and opens `PrivateChatActivity` with extras `ID_CHAT_PRIVADO`, `CURRENT_USER_ID`, `OTHER_USER_ID`, `OTHER_USER_NAME`.
+
+**Package note:** The root `com.example.chat` package contains empty stub files (one-line moved comments). All real source lives in the subpackages listed above.
+
 ## Backend API
 
-The PHP backend runs on Railway (HTTP, not HTTPS — `usesCleartextTraffic=true` in manifest). The base URL is configured in `RetrofitClient`. All requests use `application/x-www-form-urlencoded`. The database schema includes: `usuarios`, `salas`, `usuario_sala`, `log_mensajes_grupal`, `chats_privados`, `log_mensajes_privados`.
+The PHP backend runs on Railway (HTTPS). The base URL is a constant in `RetrofitClient.BASE_URL`. All requests use `application/x-www-form-urlencoded`. The database schema includes: `usuarios`, `salas`, `usuario_sala`, `log_mensajes_grupal`, `chats_privados`, `log_mensajes_privados`.
 
 ## Dependency Versions
 

@@ -56,6 +56,7 @@ public class ScannerActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ExecutorService cameraExecutor;
     private ImageAnalysis imageAnalysisRef;
+    private ProcessCameraProvider cameraProviderRef;
 
     // Instancia única del scanner reutilizada para reactivar sin conflictos
     private final BarcodeScanner barcodeScanner = BarcodeScanning.getClient(
@@ -119,17 +120,22 @@ public class ScannerActivity extends AppCompatActivity {
     }
 
     private void startCamera() {
-        ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(this);
-        future.addListener(() -> {
-            try {
-                bindPreview(future.get());
-            } catch (ExecutionException | InterruptedException e) {
-                Log.e(TAG, "Error al iniciar cámara", e);
-            }
-        }, ContextCompat.getMainExecutor(this));
+        // Delay para que la instancia anterior de la cámara se libere completamente
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (isDestroyed() || isFinishing()) return;
+            ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(this);
+            future.addListener(() -> {
+                try {
+                    bindPreview(future.get());
+                } catch (ExecutionException | InterruptedException e) {
+                    Log.e(TAG, "Error al iniciar cámara", e);
+                }
+            }, ContextCompat.getMainExecutor(this));
+        }, 600);
     }
 
     private void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
+        cameraProviderRef = cameraProvider;
         androidx.camera.core.Preview preview = new androidx.camera.core.Preview.Builder().build();
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
@@ -139,9 +145,8 @@ public class ScannerActivity extends AppCompatActivity {
             finish();
             return;
         }
-        Log.d(TAG, "Cámaras disponibles: " + camaras.size() + " → usando id=" +
-                camaras.get(0).toString());
 
+        // Selector original: toma todas las cámaras disponibles (compatible con cámaras virtuales)
         CameraSelector cameraSelector = new CameraSelector.Builder()
                 .addCameraFilter(list -> new ArrayList<>(list))
                 .build();
@@ -276,6 +281,9 @@ public class ScannerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (cameraProviderRef != null) {
+            cameraProviderRef.unbindAll();
+        }
         barcodeScanner.close();
         cameraExecutor.shutdown();
     }

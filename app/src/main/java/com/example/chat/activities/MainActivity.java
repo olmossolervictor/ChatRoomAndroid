@@ -4,13 +4,22 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Base64;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -25,8 +34,10 @@ import com.example.chat.adapters.MensajeAdapter;
 import com.example.chat.models.Mensaje;
 import com.example.chat.network.ChatApiServices;
 import com.example.chat.network.RetrofitClient;
+import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 
 import org.json.JSONObject;
 
@@ -45,6 +56,9 @@ public class MainActivity extends AppCompatActivity {
     private EditText editMessage;
     private Button btnSend;
     private ListView listMessages;
+    private LinearLayout layoutInputMessage;
+
+    private boolean isAdmin = false;
 
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
@@ -68,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         currentUserId = pref.getInt("id_usuario", -1);
+        String rol = pref.getString("rol", "usuario");
+        isAdmin = "admin".equals(rol);
 
         if (currentUserId == -1) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -100,23 +116,29 @@ public class MainActivity extends AppCompatActivity {
         editMessage = findViewById(R.id.editMessage);
         btnSend = findViewById(R.id.btnSend);
         listMessages = findViewById(R.id.listMessages);
+        layoutInputMessage = findViewById(R.id.layoutInputMessage);
 
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessages.setAdapter(adapter);
 
-        btnSend.setOnClickListener(v -> {
-            String mensaje = editMessage.getText().toString().trim();
-            if (!mensaje.isEmpty()) {
-                obtenerUbicacionYEnviar(mensaje);
-            }
-        });
+        if (isAdmin) {
+            // Admin: solo puede ver el chat, no escribir ni abrir chat privado
+            layoutInputMessage.setVisibility(View.GONE);
+        } else {
+            btnSend.setOnClickListener(v -> {
+                String mensaje = editMessage.getText().toString().trim();
+                if (!mensaje.isEmpty()) {
+                    obtenerUbicacionYEnviar(mensaje);
+                }
+            });
 
-        listMessages.setOnItemClickListener((parent, view, position, id) -> {
-            Mensaje msg = listaMensajes.get(position);
-            if (msg.getIdUsuario() != currentUserId) {
-                abrirChatPrivado(msg.getIdUsuario(), msg.getNombre());
-            }
-        });
+            listMessages.setOnItemClickListener((parent, view, position, id) -> {
+                Mensaje msg = listaMensajes.get(position);
+                if (msg.getIdUsuario() != currentUserId) {
+                    mostrarPerfilUsuario(msg.getIdUsuario(), msg.getNombre());
+                }
+            });
+        }
 
         unirseASalaEnServidor(currentSalaId);
         obtenerMensajes();
@@ -162,31 +184,47 @@ public class MainActivity extends AppCompatActivity {
     // ─── Verificación de ubicación ────────────────────────────────────────────
 
     private void verificarUbicacion() {
-        // Sin datos de geovalla o sin permiso → no verificar
-        if (salaRadioMetros <= 0) return;
+        // Sin coordenadas de sala → no verificar
+        if (salaLatitud == 0 && salaLongitud == 0) return;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) return;
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-            if (location == null) return;
+        // Si radio_metros == 0, usar 100 metros por defecto
+        double radioEfectivo = salaRadioMetros > 0 ? salaRadioMetros : 100.0;
 
-            float[] resultado = new float[1];
-            Location.distanceBetween(
-                    location.getLatitude(), location.getLongitude(),
-                    salaLatitud, salaLongitud,
-                    resultado
-            );
+        // Pedir ubicación fresca en lugar de usar la caché
+        CurrentLocationRequest request = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setMaxUpdateAgeMillis(5000) // acepta ubicación de hasta 5 segundos de antigüedad
+                .build();
 
-            float distanciaMetros = resultado[0];
-            if (distanciaMetros > salaRadioMetros) {
-                expulsarUsuario("Has salido del área de la sala");
-            }
-        });
+        fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener(this, location -> {
+                    if (location == null) return;
+
+                    float[] resultado = new float[1];
+                    Location.distanceBetween(
+                            location.getLatitude(), location.getLongitude(),
+                            salaLatitud, salaLongitud,
+                            resultado
+                    );
+
+                    float distanciaMetros = resultado[0];
+                    if (distanciaMetros > radioEfectivo) {
+                        expulsarUsuario("Has salido del área de la sala");
+                    }
+                });
     }
 
     private void expulsarUsuario(String motivo) {
         handler.removeCallbacks(refreshRunnable);
         Toast.makeText(this, motivo.toUpperCase(), Toast.LENGTH_LONG).show();
+        // Notificar al servidor que la sesión terminó por expulsión
+        RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                    @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
         finish();
     }
 
@@ -257,6 +295,56 @@ public class MainActivity extends AppCompatActivity {
                                 "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    // ─── Perfil de usuario (popup) ────────────────────────────────────────────
+
+    private void mostrarPerfilUsuario(int otherUserId, String otherUserName) {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_user_profile, null);
+        ImageView imgFoto = dialogView.findViewById(R.id.dialogImgFoto);
+        TextView textNombre = dialogView.findViewById(R.id.dialogTextNombre);
+        TextView textApellidos = dialogView.findViewById(R.id.dialogTextApellidos);
+        Button btnChatPrivado = dialogView.findViewById(R.id.dialogBtnChatPrivado);
+        Button btnDenunciar = dialogView.findViewById(R.id.dialogBtnDenunciar);
+
+        textNombre.setText(otherUserName);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        RetrofitClient.getChatApiServices().getUsuario(otherUserId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            try {
+                                org.json.JSONObject json = new org.json.JSONObject(response.body().string());
+                                String apellidos = json.optString("apellidos", "");
+                                textApellidos.setText(apellidos);
+                                String foto = json.optString("foto", "");
+                                if (!foto.isEmpty()) {
+                                    byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
+                                    imgFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
+                                }
+                            } catch (Exception e) { e.printStackTrace(); }
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
+
+        btnChatPrivado.setOnClickListener(v -> {
+            dialog.dismiss();
+            abrirChatPrivado(otherUserId, otherUserName);
+        });
+
+        btnDenunciar.setOnClickListener(v -> {
+            dialog.dismiss();
+            Toast.makeText(this, "Denuncia enviada", Toast.LENGTH_SHORT).show();
+        });
+
+        dialog.show();
     }
 
     // ─── Chat privado ─────────────────────────────────────────────────────────

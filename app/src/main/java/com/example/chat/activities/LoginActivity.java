@@ -63,24 +63,38 @@ public class LoginActivity extends AppCompatActivity {
         api.loginUsuario(email, password).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    try {
-                        JSONObject json = new JSONObject(response.body().string());
-                        if (json.getString("status").equals("success")) {
-                            int idUsuario = json.getInt("id_usuario");
-                            String nombre = json.getString("nombre");
-                            getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit()
-                                    .putInt("id_usuario", idUsuario)
-                                    .putString("nombre", nombre)
-                                    .apply();
-                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                            finish();
-                        } else {
-                            Toast.makeText(LoginActivity.this, json.getString("message"), Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                try {
+                    String bodyStr = response.isSuccessful() && response.body() != null
+                            ? response.body().string()
+                            : (response.errorBody() != null ? response.errorBody().string() : "");
+                    android.util.Log.d("LOGIN_DEBUG", "HTTP " + response.code() + ": " + bodyStr);
+
+                    if (!response.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "Error del servidor (" + response.code() + "): " + bodyStr, Toast.LENGTH_LONG).show();
+                        return;
                     }
+                    if (bodyStr.isEmpty()) {
+                        Toast.makeText(LoginActivity.this, "Respuesta vacía del servidor", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    JSONObject json = new JSONObject(bodyStr);
+                    if (json.getString("status").equals("success")) {
+                        int idUsuario = json.getInt("id_usuario");
+                        String nombre = json.getString("nombre");
+                        String rol = json.optString("rol", "usuario").toLowerCase();
+                        getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit()
+                                .putInt("id_usuario", idUsuario)
+                                .putString("nombre", nombre)
+                                .putString("rol", rol)
+                                .apply();
+                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                        finish();
+                    } else {
+                        Toast.makeText(LoginActivity.this, json.optString("message", "Credenciales incorrectas"), Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("LOGIN_ERROR", "Excepción: " + e.getMessage());
+                    Toast.makeText(LoginActivity.this, "Error al procesar respuesta: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             }
 

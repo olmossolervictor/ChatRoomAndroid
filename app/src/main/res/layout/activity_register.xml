@@ -68,6 +68,16 @@
             android:layout_height="wrap_content"
             android:hint="Correo electrónico"
             android:inputType="textEmailAddress"
+            android:layout_marginBottom="2dp"/>
+
+        <TextView
+            android:id="@+id/textEmailError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ya existe una cuenta con este correo electrónico"
+            android:textColor="#D32F2F"
+            android:textSize="12sp"
+            android:visibility="gone"
             android:layout_marginBottom="8dp"/>
 
         <EditText

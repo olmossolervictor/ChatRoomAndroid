@@ -95,6 +95,35 @@ public interface ChatApiServices {
             @Query("id_sala") String idSala
     );
 
+    @GET("usuarios/{id_usuario}/rol")
+    Call<ResponseBody> getRolUsuario(
+            @Path("id_usuario") int idUsuario
+    );
+
+    @GET("usuarios/check-email")
+    Call<ResponseBody> checkEmailExistente(
+            @Query("email") String email
+    );
+
+    @GET("usuarios/buscar")
+    Call<ResponseBody> buscarUsuarioPorEmail(
+            @Query("email") String email
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/cambiar-rol")
+    Call<ResponseBody> cambiarRolUsuario(
+            @Field("id_usuario") int idUsuario,
+            @Field("nuevo_rol") String nuevoRol
+    );
+
+    @FormUrlEncoded
+    @POST("salas/salir")
+    Call<ResponseBody> salirDeSala(
+            @Field("id_usuario") int idUsuario,
+            @Field("id_sala") String idSala
+    );
+
     // --- CHAT PRIVADO ---
 
     @FormUrlEncoded
