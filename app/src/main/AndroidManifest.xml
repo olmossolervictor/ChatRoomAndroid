@@ -39,6 +39,10 @@
             android:exported="false" />
 
         <activity
+            android:name="com.example.chat.activities.VerificacionEmailActivity"
+            android:exported="false" />
+
+        <activity
             android:name="com.example.chat.activities.ScannerActivity"
             android:exported="false" />
 

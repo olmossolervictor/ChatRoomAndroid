@@ -31,6 +31,12 @@ public interface ChatApiServices {
     );
 
     @FormUrlEncoded
+    @POST("usuarios/registrar")
+    Call<ResponseBody> iniciarRegistro(
+            @Field("email") String email
+    );
+
+    @FormUrlEncoded
     @POST("usuarios/actualizar/{id_usuario}")
     Call<ResponseBody> actualizarUsuario(
             @Path("id_usuario") int idUsuario,
@@ -53,6 +59,18 @@ public interface ChatApiServices {
     Call<ResponseBody> loginUsuario(
             @Field("email") String email,
             @Field("password") String password
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/login-google")
+    Call<ResponseBody> loginConGoogle(
+            @Field("id_token") String idToken
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/reenviar-verificacion")
+    Call<ResponseBody> reenviarVerificacionEmail(
+            @Field("email") String email
     );
 
     // --- SALAS ---
@@ -144,5 +162,26 @@ public interface ChatApiServices {
             @Field("id_chat_privado") int idChatPrivado,
             @Field("id_usuario_emisor") int idUsuarioEmisor,
             @Field("mensaje") String mensaje
+    );
+
+    // --- EMAIL VERIFICATION ---
+
+    @FormUrlEncoded
+    @POST("usuarios/verificar-codigo")
+    Call<ResponseBody> verificarCodigo(
+            @Field("email") String email,
+            @Field("code") String code,
+            @Field("nombre") String nombre,
+            @Field("apellidos") String apellidos,
+            @Field("fecha_nacimiento") String fechaNacimiento,
+            @Field("telefono") String telefono,
+            @Field("password") String password,
+            @Field("foto") String foto
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/verificar-google")
+    Call<ResponseBody> verificarConGoogle(
+            @Field("id_token") String idToken
     );
 }

@@ -29,6 +29,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import com.google.android.material.snackbar.Snackbar;
 
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
@@ -161,9 +162,6 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    private void openGallery() {
-        startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), PICK_IMAGE_REQUEST);
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -178,30 +176,12 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
-                imgUser.setImageBitmap(bitmap);
-                encodedImage = encodeImage(bitmap);
-            } catch (IOException e) { e.printStackTrace(); }
-        }
-        else if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK && data != null) {
-            Bundle extras = data.getExtras();
-            if (extras != null) {
-                Bitmap imageBitmap = (Bitmap) extras.get("data");
-                imgUser.setImageBitmap(imageBitmap);
-                encodedImage = encodeImage(imageBitmap);
-            }
-        }
-    }
 
     // =========================================================
 
     private void mostrarCalendario() {
         Calendar c = Calendar.getInstance();
+        // Máximo: hace 18 años
         Calendar maxCal = Calendar.getInstance();
         maxCal.add(Calendar.YEAR, -18);
 
@@ -403,13 +383,23 @@ public class RegisterActivity extends AppCompatActivity {
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
-        RetrofitClient.getChatApiServices().registrarUsuario(
-                nombre, apellidos, fechaSeleccionada, email, telefono, password, encodedImage
-        ).enqueue(new Callback<ResponseBody>() {
+        // Solo enviar el email al servidor para que mande el código
+        RetrofitClient.getChatApiServices().iniciarRegistro(email)
+                .enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(RegisterActivity.this, "Usuario registrado", Toast.LENGTH_SHORT).show();
+                    Snackbar.make(findViewById(android.R.id.content), R.string.codigo_enviado, Snackbar.LENGTH_LONG).show();
+                    // Pasar todos los datos del formulario a VerificacionEmailActivity
+                    Intent intent = new Intent(RegisterActivity.this, VerificacionEmailActivity.class);
+                    intent.putExtra("VERIFICACION_EMAIL", email);
+                    intent.putExtra("VERIFICACION_NOMBRE", nombre);
+                    intent.putExtra("VERIFICACION_APELLIDOS", apellidos);
+                    intent.putExtra("VERIFICACION_FECHA", fechaSeleccionada);
+                    intent.putExtra("VERIFICACION_TELEFONO", telefono);
+                    intent.putExtra("VERIFICACION_PASSWORD", password);
+                    intent.putExtra("VERIFICACION_FOTO", encodedImage);
+                    startActivity(intent);
                     finish();
                 } else {
                     try {
@@ -426,6 +416,25 @@ public class RegisterActivity extends AppCompatActivity {
                 Toast.makeText(RegisterActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void openGallery() {
+        startActivityForResult(
+                new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI),
+                PICK_IMAGE_REQUEST
+        );
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
+                imgUser.setImageBitmap(bitmap);
+                encodedImage = encodeImage(bitmap);
+            } catch (IOException e) { e.printStackTrace(); }
+        }
     }
 
     private String encodeImage(Bitmap bitmap) {
