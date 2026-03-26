@@ -1,8 +1,10 @@
 package com.example.chat.activities;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -14,13 +16,19 @@ import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
@@ -45,7 +53,16 @@ public class RegisterActivity extends AppCompatActivity {
     private Button btnSelectPhoto, btnRegister;
     private TextView textBackToLogin, textTitle;
 
+    // AÑADIMOS EL CHECKBOX Y SU CONTENEDOR
+    private CheckBox checkTerminos;
+    private LinearLayout layoutTerminos;
+
+    // Constantes para permisos e intenciones
     private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int CAMERA_REQUEST = 2;
+    private static final int PERMISSION_GALLERY_CODE = 100;
+    private static final int PERMISSION_CAMERA_CODE = 101;
+
     private String encodedImage = "";
     private boolean isEditMode = false;
     private int currentUserId;
@@ -74,23 +91,117 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
         textBackToLogin = findViewById(R.id.textBackToLogin);
 
+        // VINCULAMOS EL CHECKBOX Y SU LAYOUT
+        checkTerminos = findViewById(R.id.checkTerminos);
+        layoutTerminos = findViewById(R.id.layoutTerminos);
+
         editFechaNac.setFocusable(false);
         editFechaNac.setClickable(true);
         editFechaNac.setOnClickListener(v -> mostrarCalendario());
 
         isEditMode = getIntent().getBooleanExtra("MODO_EDICION", false);
-        if (isEditMode) setupEditMode();
+        if (isEditMode) {
+            setupEditMode();
+            // Si estamos editando perfil, ocultamos la caja de los términos
+            if (layoutTerminos != null) {
+                layoutTerminos.setVisibility(View.GONE);
+            }
+        }
 
         configurarTextWatcherEmail();
 
-        btnSelectPhoto.setOnClickListener(v -> openGallery());
+        btnSelectPhoto.setOnClickListener(v -> mostrarOpcionesFoto());
+
         btnRegister.setOnClickListener(v -> { if (isEditMode) actualizar(); else registrar(); });
         textBackToLogin.setOnClickListener(v -> finish());
     }
 
+    // =========================================================
+    // 📷 LÓGICA DE FOTO Y PERMISOS
+    // =========================================================
+
+    private void mostrarOpcionesFoto() {
+        String[] opciones = {"Hacer foto con la Cámara", "Elegir de la Galería"};
+        new AlertDialog.Builder(this)
+                .setTitle("Elige una foto de perfil")
+                .setItems(opciones, (dialog, which) -> {
+                    if (which == 0) checkPermissionAndOpenCamera();
+                    else checkPermissionAndOpenGallery();
+                })
+                .show();
+    }
+
+    private void checkPermissionAndOpenCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA_CODE);
+        } else {
+            openCamera();
+        }
+    }
+
+    private void checkPermissionAndOpenGallery() {
+        String permiso = Manifest.permission.READ_EXTERNAL_STORAGE;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permiso = Manifest.permission.READ_MEDIA_IMAGES;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, permiso) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permiso}, PERMISSION_GALLERY_CODE);
+        } else {
+            openGallery();
+        }
+    }
+
+    private void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(cameraIntent, CAMERA_REQUEST);
+        } else {
+            Toast.makeText(this, "No se encontró aplicación de cámara", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openGallery() {
+        startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_CAMERA_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) openCamera();
+            else Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+        }
+        else if (requestCode == PERMISSION_GALLERY_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) openGallery();
+            else Toast.makeText(this, "Permiso de galería denegado", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
+                imgUser.setImageBitmap(bitmap);
+                encodedImage = encodeImage(bitmap);
+            } catch (IOException e) { e.printStackTrace(); }
+        }
+        else if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK && data != null) {
+            Bundle extras = data.getExtras();
+            if (extras != null) {
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
+                imgUser.setImageBitmap(imageBitmap);
+                encodedImage = encodeImage(imageBitmap);
+            }
+        }
+    }
+
+    // =========================================================
+
     private void mostrarCalendario() {
         Calendar c = Calendar.getInstance();
-        // Máximo: hace 18 años
         Calendar maxCal = Calendar.getInstance();
         maxCal.add(Calendar.YEAR, -18);
 
@@ -187,6 +298,14 @@ public class RegisterActivity extends AppCompatActivity {
         String email = editEmail.getText().toString().trim();
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
+
+        // VALIDACIÓN DE LOS TÉRMINOS LEGALES (Solo si es un registro nuevo)
+        if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
+            Toast.makeText(this, "Debes aceptar los términos y condiciones legales", Toast.LENGTH_LONG).show();
+            // Le damos un pequeño efecto visual para que se fije
+            checkTerminos.requestFocus();
+            return false;
+        }
 
         if (nombre.isEmpty()) {
             editNombre.setError("El nombre es obligatorio");
@@ -307,25 +426,6 @@ public class RegisterActivity extends AppCompatActivity {
                 Toast.makeText(RegisterActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void openGallery() {
-        startActivityForResult(
-                new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI),
-                PICK_IMAGE_REQUEST
-        );
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
-                imgUser.setImageBitmap(bitmap);
-                encodedImage = encodeImage(bitmap);
-            } catch (IOException e) { e.printStackTrace(); }
-        }
     }
 
     private String encodeImage(Bitmap bitmap) {

@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     android:padding="24dp">
 
     <LinearLayout
@@ -12,20 +13,38 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="CHATROOM QR"
-            android:textSize="24sp"
-            android:textStyle="bold"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="32dp"/>
+            android:layout_marginBottom="32dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CHATROOM "
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="QR"
+                android:textColor="#6200EE"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/editEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Correo electrónico"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#B3FFFFFF"
+            android:backgroundTint="#FFFFFF"
             android:inputType="textEmailAddress"
             android:layout_marginBottom="16dp"/>
 
@@ -34,6 +53,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Contraseña"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#B3FFFFFF"
+            android:backgroundTint="#FFFFFF"
             android:inputType="textPassword"
             android:layout_marginBottom="24dp"/>
 
@@ -49,11 +71,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="¿No tienes cuenta? Regístrate aquí"
-            android:textColor="@color/black"
+            android:textColor="#FFFFFF"
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"/>
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

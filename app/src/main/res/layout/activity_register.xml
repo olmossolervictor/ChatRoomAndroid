@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     android:padding="24dp">
 
     <LinearLayout
@@ -15,19 +15,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Registro de Usuario"
-            android:textSize="24sp"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="16dp"/>
 
         <ImageView
             android:id="@+id/imgUser"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_gravity="center"
             android:src="@android:drawable/ic_menu_camera"
             android:background="@android:color/darker_gray"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:scaleType="centerCrop"/>
 
         <Button
@@ -36,38 +37,77 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Seleccionar Foto"
+            android:textSize="12sp"
             android:layout_marginBottom="16dp"/>
 
-        <EditText
-            android:id="@+id/editRegNombre"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nombre"
-            android:inputType="textPersonName"
-            android:layout_marginBottom="8dp"/>
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:layout_marginBottom="6dp">
 
-        <EditText
-            android:id="@+id/editRegApellidos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Apellidos"
-            android:inputType="textPersonName"
-            android:layout_marginBottom="8dp"/>
+            <EditText
+                android:id="@+id/editRegNombre"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:hint="Nombre"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#B3FFFFFF"
+                android:backgroundTint="#FFFFFF"
+                android:inputType="textPersonName"
+                android:textSize="14sp"/>
+
+            <EditText
+                android:id="@+id/editRegApellidos"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:hint="Apellidos"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#B3FFFFFF"
+                android:backgroundTint="#FFFFFF"
+                android:inputType="textPersonName"
+                android:textSize="14sp"/>
+        </LinearLayout>
 
         <EditText
             android:id="@+id/editRegEdad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Edad"
+            android:hint="Fecha de Nacimiento"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#B3FFFFFF"
+            android:backgroundTint="#FFFFFF"
             android:inputType="number"
-            android:layout_marginBottom="8dp"/>
+            android:textSize="14sp"
+            android:layout_marginBottom="6dp"/>
+
+        <EditText
+            android:id="@+id/editRegTelefono"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Teléfono"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#B3FFFFFF"
+            android:backgroundTint="#FFFFFF"
+            android:inputType="phone"
+            android:textSize="14sp"
+            android:layout_marginBottom="6dp"/>
 
         <EditText
             android:id="@+id/editRegEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Correo electrónico"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#B3FFFFFF"
+            android:backgroundTint="#FFFFFF"
             android:inputType="textEmailAddress"
+            android:textSize="14sp"
             android:layout_marginBottom="2dp"/>
 
         <TextView
@@ -75,28 +115,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Ya existe una cuenta con este correo electrónico"
-            android:textColor="#D32F2F"
+            android:textColor="#FF6B6B"
             android:textSize="12sp"
             android:visibility="gone"
-            android:layout_marginBottom="8dp"/>
-
-        <EditText
-            android:id="@+id/editRegTelefono"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Teléfono"
-            android:inputType="phone"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="6dp"/>
 
         <EditText
             android:id="@+id/editRegPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Contraseña"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#B3FFFFFF"
+            android:backgroundTint="#FFFFFF"
             android:inputType="textPassword"
+            android:textSize="14sp"
             android:layout_marginBottom="16dp"/>
 
-        <!-- SECCIÓN DE TÉRMINOS LEGALES -->
         <LinearLayout
             android:id="@+id/layoutTerminos"
             android:layout_width="match_parent"
@@ -108,14 +143,16 @@
             <CheckBox
                 android:id="@+id/checkTerminos"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                app:buttonTint="#FFFFFF" />
 
             <TextView
                 android:id="@+id/textVerTerminos"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Acepto los términos y condiciones legales"
-                android:textColor="@android:color/holo_blue_dark"
+                android:textColor="#4DD0E1"
+                android:textSize="13sp"
                 android:clickable="true"
                 android:focusable="true" />
         </LinearLayout>
@@ -132,7 +169,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="¿Ya tienes cuenta? Inicia sesión"
-            android:textColor="@color/black"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"/>
