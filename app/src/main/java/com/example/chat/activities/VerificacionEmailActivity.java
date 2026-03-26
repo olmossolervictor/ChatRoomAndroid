@@ -38,6 +38,12 @@ import retrofit2.Response;
 public class VerificacionEmailActivity extends AppCompatActivity {
 
     private String verificacionEmail = "";
+    private String verificacionNombre = "";
+    private String verificacionApellidos = "";
+    private String verificacionFecha = "";
+    private String verificacionTelefono = "";
+    private String verificacionPassword = "";
+    private String verificacionFoto = "";
     private EditText[] digitFields = new EditText[6];
     private Button btnVerificarCodigo, btnVerificarGoogle;
     private TextView textEmail, textReenviarCodigo;
@@ -57,6 +63,13 @@ public class VerificacionEmailActivity extends AppCompatActivity {
             finish();
             return;
         }
+        verificacionNombre = getIntent().getStringExtra("VERIFICACION_NOMBRE");
+        verificacionApellidos = getIntent().getStringExtra("VERIFICACION_APELLIDOS");
+        verificacionFecha = getIntent().getStringExtra("VERIFICACION_FECHA");
+        verificacionTelefono = getIntent().getStringExtra("VERIFICACION_TELEFONO");
+        verificacionPassword = getIntent().getStringExtra("VERIFICACION_PASSWORD");
+        verificacionFoto = getIntent().getStringExtra("VERIFICACION_FOTO");
+        if (verificacionFoto == null) verificacionFoto = "";
 
         api = RetrofitClient.getChatApiServices();
         credentialManager = CredentialManager.create(this);
@@ -150,7 +163,10 @@ public class VerificacionEmailActivity extends AppCompatActivity {
             return;
         }
 
-        api.verificarCodigo(verificacionEmail, codigo).enqueue(new Callback<ResponseBody>() {
+        api.verificarCodigo(verificacionEmail, codigo,
+                verificacionNombre, verificacionApellidos, verificacionFecha,
+                verificacionTelefono, verificacionPassword, verificacionFoto)
+                .enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {

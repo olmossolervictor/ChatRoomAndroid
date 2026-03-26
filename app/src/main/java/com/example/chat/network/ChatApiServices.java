@@ -31,6 +31,12 @@ public interface ChatApiServices {
     );
 
     @FormUrlEncoded
+    @POST("usuarios/registrar")
+    Call<ResponseBody> iniciarRegistro(
+            @Field("email") String email
+    );
+
+    @FormUrlEncoded
     @POST("usuarios/actualizar/{id_usuario}")
     Call<ResponseBody> actualizarUsuario(
             @Path("id_usuario") int idUsuario,
@@ -164,7 +170,13 @@ public interface ChatApiServices {
     @POST("usuarios/verificar-codigo")
     Call<ResponseBody> verificarCodigo(
             @Field("email") String email,
-            @Field("codigo") String codigo
+            @Field("code") String code,
+            @Field("nombre") String nombre,
+            @Field("apellidos") String apellidos,
+            @Field("fecha_nacimiento") String fechaNacimiento,
+            @Field("telefono") String telefono,
+            @Field("password") String password,
+            @Field("foto") String foto
     );
 
     @FormUrlEncoded

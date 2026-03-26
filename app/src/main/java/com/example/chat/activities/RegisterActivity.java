@@ -285,15 +285,22 @@ public class RegisterActivity extends AppCompatActivity {
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
-        RetrofitClient.getChatApiServices().registrarUsuario(
-                nombre, apellidos, fechaSeleccionada, email, telefono, password, encodedImage
-        ).enqueue(new Callback<ResponseBody>() {
+        // Solo enviar el email al servidor para que mande el código
+        RetrofitClient.getChatApiServices().iniciarRegistro(email)
+                .enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Snackbar.make(findViewById(android.R.id.content), R.string.codigo_enviado, Snackbar.LENGTH_LONG).show();
+                    // Pasar todos los datos del formulario a VerificacionEmailActivity
                     Intent intent = new Intent(RegisterActivity.this, VerificacionEmailActivity.class);
                     intent.putExtra("VERIFICACION_EMAIL", email);
+                    intent.putExtra("VERIFICACION_NOMBRE", nombre);
+                    intent.putExtra("VERIFICACION_APELLIDOS", apellidos);
+                    intent.putExtra("VERIFICACION_FECHA", fechaSeleccionada);
+                    intent.putExtra("VERIFICACION_TELEFONO", telefono);
+                    intent.putExtra("VERIFICACION_PASSWORD", password);
+                    intent.putExtra("VERIFICACION_FOTO", encodedImage);
                     startActivity(intent);
                     finish();
                 } else {
