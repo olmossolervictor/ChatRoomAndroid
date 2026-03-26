@@ -25,17 +25,17 @@
                 android:id="@+id/btnMenuDrawer"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@android:drawable/ic_menu_sort_by_size"
-                android:tint="@android:color/white"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Menú"/>
+                android:contentDescription="Menú"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                android:tint="@android:color/white" />
 
             <TextView
                 android:id="@+id/textWelcome"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="MIS SALAS"
+                android:text="INICIO"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 android:textStyle="bold"

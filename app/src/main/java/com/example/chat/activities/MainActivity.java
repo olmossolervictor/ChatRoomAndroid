@@ -230,6 +230,8 @@ public class MainActivity extends AppCompatActivity {
 
     // ─── Mensajes ─────────────────────────────────────────────────────────────
 
+    // ─── Mensajes ─────────────────────────────────────────────────────────────
+
     private void obtenerMensajes() {
         RetrofitClient.getChatApiServices()
                 .getMensajesGrupal(currentSalaId)
@@ -249,34 +251,27 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+
     private void obtenerUbicacionYEnviar(String mensaje) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-            return;
-        }
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-            String mensajeConUbicacion = mensaje;
-            if (location != null) {
-                mensajeConUbicacion += "\n(Lat: " + location.getLatitude()
-                        + ", Lon: " + location.getLongitude() + ")";
-            }
-            enviarMensajeAlServidor(mensajeConUbicacion);
-        });
+        // NOTA: Como ya no incrustamos la ubicación en el texto,
+        // puedes decidir si sigues queriendo pedir permisos de ubicación aquí
+        // o si prefieres delegarlo solo a la función 'verificarUbicacion()'
+        enviarMensajeAlServidor(mensaje);
     }
 
-    private void enviarMensajeAlServidor(String mensaje) {
+    private void enviarMensajeAlServidor(String mensajeLimpio) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
         android.util.Log.d("DEBUG_CHAT", "Enviando a Sala: [" + currentSalaId + "] Usuario: " + currentUserId);
 
-        api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensaje)
+        // Enviamos el mensaje tal cual lo escribió el usuario
+        api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
+                            // Vaciamos la caja de texto tras enviar
                             editMessage.setText("");
+                            // Refrescamos la lista para ver nuestro mensaje
                             obtenerMensajes();
                         } else {
                             int code = response.code();
