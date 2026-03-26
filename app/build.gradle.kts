@@ -2,6 +2,20 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+val googleWebClientId = (localProperties.getProperty("GOOGLE_WEB_CLIENT_ID")
+    ?: providers.gradleProperty("GOOGLE_WEB_CLIENT_ID").orNull
+    ?: "")
+    .trim()
+
 android {
     namespace = "com.example.chat"
     compileSdk {
@@ -19,6 +33,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+        resValue("string", "google_web_client_id", googleWebClientId)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -43,6 +58,9 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
     implementation("com.google.mlkit:barcode-scanning:17.2.0")

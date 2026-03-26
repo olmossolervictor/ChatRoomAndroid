@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.snackbar.Snackbar;
 
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
@@ -290,7 +291,10 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(RegisterActivity.this, "Usuario registrado", Toast.LENGTH_SHORT).show();
+                    Snackbar.make(findViewById(android.R.id.content), R.string.codigo_enviado, Snackbar.LENGTH_LONG).show();
+                    Intent intent = new Intent(RegisterActivity.this, VerificacionEmailActivity.class);
+                    intent.putExtra("VERIFICACION_EMAIL", email);
+                    startActivity(intent);
                     finish();
                 } else {
                     try {

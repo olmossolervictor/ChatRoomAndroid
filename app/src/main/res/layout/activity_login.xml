@@ -44,6 +44,25 @@
             android:text="Iniciar Sesión"
             android:layout_marginBottom="16dp"/>
 
+        <Button
+            android:id="@+id/btnGoogleLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/google_login_button"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/textResendVerification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/resend_verification"
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="16dp"/>
+
         <TextView
             android:id="@+id/textGoToRegister"
             android:layout_width="match_parent"

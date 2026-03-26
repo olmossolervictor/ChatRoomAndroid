@@ -55,6 +55,18 @@ public interface ChatApiServices {
             @Field("password") String password
     );
 
+    @FormUrlEncoded
+    @POST("usuarios/login-google")
+    Call<ResponseBody> loginConGoogle(
+            @Field("id_token") String idToken
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/reenviar-verificacion")
+    Call<ResponseBody> reenviarVerificacionEmail(
+            @Field("email") String email
+    );
+
     // --- SALAS ---
 
     @GET("salas/mis-salas")
@@ -144,5 +156,20 @@ public interface ChatApiServices {
             @Field("id_chat_privado") int idChatPrivado,
             @Field("id_usuario_emisor") int idUsuarioEmisor,
             @Field("mensaje") String mensaje
+    );
+
+    // --- EMAIL VERIFICATION ---
+
+    @FormUrlEncoded
+    @POST("usuarios/verificar-codigo")
+    Call<ResponseBody> verificarCodigo(
+            @Field("email") String email,
+            @Field("codigo") String codigo
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/verificar-google")
+    Call<ResponseBody> verificarConGoogle(
+            @Field("id_token") String idToken
     );
 }

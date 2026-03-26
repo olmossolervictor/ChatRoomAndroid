@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Chat</string>
+    <string name="google_login_button">Continuar con Google</string>
+    <string name="register_success_check_email">Registro completado. Revisa tu correo para verificar tu cuenta antes de iniciar sesión.</string>
+    <string name="email_not_verified">Tu correo todavía no está verificado.</string>
+    <string name="resend_verification">Reenviar verificación</string>
+    <string name="google_not_configured">Configura GOOGLE_WEB_CLIENT_ID en local.properties para usar Google</string>
+
+    <!-- Verificación de email -->
+    <string name="verificacion_titulo">Verifica tu cuenta</string>
+    <string name="verificacion_subtitulo">Enviamos un código de 6 dígitos a:\n%1$s</string>
+    <string name="verificar_codigo">Verificar código</string>
+    <string name="verificar_google">Verificar con Google</string>
+    <string name="reenviar_codigo">Reenviar código</string>
+    <string name="verificacion_exitosa">¡Cuenta verificada! Ya puedes iniciar sesión.</string>
+    <string name="codigo_enviado">Código de verificación enviado a tu correo</string>
+    <string name="codigo_incorrecto">Código incorrecto o expirado</string>
 </resources>

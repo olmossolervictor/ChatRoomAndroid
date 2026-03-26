@@ -6,4 +6,9 @@
     </style>
 
     <style name="Theme.Chat" parent="Base.Theme.Chat" />
+
+    <style name="DigitFieldStyle" parent="">
+        <item name="android:background">@drawable/digit_field_border</item>
+        <item name="android:padding">8dp</item>
+    </style>
 </resources>

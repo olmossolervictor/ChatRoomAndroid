@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## Build Commands
 
@@ -39,15 +39,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (group chat)
                              ↘ PrivateChatActivity (1:1 chat)
-                             ↘ UserManagementActivity (owner-only, via drawer)
-                             ↘ RegisterActivity (MODO_EDICION=true, edit profile via drawer)
 ```
 
 **Package structure under `com.example.chat`:**
 
 | Package | Contents |
 |---------|----------|
-| `activities` | `LoginActivity`, `HomeActivity`, `RegisterActivity`, `ScannerActivity`, `MainActivity`, `PrivateChatActivity`, `UserManagementActivity` |
+| `activities` | `LoginActivity`, `HomeActivity`, `RegisterActivity`, `ScannerActivity`, `MainActivity`, `PrivateChatActivity` |
 | `adapters` | `MensajeAdapter` (chat bubbles), `SalaAdapter` (room list) |
 | `models` | `Mensaje`, `Sala` |
 | `network` | `ChatApiServices` (Retrofit interface), `RetrofitClient` (singleton), `FormUrlEncoded` (custom annotation) |
@@ -58,16 +56,12 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 |-------|------|
 | `network/ChatApiServices` | All API endpoints; add new endpoints here |
 | `network/RetrofitClient` | Singleton Retrofit/OkHttp — do not modify |
-| `activities/HomeActivity` | Room list + QR scan button + navigation drawer (profile, logout, admin) |
+| `activities/HomeActivity` | Shows user's active rooms list + Escanear QR button |
 | `activities/ScannerActivity` | Scans QR → calls `unirseASala` → fetches room info → returns to Home |
 | `activities/MainActivity` | Group chat; polls messages + time + geofence every 3s |
-| `activities/UserManagementActivity` | Search user by email, promote/demote to admin; only reachable by `owner` role |
-| `activities/RegisterActivity` | Registration form; also used as profile editor when launched with `MODO_EDICION=true` |
 | `models/Sala` | Room model: `id_sala`, `nombre`, `latitud`, `longitud`, `radio_metros`, `tiempo_maximo` |
 
-**Session persistence:** `SharedPreferences` (`ChatPrefs`) stores `id_usuario`, `nombre`, `rol` (`owner`/`admin`/`usuario`), and `auth_provider` (`password`/`google`).
-
-**Roles:** Three roles exist — `owner` (id_rol=1), `admin`, `usuario`. On login, `rol` is saved to `ChatPrefs`. `HomeActivity.comprobarRolUsuario()` also refreshes it from the API and only shows the "Gestión de usuarios" drawer item to `owner`.
+**Session persistence:** user ID and display name stored in `SharedPreferences` (`ChatPrefs`).
 
 **Room join flow:**
 1. User scans QR with room name (e.g. `GENERAL`) in `ScannerActivity`
@@ -81,14 +75,6 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 **Message sending:** Every outgoing group message has the sender's GPS coordinates appended as `\n(Lat: X, Lon: Y)` by `obtenerUbicacionYEnviar`. If location permission is denied, the message is not sent.
 
 **Private chat trigger:** Tapping another user's message bubble in `MainActivity` calls `crearChatPrivado` and opens `PrivateChatActivity` with extras `ID_CHAT_PRIVADO`, `CURRENT_USER_ID`, `OTHER_USER_ID`, `OTHER_USER_NAME`.
-
-**Google Sign-In:** `LoginActivity` supports Google login via Jetpack `CredentialManager`. Requires `google_web_client_id` in `res/values/strings.xml` to be set; the button is disabled/greyed out if the value is empty.
-
-**Email verification:** Registration triggers a verification email. Login returns `email_not_verified` status (or HTTP 403) for unverified accounts, showing a "resend verification" link that calls `reenviarVerificacionEmail`.
-
-**Navigation drawer (HomeActivity):** Hamburger menu opens a side drawer with: edit profile (→ `RegisterActivity` with `MODO_EDICION=true`), settings (placeholder), user management (owner-only), terms (placeholder), and logout.
-
-**Profile photo:** Stored and returned as Base64 string from the API; decoded with `Base64.decode` before display.
 
 **Package note:** The root `com.example.chat` package contains empty stub files (one-line moved comments). All real source lives in the subpackages listed above.
 
