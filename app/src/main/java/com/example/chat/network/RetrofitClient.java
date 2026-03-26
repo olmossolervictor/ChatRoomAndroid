@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
     private static Retrofit retrofit = null;
 
-    public static final String BASE_URL = "https://back-chatroom-qr-production.up.railway.app/api/";
+    public static final String BASE_URL = "https://back-chatroom-qr-production-2e1d.up.railway.app/api/";
 
     public static ChatApiServices getChatApiServices() {
         if (retrofit == null) {
