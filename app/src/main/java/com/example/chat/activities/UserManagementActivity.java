@@ -1,5 +1,6 @@
 package com.example.chat.activities;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -27,7 +28,7 @@ public class UserManagementActivity extends AppCompatActivity {
 
     private EditText editBuscarEmail;
     private Button btnBuscar;
-    private LinearLayout layoutUserInfo;
+    private LinearLayout layoutUserInfo, layoutListaResultados;
     private TextView textNombreUser, textApellidosUser, textEmailUser,
             textTelefonoUser, textFechaNacUser, textRolActual, textNoEncontrado;
     private Button btnHacerAdmin, btnHacerUsuario;
@@ -42,6 +43,7 @@ public class UserManagementActivity extends AppCompatActivity {
         editBuscarEmail = findViewById(R.id.editBuscarEmail);
         btnBuscar = findViewById(R.id.btnBuscar);
         layoutUserInfo = findViewById(R.id.layoutUserInfo);
+        layoutListaResultados = findViewById(R.id.layoutListaResultados);
         textNombreUser = findViewById(R.id.textNombreUser);
         textApellidosUser = findViewById(R.id.textApellidosUser);
         textEmailUser = findViewById(R.id.textEmailUser);
@@ -78,6 +80,8 @@ public class UserManagementActivity extends AppCompatActivity {
         }
 
         layoutUserInfo.setVisibility(View.GONE);
+        layoutListaResultados.setVisibility(View.GONE);
+        layoutListaResultados.removeAllViews(); // Limpiar resultados anteriores
         textNoEncontrado.setVisibility(View.GONE);
         foundUserId = -1;
 
@@ -89,38 +93,23 @@ public class UserManagementActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null) {
                             try {
                                 String respuestaStr = response.body().string();
-
-                                // 1. Convertimos la respuesta a un ARRAY de JSON
                                 JSONArray jsonArray = new JSONArray(respuestaStr);
 
-                                // 2. Comprobamos si la lista tiene al menos un usuario
-                                if (jsonArray.length() > 0) {
-                                    // De momento, pillamos el primer usuario de la lista
-                                    JSONObject jsonUsuario = jsonArray.getJSONObject(0);
-
-                                    if (jsonUsuario.has("id_usuario") && !jsonUsuario.isNull("id_usuario")) {
-                                        foundUserId = jsonUsuario.getInt("id_usuario");
-                                        mostrarUsuario(jsonUsuario);
-
-                                        // Feedback visual si hay más de uno
-                                        if (jsonArray.length() > 1) {
-                                            Toast.makeText(UserManagementActivity.this,
-                                                    "Se encontraron " + jsonArray.length() + " resultados. Mostrando el más cercano.",
-                                                    Toast.LENGTH_SHORT).show();
-                                        }
-                                    } else {
-                                        textNoEncontrado.setVisibility(View.VISIBLE);
-                                    }
-                                } else {
-                                    // Si la lista viene vacía (NoContent 204 o [] )
+                                if (jsonArray.length() == 0) {
                                     textNoEncontrado.setVisibility(View.VISIBLE);
+                                } else if (jsonArray.length() == 1) {
+                                    // Solo hay uno, lo mostramos directamente
+                                    JSONObject jsonUsuario = jsonArray.getJSONObject(0);
+                                    mostrarUsuario(jsonUsuario);
+                                } else {
+                                    // Hay varios, mostramos la lista para que elija
+                                    procesarMultiplesResultados(jsonArray);
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 textNoEncontrado.setVisibility(View.VISIBLE);
                             }
                         } else {
-                            // Si el servidor responde 404 o error
                             textNoEncontrado.setVisibility(View.VISIBLE);
                         }
                     }
@@ -132,8 +121,61 @@ public class UserManagementActivity extends AppCompatActivity {
                 });
     }
 
+    private void procesarMultiplesResultados(JSONArray jsonArray) {
+        layoutListaResultados.setVisibility(View.VISIBLE);
+        
+        // Añadimos el título de nuevo (porque removeAllViews lo borró si estaba en el XML, 
+        // pero mejor lo manejamos dinámicamente o dejamos el título fuera del contenedor que se limpia)
+        TextView tvTitulo = new TextView(this);
+        tvTitulo.setText("RESULTADOS ENCONTRADOS (" + jsonArray.length() + "):");
+        tvTitulo.setTextSize(12);
+        tvTitulo.setPadding(0, 0, 0, 16);
+        layoutListaResultados.addView(tvTitulo);
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            try {
+                JSONObject user = jsonArray.getJSONObject(i);
+                String nombre = user.optString("nombre", "Sin nombre");
+                String email = user.optString("email", "");
+
+                // Crear un "botón" o vista para cada usuario
+                TextView item = new TextView(this);
+                item.setText(nombre + "\n" + email);
+                item.setPadding(20, 20, 20, 20);
+                item.setBackgroundResource(android.R.drawable.list_selector_background);
+                item.setClickable(true);
+                item.setFocusable(true);
+                
+                // Separación entre items
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, 
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                params.setMargins(0, 0, 0, 10);
+                item.setLayoutParams(params);
+
+                item.setOnClickListener(v -> {
+                    layoutListaResultados.setVisibility(View.GONE);
+                    mostrarUsuario(user);
+                });
+
+                layoutListaResultados.addView(item);
+
+                // Línea divisoria simple
+                View divider = new View(this);
+                divider.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+                divider.setBackgroundColor(Color.LTGRAY);
+                layoutListaResultados.addView(divider);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void mostrarUsuario(JSONObject json) {
         try {
+            foundUserId = json.optInt("id_usuario", -1);
+
             textNombreUser.setText("Nombre: " + json.optString("nombre", "-"));
             textApellidosUser.setText("Apellidos: " + json.optString("apellidos", "-"));
             textEmailUser.setText("Email: " + json.optString("email", "-"));
