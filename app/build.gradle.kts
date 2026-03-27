@@ -27,6 +27,15 @@ android {
         }
     }
 
+    signingConfigs {
+        getByName("debug") {
+            storeFile = rootProject.file("keystore/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.chat"
         minSdk = 24
@@ -39,6 +48,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
