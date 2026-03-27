@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.chat.R;
 import com.example.chat.network.RetrofitClient;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import okhttp3.ResponseBody;
@@ -87,11 +88,31 @@ public class UserManagementActivity extends AppCompatActivity {
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             try {
-                                JSONObject json = new JSONObject(response.body().string());
-                                if (json.has("id_usuario") && !json.isNull("id_usuario")) {
-                                    foundUserId = json.getInt("id_usuario");
-                                    mostrarUsuario(json);
+                                String respuestaStr = response.body().string();
+
+                                // 1. Convertimos la respuesta a un ARRAY de JSON
+                                JSONArray jsonArray = new JSONArray(respuestaStr);
+
+                                // 2. Comprobamos si la lista tiene al menos un usuario
+                                if (jsonArray.length() > 0) {
+                                    // De momento, pillamos el primer usuario de la lista
+                                    JSONObject jsonUsuario = jsonArray.getJSONObject(0);
+
+                                    if (jsonUsuario.has("id_usuario") && !jsonUsuario.isNull("id_usuario")) {
+                                        foundUserId = jsonUsuario.getInt("id_usuario");
+                                        mostrarUsuario(jsonUsuario);
+
+                                        // Feedback visual si hay más de uno
+                                        if (jsonArray.length() > 1) {
+                                            Toast.makeText(UserManagementActivity.this,
+                                                    "Se encontraron " + jsonArray.length() + " resultados. Mostrando el más cercano.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    } else {
+                                        textNoEncontrado.setVisibility(View.VISIBLE);
+                                    }
                                 } else {
+                                    // Si la lista viene vacía (NoContent 204 o [] )
                                     textNoEncontrado.setVisibility(View.VISIBLE);
                                 }
                             } catch (Exception e) {
@@ -99,13 +120,14 @@ public class UserManagementActivity extends AppCompatActivity {
                                 textNoEncontrado.setVisibility(View.VISIBLE);
                             }
                         } else {
+                            // Si el servidor responde 404 o error
                             textNoEncontrado.setVisibility(View.VISIBLE);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(UserManagementActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(UserManagementActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
