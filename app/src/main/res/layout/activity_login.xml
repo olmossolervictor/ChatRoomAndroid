@@ -38,43 +38,43 @@
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:hintEnabled="false">
+            android:textColorHint="#B3FFFFFF"
+            app:boxStrokeColor="#FFFFFF"
+            app:hintTextColor="#FFFFFF">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Correo electrónico"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#B3FFFFFF"
-                android:backgroundTint="#FFFFFF"
                 android:inputType="textEmailAddress"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"/>
+                android:textColor="#FFFFFF"
+                android:textCursorDrawable="@drawable/cursor_blanco" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
+            android:textColorHint="#B3FFFFFF"
+            app:boxStrokeColor="#FFFFFF"
+            app:hintTextColor="#FFFFFF"
             app:passwordToggleEnabled="true"
-            app:passwordToggleTint="#FFFFFF"
-            app:hintEnabled="false">
+            app:passwordToggleTint="#FFFFFF">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Contraseña"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#B3FFFFFF"
-                android:backgroundTint="#FFFFFF"
                 android:inputType="textPassword"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"/>
+                android:textColor="#FFFFFF"
+                android:textCursorDrawable="@drawable/cursor_blanco" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
@@ -96,7 +96,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/resend_verification"
-            android:textColor="@color/black"
+            android:textColor="#FFFFFF"
             android:gravity="center"
             android:visibility="gone"
             android:clickable="true"

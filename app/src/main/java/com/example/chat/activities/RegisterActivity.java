@@ -20,6 +20,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,17 +54,13 @@ public class RegisterActivity extends AppCompatActivity {
     private ImageView imgUser;
     private Button btnSelectPhoto, btnRegister;
     private TextView textBackToLogin, textTitle;
-
-    // AÑADIMOS EL CHECKBOX Y SU CONTENEDOR
     private CheckBox checkTerminos;
     private LinearLayout layoutTerminos;
-
     // Constantes para permisos e intenciones
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final int CAMERA_REQUEST = 2;
     private static final int PERMISSION_GALLERY_CODE = 100;
     private static final int PERMISSION_CAMERA_CODE = 101;
-
     private String encodedImage = "";
     private boolean isEditMode = false;
     private int currentUserId;
@@ -73,6 +70,7 @@ public class RegisterActivity extends AppCompatActivity {
     private final Handler debounceHandler = new Handler();
     private Runnable emailCheckRunnable;
     private boolean emailYaExiste = false;
+    private TextView textVerTerminos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,9 +90,13 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
         textBackToLogin = findViewById(R.id.textBackToLogin);
 
-        // VINCULAMOS EL CHECKBOX Y SU LAYOUT
+
         checkTerminos = findViewById(R.id.checkTerminos);
         layoutTerminos = findViewById(R.id.layoutTerminos);
+        textVerTerminos = findViewById(R.id.textVerTerminos);
+        if (textVerTerminos != null) {
+            textVerTerminos.setOnClickListener(v -> mostrarAlertaTerminos());
+        }
 
         editFechaNac.setFocusable(false);
         editFechaNac.setClickable(true);
@@ -117,10 +119,57 @@ public class RegisterActivity extends AppCompatActivity {
         textBackToLogin.setOnClickListener(v -> finish());
     }
 
-    // =========================================================
-    // 📷 LÓGICA DE FOTO Y PERMISOS
-    // =========================================================
+    private void mostrarAlertaTerminos() {
+        ScrollView scrollView = new ScrollView(this);
+        TextView textView = new TextView(this);
 
+        // Carga el texto desde tu archivo strings.xml
+        textView.setText(getString(R.string.terminos_legales));
+        textView.setPadding(50, 40, 50, 40);
+        textView.setTextSize(14);
+        textView.setTextColor(ContextCompat.getColor(this, android.R.color.black));
+        scrollView.addView(textView);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Términos y Condiciones")
+                .setView(scrollView)
+                .setCancelable(false)
+                .setPositiveButton("Aceptar", (d, which) -> {
+                    // Si acepta, marcamos el checkbox automáticamente
+                    checkTerminos.setChecked(true);
+                })
+                .setNegativeButton("Rechazar", (d, which) -> {
+                    // Si rechaza, lo desmarcamos por si acaso y avisamos
+                    checkTerminos.setChecked(false);
+                    Toast.makeText(RegisterActivity.this, "Debes aceptar los términos para registrarte", Toast.LENGTH_SHORT).show();
+                })
+                .create();
+
+        dialog.show();
+
+        // Bloqueamos el botón de aceptar por defecto
+        Button btnAceptar = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        btnAceptar.setEnabled(false);
+
+        // Escuchamos el scroll para desbloquear el botón cuando llegue al final
+        scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+            View view = scrollView.getChildAt(scrollView.getChildCount() - 1);
+            int diff = (view.getBottom() - (scrollView.getHeight() + scrollView.getScrollY()));
+            if (diff <= 0) {
+                btnAceptar.setEnabled(true);
+            }
+        });
+
+        // Por si el texto es tan corto que no hace falta scrollear
+        scrollView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            View view = scrollView.getChildAt(scrollView.getChildCount() - 1);
+            if (view.getBottom() <= scrollView.getHeight()) {
+                btnAceptar.setEnabled(true);
+            }
+        });
+    }
+
+    // 📷 LÓGICA DE FOTO Y PERMISOS
     private void mostrarOpcionesFoto() {
         String[] opciones = {"Hacer foto con la Cámara", "Elegir de la Galería"};
         new AlertDialog.Builder(this)
