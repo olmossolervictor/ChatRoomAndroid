@@ -47,7 +47,7 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 
 | Package | Contents |
 |---------|----------|
-| `activities` | `LoginActivity`, `HomeActivity`, `RegisterActivity`, `ScannerActivity`, `MainActivity`, `PrivateChatActivity`, `UserManagementActivity` |
+| `activities` | `LoginActivity`, `HomeActivity`, `RegisterActivity`, `VerificacionEmailActivity`, `ScannerActivity`, `MainActivity`, `PrivateChatActivity`, `UserManagementActivity` |
 | `adapters` | `MensajeAdapter` (chat bubbles), `SalaAdapter` (room list) |
 | `models` | `Mensaje`, `Sala` |
 | `network` | `ChatApiServices` (Retrofit interface), `RetrofitClient` (singleton), `FormUrlEncoded` (custom annotation) |
@@ -84,7 +84,7 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 
 **Google Sign-In:** `LoginActivity` supports Google login via Jetpack `CredentialManager`. Requires `google_web_client_id` in `res/values/strings.xml` to be set; the button is disabled/greyed out if the value is empty.
 
-**Email verification:** Registration triggers a verification email. Login returns `email_not_verified` status (or HTTP 403) for unverified accounts, showing a "resend verification" link that calls `reenviarVerificacionEmail`.
+**Email verification:** `RegisterActivity` navigates to `VerificacionEmailActivity` after form submission, passing all user data as Intent extras (`VERIFICACION_EMAIL`, `VERIFICACION_NOMBRE`, etc.). The user enters a 6-digit code; on success, the account is created and the user is sent to `LoginActivity`. Login returns `email_not_verified` status (or HTTP 403) for accounts that bypassed this step, showing a "resend verification" link that calls `reenviarVerificacionEmail`.
 
 **Navigation drawer (HomeActivity):** Hamburger menu opens a side drawer with: edit profile (→ `RegisterActivity` with `MODO_EDICION=true`), settings (placeholder), user management (owner-only), terms (placeholder), and logout.
 

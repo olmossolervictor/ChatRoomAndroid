@@ -16,11 +16,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -336,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnDenunciar.setOnClickListener(v -> {
             dialog.dismiss();
-            Toast.makeText(this, "Denuncia enviada", Toast.LENGTH_SHORT).show();
+            mostrarDialogoDenuncias(otherUserId);
         });
 
         dialog.show();
@@ -352,7 +354,12 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             try {
-                                JSONObject json = new JSONObject(response.body().string());
+                                String bodyStr = response.body().string();
+                                JSONObject json = new JSONObject(bodyStr);
+                                if (!json.has("id_chat_privado")) {
+                                    Toast.makeText(MainActivity.this, "Respuesta inesperada: " + bodyStr, Toast.LENGTH_LONG).show();
+                                    return;
+                                }
                                 int idChatPrivado = json.getInt("id_chat_privado");
                                 Intent intent = new Intent(MainActivity.this, PrivateChatActivity.class);
                                 intent.putExtra("ID_CHAT_PRIVADO", idChatPrivado);
@@ -360,13 +367,22 @@ public class MainActivity extends AppCompatActivity {
                                 intent.putExtra("OTHER_USER_ID", otherUserId);
                                 intent.putExtra("OTHER_USER_NAME", otherUserName);
                                 startActivity(intent);
-                            } catch (Exception e) { e.printStackTrace(); }
+                            } catch (Exception e) {
+                                Toast.makeText(MainActivity.this, "Error al parsear respuesta: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            try {
+                                String errorBody = response.errorBody() != null ? response.errorBody().string() : "sin detalle";
+                                Toast.makeText(MainActivity.this, "Error " + response.code() + ": " + errorBody, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                Toast.makeText(MainActivity.this, "Error " + response.code(), Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(MainActivity.this, "Error al conectar", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -380,6 +396,89 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
+    }
+
+    private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
+        final String[] tiposDenuncia = {
+            "Información falsa",
+            "Comentario obsceno",
+            "Otro"
+        };
+        final String[] tipoDenunciaSeleccionado = {""};
+        final EditText[] editRazon = {null};
+
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle("Enviar Denuncia");
+
+        LinearLayout layoutDenuncia = new LinearLayout(this);
+        layoutDenuncia.setOrientation(LinearLayout.VERTICAL);
+        layoutDenuncia.setPadding(16, 16, 16, 16);
+
+        Spinner spinnerTipo = new Spinner(this);
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+            this, android.R.layout.simple_spinner_item, tiposDenuncia);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTipo.setAdapter(adapter);
+        spinnerTipo.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                tipoDenunciaSeleccionado[0] = tiposDenuncia[position];
+                if (position == 2) {
+                    if (editRazon[0] == null) {
+                        editRazon[0] = new EditText(MainActivity.this);
+                        editRazon[0].setHint("Explica la razón de tu denuncia");
+                        editRazon[0].setVisibility(View.VISIBLE);
+                        layoutDenuncia.addView(editRazon[0]);
+                    } else {
+                        editRazon[0].setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    if (editRazon[0] != null) {
+                        editRazon[0].setVisibility(View.GONE);
+                    }
+                }
+            }
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+
+        layoutDenuncia.addView(spinnerTipo);
+
+        builder.setView(layoutDenuncia);
+        builder.setPositiveButton("Enviar", (dialog, which) -> {
+            if (tipoDenunciaSeleccionado[0].isEmpty()) {
+                Toast.makeText(MainActivity.this, "Selecciona un tipo de denuncia", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String razon = "";
+            if (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) {
+                razon = editRazon[0].getText().toString().trim();
+            }
+
+            enviarDenuncia(idUsuarioDenunciado, tipoDenunciaSeleccionado[0], razon);
+        });
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    private void enviarDenuncia(int idUsuarioDenunciado, String tipo, String razon) {
+        RetrofitClient.getChatApiServices()
+            .crearDenuncia(currentUserId, idUsuarioDenunciado, tipo, razon)
+            .enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(MainActivity.this, "Denuncia registrada correctamente", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Error al registrar denuncia", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     @Override

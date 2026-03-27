@@ -14,6 +14,8 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import org.json.JSONObject;
+import org.json.JSONArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -48,15 +50,17 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText editNombre, editApellidos, editFechaNac, editEmail, editTelefono, editPassword;
-    private TextView textEmailError;
+    private EditText editNombre, editApellidos, editFechaNac, editEmail, editTelefono, editPassword, editNombreUsuario;
+    private TextView textEmailError, textNombreUsuarioError;
     private ImageView imgUser;
     private Button btnSelectPhoto, btnRegister;
     private TextView textBackToLogin, textTitle;
+    private LinearLayout layoutSugerencias, layoutBotonesSugerencias;
 
     // AÑADIMOS EL CHECKBOX Y SU CONTENEDOR
     private CheckBox checkTerminos;
     private LinearLayout layoutTerminos;
+    private TextView textVerTerminos;
 
     // Constantes para permisos e intenciones
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -95,6 +99,40 @@ public class RegisterActivity extends AppCompatActivity {
         // VINCULAMOS EL CHECKBOX Y SU LAYOUT
         checkTerminos = findViewById(R.id.checkTerminos);
         layoutTerminos = findViewById(R.id.layoutTerminos);
+        textVerTerminos = findViewById(R.id.textVerTerminos);
+
+        // Agregar listener para mostrar términos al hacer clic
+        if (textVerTerminos != null) {
+            textVerTerminos.setOnClickListener(v -> mostrarDialogoTerminos());
+        }
+
+        // Vinculamos nombre de usuario y sus elementos
+        editNombreUsuario = findViewById(R.id.editRegNombreUsuario);
+        textNombreUsuarioError = findViewById(R.id.textNombreUsuarioError);
+        layoutSugerencias = findViewById(R.id.layoutSugerencias);
+        layoutBotonesSugerencias = findViewById(R.id.layoutBotonesSugerencias);
+
+        // Agregar listener para validar nombre de usuario
+        if (editNombreUsuario != null) {
+            editNombreUsuario.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    textNombreUsuarioError.setVisibility(View.GONE);
+                    layoutSugerencias.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    String nombreUsuario = s.toString().trim();
+                    if (nombreUsuario.length() > 3) {
+                        validarNombreUsuario(nombreUsuario);
+                    }
+                }
+            });
+        }
 
         editFechaNac.setFocusable(false);
         editFechaNac.setClickable(true);
@@ -377,34 +415,29 @@ public class RegisterActivity extends AppCompatActivity {
     private void registrar() {
         if (!validarCampos(true)) return;
 
-        String nombre = editNombre.getText().toString().trim();
-        String apellidos = editApellidos.getText().toString().trim();
         String email = editEmail.getText().toString().trim();
-        String telefono = editTelefono.getText().toString().trim();
-        String password = editPassword.getText().toString().trim();
 
-        // Solo enviar el email al servidor para que mande el código
-        RetrofitClient.getChatApiServices().iniciarRegistro(email)
+        RetrofitClient.getChatApiServices()
+                .iniciarRegistro(email)
                 .enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.codigo_enviado, Snackbar.LENGTH_LONG).show();
-                    // Pasar todos los datos del formulario a VerificacionEmailActivity
+                    // Guardar datos del usuario para la verificación
                     Intent intent = new Intent(RegisterActivity.this, VerificacionEmailActivity.class);
                     intent.putExtra("VERIFICACION_EMAIL", email);
-                    intent.putExtra("VERIFICACION_NOMBRE", nombre);
-                    intent.putExtra("VERIFICACION_APELLIDOS", apellidos);
+                    intent.putExtra("VERIFICACION_NOMBRE_USUARIO", editNombreUsuario.getText().toString().trim());
+                    intent.putExtra("VERIFICACION_NOMBRE", editNombre.getText().toString().trim());
+                    intent.putExtra("VERIFICACION_APELLIDOS", editApellidos.getText().toString().trim());
                     intent.putExtra("VERIFICACION_FECHA", fechaSeleccionada);
-                    intent.putExtra("VERIFICACION_TELEFONO", telefono);
-                    intent.putExtra("VERIFICACION_PASSWORD", password);
+                    intent.putExtra("VERIFICACION_TELEFONO", editTelefono.getText().toString().trim());
+                    intent.putExtra("VERIFICACION_PASSWORD", editPassword.getText().toString().trim());
                     intent.putExtra("VERIFICACION_FOTO", encodedImage);
                     startActivity(intent);
                     finish();
                 } else {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "sin detalle";
-                        android.util.Log.e("REGISTER_ERROR", "HTTP " + response.code() + ": " + errorBody);
                         Toast.makeText(RegisterActivity.this, "Error " + response.code() + ": " + errorBody, Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
                         Toast.makeText(RegisterActivity.this, "Error en el registro (código " + response.code() + ")", Toast.LENGTH_LONG).show();
@@ -441,5 +474,88 @@ public class RegisterActivity extends AppCompatActivity {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
         return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+    }
+
+    private void mostrarDialogoTerminos() {
+        String terminosTexto = "TÉRMINOS Y CONDICIONES\n\n" +
+                "1. Uso del Servicio\n" +
+                "Al utilizar esta aplicación, aceptas estos términos y condiciones. Si no estás de acuerdo, no uses la aplicación.\n\n" +
+                "2. Cuentas de Usuario\n" +
+                "Eres responsable de mantener la confidencialidad de tu contraseña y de toda la actividad que ocurra bajo tu cuenta.\n\n" +
+                "3. Contenido\n" +
+                "No debes publicar contenido ofensivo, ilegal o que infrinja derechos de terceros.\n\n" +
+                "4. Privacidad\n" +
+                "Tu información personal será tratada según nuestra política de privacidad.\n\n" +
+                "5. Limitación de Responsabilidad\n" +
+                "No somos responsables por daños indirectos o pérdida de datos.\n\n" +
+                "6. Cambios en los Términos\n" +
+                "Podemos modificar estos términos en cualquier momento. El uso continuado de la aplicación implica aceptación de los cambios.\n\n" +
+                "7. Terminación\n" +
+                "Podemos suspender tu cuenta por violación de estos términos.\n\n" +
+                "8. Ley Aplicable\n" +
+                "Estos términos se rigen por la ley aplicable en tu país.";
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Términos y Condiciones");
+        builder.setMessage(terminosTexto);
+        builder.setPositiveButton("Acepto", (dialog, which) -> {
+            checkTerminos.setChecked(true);
+            dialog.dismiss();
+        });
+        builder.setNegativeButton("Cancelar", (dialog, which) -> {
+            checkTerminos.setChecked(false);
+            dialog.dismiss();
+        });
+        builder.setCancelable(false);
+        builder.show();
+    }
+
+    private void validarNombreUsuario(String nombreUsuario) {
+        RetrofitClient.getChatApiServices().sugerirNombreUsuario(nombreUsuario)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            try {
+                                JSONObject json = new JSONObject(response.body().string());
+                                boolean disponible = json.optBoolean("disponible", true);
+                                JSONArray sugerencias = json.optJSONArray("sugerencias");
+
+                                if (disponible) {
+                                    // Nombre disponible
+                                    textNombreUsuarioError.setVisibility(View.GONE);
+                                    layoutSugerencias.setVisibility(View.GONE);
+                                } else {
+                                    // Nombre no disponible, mostrar sugerencias
+                                    textNombreUsuarioError.setVisibility(View.VISIBLE);
+                                    layoutSugerencias.setVisibility(View.VISIBLE);
+                                    layoutBotonesSugerencias.removeAllViews();
+
+                                    for (int i = 0; i < sugerencias.length(); i++) {
+                                        String sugerencia = sugerencias.getString(i);
+                                        Button btnSugerencia = new Button(RegisterActivity.this);
+                                        btnSugerencia.setText(sugerencia);
+                                        btnSugerencia.setTextSize(12);
+                                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                        params.setMargins(4, 0, 4, 0);
+                                        btnSugerencia.setLayoutParams(params);
+                                        btnSugerencia.setOnClickListener(v -> {
+                                            editNombreUsuario.setText(sugerencia);
+                                        });
+                                        layoutBotonesSugerencias.addView(btnSugerencia);
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    }
+                });
     }
 }
