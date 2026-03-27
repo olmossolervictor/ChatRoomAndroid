@@ -1,7 +1,6 @@
 package com.example.chat.activities;
 
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -22,14 +21,6 @@ import com.example.chat.R;
 import com.example.chat.adapters.SalaAdapter;
 import com.example.chat.models.Sala;
 import com.example.chat.network.RetrofitClient;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.Priority;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.Task;
 
 import org.json.JSONObject;
 
@@ -44,12 +35,11 @@ import retrofit2.Response;
 public class HomeActivity extends AppCompatActivity {
 
     private static final int SCAN_QR_REQUEST_CODE = 2000;
-    private static final int GPS_SETTINGS_REQUEST_CODE = 1001;
 
     private DrawerLayout drawerLayout;
     private ListView listSalas;
     private TextView textEmptySalas;
-    private Button btnScanQR, btnGPS;
+    private Button btnScanQR;
     private ImageButton btnMenuDrawer;
 
     // Drawer views
@@ -74,7 +64,6 @@ public class HomeActivity extends AppCompatActivity {
         listSalas = findViewById(R.id.listSalas);
         textEmptySalas = findViewById(R.id.textEmptySalas);
         btnScanQR = findViewById(R.id.btnScanQRHome);
-        btnGPS = findViewById(R.id.btnGPSHome);
         btnMenuDrawer = findViewById(R.id.btnMenuDrawer);
 
         imgDrawerFoto = findViewById(R.id.imgDrawerFoto);
@@ -100,8 +89,6 @@ public class HomeActivity extends AppCompatActivity {
         btnScanQR.setOnClickListener(v ->
                 startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE));
 
-        btnGPS.setOnClickListener(v -> verificarYActivarGPS());
-
         drawerEditarPerfil.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
             Intent intent = new Intent(this, RegisterActivity.class);
@@ -109,9 +96,10 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // MAGIA AQUÍ: Redirige a la nueva pantalla de Ajustes
         drawerAjustes.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
-            Toast.makeText(this, "Ajustes — próximamente", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, AjustesActivity.class));
         });
 
         drawerGestionUsuarios.setOnClickListener(v -> {
@@ -176,18 +164,11 @@ public class HomeActivity extends AppCompatActivity {
                         listaMisSalas.clear();
                         if (response.isSuccessful() && response.body() != null) {
                             listaMisSalas.addAll(response.body());
-                        } else {
-                            try {
-                                String err = response.errorBody() != null ? response.errorBody().string() : "";
-                                android.util.Log.e("SALAS_DEBUG", "HTTP " + response.code() + ": " + err);
-                            } catch (Exception ignored) {}
                         }
                         salaAdapter.notifyDataSetChanged();
                     }
                     @Override
-                    public void onFailure(Call<List<Sala>> call, Throwable t) {
-                        android.util.Log.e("SALAS_DEBUG", "Fallo de red: " + t.getMessage());
-                    }
+                    public void onFailure(Call<List<Sala>> call, Throwable t) {}
                 });
     }
 
@@ -255,21 +236,5 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
-    }
-
-    private void verificarYActivarGPS() {
-        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000).build();
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-        task.addOnSuccessListener(this, r ->
-                Toast.makeText(this, "El GPS ya está activado", Toast.LENGTH_SHORT).show());
-        task.addOnFailureListener(this, e -> {
-            if (e instanceof ResolvableApiException) {
-                try {
-                    ((ResolvableApiException) e).startResolutionForResult(this, GPS_SETTINGS_REQUEST_CODE);
-                } catch (IntentSender.SendIntentException ignored) {}
-            }
-        });
     }
 }

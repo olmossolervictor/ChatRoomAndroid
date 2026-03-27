@@ -52,7 +52,7 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
-
+    private androidx.drawerlayout.widget.DrawerLayout drawerLayoutMain;
     private EditText editMessage;
     private Button btnSend;
     private ListView listMessages;
@@ -108,11 +108,34 @@ public class MainActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            // 1. Añadimos "| WindowInsetsCompat.Type.ime()" para sumar la altura del teclado
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+
+            // 2. Le decimos a la lista de mensajes que baje al último mensaje al abrir el teclado
+            if (listMessages != null && adapter != null && adapter.getCount() > 0) {
+                // Le damos un pequeño retraso de 100ms para que la animación fluya bien
+                listMessages.postDelayed(() -> listMessages.setSelection(adapter.getCount() - 1), 100);
+            }
             return insets;
         });
+        drawerLayoutMain = findViewById(R.id.drawerLayoutMain);
+        android.widget.ImageButton btnMenuDrawerMain = findViewById(R.id.btnMenuDrawerMain);
+        TextView drawerVolverInicio = findViewById(R.id.drawerVolverInicio);
+        TextView drawerSalirSala = findViewById(R.id.drawerSalirSala);
 
+
+        btnMenuDrawerMain.setOnClickListener(v -> drawerLayoutMain.openDrawer(androidx.core.view.GravityCompat.START));
+
+
+        drawerVolverInicio.setOnClickListener(v -> {
+            finish(); // Cierra el chat y vuelve al Home
+        });
+
+
+        drawerSalirSala.setOnClickListener(v -> {
+            expulsarUsuario("Has salido de la sala");
+        });
         editMessage = findViewById(R.id.editMessage);
         btnSend = findViewById(R.id.btnSend);
         listMessages = findViewById(R.id.listMessages);

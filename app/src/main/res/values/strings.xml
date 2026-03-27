@@ -1,101 +1,44 @@
 <resources>
     <string name="app_name">Chat</string>
     <string name="terminos_legales">
+        <b>Última actualización: 27 de marzo de 2026</b>\n\n
+        <b>1. Aviso Legal e Información del Titular (LSSI-CE)</b>\n
+        En cumplimiento de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa que la aplicación ChatRoomQR es propiedad de ChatRoomQR , con NIF/DNI [TU_NIF_O_DNI] y correo electrónico de contacto: soporte@chatroomqr.com.\n\n
 
-    1. Términos y Condiciones de Uso\n
-1.1. Objeto y Aceptación\n
-El presente documento regula el acceso y uso de la aplicación ChatRoomQR. Al crear una cuenta, el usuario manifiesta haber leído, entendido y aceptado estos términos en su totalidad. Si no está de acuerdo, debe abstenerse de utilizar la aplicación.\n
+        <b>2. Términos y Condiciones de Uso</b>\n\n
+        <b>2.1. Objeto y Aceptación</b>\n
+        El presente documento regula el acceso y uso de la aplicación ChatRoomQR. Al crear una cuenta, el usuario manifiesta haber leído, entendido y aceptado estos términos en su totalidad.\n\n
 
-1.2. Requisitos de Usuario\n
-Para registrarse, el usuario debe tener al menos 18 años de edad. El usuario es el único responsable de mantener la confidencialidad de sus credenciales de acceso y de todas las actividades que ocurran bajo su cuenta.\n
-hola jose
-1.3. Propiedad Intelectual\n
-El software, diseño gráfico, logotipos y contenidos de la aplicación son propiedad exclusiva de ChatRoomQR y están protegidos por las leyes de propiedad intelectual. Queda estrictamente prohibida la reproducción, modificación o descompilación (ingeniería inversa) de la APK.\n
+        <b>2.2. Requisitos de Usuario</b>\n
+        Para registrarse, el usuario debe tener al menos 18 años de edad. El usuario es el único responsable de mantener la confidencialidad de sus credenciales.\n\n
 
-1.4. Limitación de Responsabilidad\n
-Disponibilidad: No se garantiza el funcionamiento ininterrumpido de la app.\n
+        <b>2.3. Propiedad Intelectual</b>\n
+        El software, diseño gráfico, logotipos y contenidos de la aplicación son propiedad exclusiva de ChatRoomQR y están protegidos por la Ley de Propiedad Intelectual española. Queda prohibida la reproducción o descompilación de la APK.\n\n
 
-Daños: El desarrollador no será responsable por daños indirectos, pérdida de datos o fallos en el dispositivo derivados del uso de la aplicación, salvo que la ley local disponga lo contrario.\n
+        <b>2.4. Limitación de Responsabilidad</b>\n
+        - Disponibilidad: No se garantiza el funcionamiento ininterrumpido de la app.\n
+        - Daños: El desarrollador no será responsable por daños indirectos derivados del uso de la aplicación, salvo que la legislación de consumidores y usuarios (TRLGDCU) disponga lo contrario.\n\n
 
-1.5. Suspensión de Cuenta\n
-Nos reservamos el derecho de suspender o cancelar cuentas que infrinjan estos términos, realicen actividades fraudulentas o afecten la seguridad de otros usuarios.\n
+        <b>3. Política de Privacidad (RGPD y LOPDGDD)</b>\n\n
+        <b>3.1. Tratamiento de Datos</b>\n
+        De conformidad con el Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 (LOPDGDD), informamos que los datos recabados (email, contraseñas encriptadas y datos de uso) serán tratados con la finalidad de gestionar la cuenta del usuario y el correcto funcionamiento de los chats y la geolocalización.\n\n
 
-2. Política de Privacidad\n
-2.1. Información que Recopilamos\n
-Para el correcto funcionamiento de la app, recopilamos:\n
+        <b>3.2. Proveedores de Servicios (Terceros)</b>\n
+        Utilizamos servicios de terceros que pueden procesar datos, tales como Google Play Services y Firebase (Google), los cuales cumplen con los estándares de seguridad europeos.\n\n
 
-Datos de Registro: Nombre de usuario, dirección de correo electrónico y contraseña (encriptada).\n
+        <b>3.3. Derechos ARCO-POL</b>\n
+        El usuario puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación, Oposición, Portabilidad y Limitación del tratamiento enviando un correo a [TU_EMAIL_DE_SOPORTE].\n\n
 
-Datos de Uso: Información sobre cómo interactúas con las funciones de la app (registros de errores, tiempo de sesión, chat grupal, chat individual).\n
+        <b>4. Normas de Conducta y Moderación</b>\n\n
+        <b>4.1. Restricciones de Identidad y Contenido</b>\n
+        El usuario se compromete a usar un lenguaje cívico. Queda estrictamente prohibido el uso de lenguaje ofensivo, discriminatorio, o suplantar la identidad de administradores o terceros.\n\n
 
+        <b>4.2. Derecho de Expulsión</b>\n
+        Los administradores o moderadores tienen la autoridad para supervisar el chat y podrán expulsar (banear) de forma temporal o permanente a cualquier usuario que incumpla estas normas, pudiendo conllevar la suspensión total de la cuenta.\n\n
 
-2.2. Uso de la Información\n
-Utilizamos tus datos para:\n
-
-Gestionar tu perfil de usuario y permitir el acceso a las funciones.\n
-
-Enviar notificaciones técnicas o actualizaciones de seguridad.\n
-
-Analizar fallos técnicos para mejorar la estabilidad de la APK en diferentes versiones de Android.\n
-
-2.3. Proveedores de Servicios (Terceros)\n
-Es posible que utilicemos servicios de terceros que recopilan información para identificarte. Estos incluyen:\n
-
-Google Play Services: Para la distribución y seguridad.\n
-
-Firebase (Google): Para autenticación, base de datos y análisis de errores (Crashlytics).\n
-
-2.4. Derechos del Usuario (GDPR / LOPD)\n
-Como usuario, tienes derecho a:\n
-
-Acceso: Saber qué datos tenemos de ti.\n
-
-Rectificación: Corregir información errónea.\n
-
-Supresión (Derecho al olvido): Solicitar que eliminemos tu cuenta y datos asociados.\n
-
-Portabilidad: Recibir tus datos en un formato legible.\n
-
-2.5. Seguridad de los Datos\n
-Implementamos medidas técnicas (como el uso de protocolos HTTPS y encriptación) para proteger tu información. Sin embargo, ningún método de transmisión por Internet es 100% seguro.\n
-
-2.6. Contacto\n
-Para cualquier duda o para ejercer tus derechos sobre tus datos, puedes contactarnos en: Aquí hay que poner un email de soporte.\n
-
-3. Cláusula de Registro y Nombres de Usuario\n
-
-3.1.Restricciones de Identidad:\n
-Al crear una cuenta en ChatRoomQR, el usuario se compromete a elegir un nombre de perfil (username) que respete las normas básicas de convivencia. Queda estrictamente prohibido el uso de:\n
-
-3.1.1.Lenguaje Ofensivo: Palabras malsonantes, obscenas o vulgares en cualquier idioma.
-
-3.1.2. Contenido Sensible: Nombres que promuevan el odio, la discriminación, el racismo, la violencia o que puedan herir la sensibilidad de otros usuarios.\n
-
-3.1.3. Suplantación: Nombres que intenten hacerse pasar por el administrador, soporte técnico o terceras personas.\n
-
-3.2. Consecuencias: El sistema o los administradores se reservan el derecho de solicitar el cambio del nombre de usuario o proceder a la cancelación inmediata de la cuenta si se detecta un incumplimiento de esta norma.\n
-
-4. Normas de la Sala de Chat Grupal\n
-
-4.1. Código de Conducta y Cordialidad:
-La sala de chat es un espacio diseñado para el intercambio de ideas basado en el respeto mutuo. Todos los asistentes deben mantener una actitud cordial y constructiva. No se tolerará:\n
-
-4.1.1. El acoso, las amenazas o los insultos directos a otros miembros.\n
-
-4.1.2. El envío de contenido inapropiado (spam, enlaces maliciosos o material sensible).\n
-
-4.1.3. Cualquier comportamiento que interrumpa el flujo normal y armonioso de la conversación.\n
-
-5. Moderación y Derecho de Expulsión:\n
-
-Para garantizar la seguridad del grupo, la sala contará con la figura del Moderador. El usuario acepta y reconoce que:\n
-
-5.1. El Moderador tiene la autoridad plena para supervisar el contenido del chat.\n
-
-5.2. Derecho de Expulsión: El Moderador podrá expulsar (banear) de forma temporal o permanente a cualquier usuario que, a su solo criterio, falte a la cordialidad o incumpla las normas aquí descritas.\n
-
-5.3. La expulsión de una sala de chat puede conllevar, según la gravedad, la suspensión total del acceso a la aplicación sin previo aviso.</string>
-
+        <b>5. Legislación Aplicable y Jurisdicción</b>\n
+        Estos términos se rigen por la legislación española. Para la resolución de cualquier controversia que pudiera derivarse del uso de la aplicación, las partes se someten a los Juzgados y Tribunales del domicilio del usuario (si es consumidor) o a los de Murcia, España.
+    </string>
     <string name="google_login_button">Continuar con Google</string>
     <string name="register_success_check_email">Registro completado. Revisa tu correo para verificar tu cuenta antes de iniciar sesión.</string>
     <string name="email_not_verified">Tu correo todavía no está verificado.</string>

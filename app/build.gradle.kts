@@ -1,8 +1,9 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
-import java.util.Properties
 
 val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
@@ -72,6 +73,11 @@ dependencies {
     implementation("androidx.camera:camera-camera2:1.3.0")
     implementation("androidx.camera:camera-lifecycle:1.3.0")
     implementation("androidx.camera:camera-view:1.3.0")
+    implementation("de.hdodenhof:circleimageview:3.1.0")
+    implementation("com.airbnb.android:lottie:6.4.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+    implementation("com.github.GrenderG:Toasty:1.5.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
