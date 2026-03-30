@@ -319,6 +319,10 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void actualizarBadgeNotificaciones() {
+        if (!getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("notificaciones", true)) {
+            drawerNotifBadge.setVisibility(View.GONE);
+            return;
+        }
         RetrofitClient.getChatApiServices()
                 .obtenerNotificacionesNoLeidas(currentUserId)
                 .enqueue(new Callback<ResponseBody>() {

@@ -221,6 +221,20 @@ public class ScannerActivity extends AppCompatActivity {
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.code() == 403) {
+                            try {
+                                String body = response.errorBody() != null ? response.errorBody().string() : "";
+                                org.json.JSONObject json = new org.json.JSONObject(body);
+                                String motivo = json.optString("motivo", "");
+                                String msg = motivo.isEmpty()
+                                        ? "Has sido expulsado de esta sala"
+                                        : "Has sido expulsado de esta sala por: " + motivo;
+                                mostrarError(msg);
+                            } catch (Exception e) {
+                                mostrarError("Has sido expulsado de esta sala");
+                            }
+                            return;
+                        }
                         obtenerInfoSalaYFinalizar(idSala);
                     }
 

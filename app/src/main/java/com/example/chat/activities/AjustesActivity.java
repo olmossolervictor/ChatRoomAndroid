@@ -1,12 +1,15 @@
 package com.example.chat.activities;
 
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ImageButton;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.chat.R;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -21,26 +24,65 @@ import com.google.android.gms.tasks.Task;
 public class AjustesActivity extends AppCompatActivity {
 
     private static final int GPS_SETTINGS_REQUEST_CODE = 1001;
-    private Switch switchGps;
+    static final String PREFS = "AjustesPrefs";
+
+    private Switch switchGps, switchModoOscuro, switchMantenerPantalla, switchNotificaciones;
+    private RadioGroup radioTamanoFuente;
+    private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ajustes);
 
+        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+
         ImageButton btnBackAjustes = findViewById(R.id.btnBackAjustes);
         switchGps = findViewById(R.id.switchGps);
+        switchModoOscuro = findViewById(R.id.switchModoOscuro);
+        switchMantenerPantalla = findViewById(R.id.switchMantenerPantalla);
+        switchNotificaciones = findViewById(R.id.switchNotificaciones);
+        radioTamanoFuente = findViewById(R.id.radioTamanoFuente);
 
-        // Volver atrás
         btnBackAjustes.setOnClickListener(v -> finish());
 
-        // Lógica del interruptor
-        switchGps.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                verificarYActivarGPS();
-            } else {
-                Toast.makeText(this, "Aviso: Android solo permite desactivar el GPS manualmente desde los Ajustes de tu teléfono.", Toast.LENGTH_LONG).show();
-            }
+        // --- Cargar valores guardados ---
+        switchModoOscuro.setChecked(prefs.getBoolean("modo_oscuro", false));
+        switchMantenerPantalla.setChecked(prefs.getBoolean("mantener_pantalla", false));
+        switchNotificaciones.setChecked(prefs.getBoolean("notificaciones", true));
+
+        int tamano = prefs.getInt("tamano_fuente", 15);
+        if (tamano == 13) radioTamanoFuente.check(R.id.radioFuentePequena);
+        else if (tamano == 18) radioTamanoFuente.check(R.id.radioFuenteGrande);
+        else radioTamanoFuente.check(R.id.radioFuenteNormal);
+
+        // --- Listeners ---
+
+        switchModoOscuro.setOnCheckedChangeListener((b, isChecked) -> {
+            prefs.edit().putBoolean("modo_oscuro", isChecked).apply();
+            AppCompatDelegate.setDefaultNightMode(isChecked
+                    ? AppCompatDelegate.MODE_NIGHT_YES
+                    : AppCompatDelegate.MODE_NIGHT_NO);
+        });
+
+        switchMantenerPantalla.setOnCheckedChangeListener((b, isChecked) ->
+                prefs.edit().putBoolean("mantener_pantalla", isChecked).apply());
+
+        switchNotificaciones.setOnCheckedChangeListener((b, isChecked) ->
+                prefs.edit().putBoolean("notificaciones", isChecked).apply());
+
+        radioTamanoFuente.setOnCheckedChangeListener((group, checkedId) -> {
+            int size = 15;
+            if (checkedId == R.id.radioFuentePequena) size = 13;
+            else if (checkedId == R.id.radioFuenteGrande) size = 18;
+            prefs.edit().putInt("tamano_fuente", size).apply();
+        });
+
+        switchGps.setOnCheckedChangeListener((b, isChecked) -> {
+            if (isChecked) verificarYActivarGPS();
+            else Toast.makeText(this,
+                    "Para desactivar el GPS ve a los ajustes del teléfono.",
+                    Toast.LENGTH_LONG).show();
         });
     }
 
@@ -52,7 +94,7 @@ public class AjustesActivity extends AppCompatActivity {
 
         task.addOnSuccessListener(this, r -> {
             Toast.makeText(this, "El GPS ya está activado", Toast.LENGTH_SHORT).show();
-            switchGps.setChecked(true); // Mantenemos el switch activo
+            switchGps.setChecked(true);
         });
 
         task.addOnFailureListener(this, e -> {
@@ -60,7 +102,7 @@ public class AjustesActivity extends AppCompatActivity {
                 try {
                     ((ResolvableApiException) e).startResolutionForResult(this, GPS_SETTINGS_REQUEST_CODE);
                 } catch (IntentSender.SendIntentException ignored) {
-                    switchGps.setChecked(false); // Si falla, apagamos el switch
+                    switchGps.setChecked(false);
                 }
             } else {
                 switchGps.setChecked(false);

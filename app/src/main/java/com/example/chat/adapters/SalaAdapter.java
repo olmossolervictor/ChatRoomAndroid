@@ -31,8 +31,33 @@ public class SalaAdapter extends ArrayAdapter<Sala> {
         Sala sala = getItem(position);
         if (sala != null) {
             TextView textNombreSala = convertView.findViewById(R.id.textNombreSala);
+            TextView textTiempoSala = convertView.findViewById(R.id.textTiempoSala);
+
             String nombre = sala.getNombre() != null ? sala.getNombre() : sala.getIdSala();
             textNombreSala.setText(nombre);
+
+            long minutos = sala.getMinutosRestantes();
+            if (minutos >= 0) {
+                String tiempoTexto;
+                if (minutos >= 60) {
+                    tiempoTexto = (minutos / 60) + "h " + (minutos % 60) + "min restantes";
+                } else {
+                    tiempoTexto = minutos + " min restantes";
+                }
+                textTiempoSala.setText(tiempoTexto);
+                int color;
+                if (minutos >= 60) {
+                    color = android.graphics.Color.parseColor("#388E3C");
+                } else if (minutos >= 30) {
+                    color = android.graphics.Color.parseColor("#F57C00");
+                } else {
+                    color = android.graphics.Color.parseColor("#D32F2F");
+                }
+                textTiempoSala.setTextColor(color);
+                textTiempoSala.setVisibility(View.VISIBLE);
+            } else {
+                textTiempoSala.setVisibility(View.GONE);
+            }
         }
 
         return convertView;

@@ -21,11 +21,14 @@ import java.util.List;
 public class MensajeAdapter extends ArrayAdapter<Mensaje> {
 
     private int currentUserId;
+    private int tamanoFuente;
 
     public MensajeAdapter(@NonNull Context context, @NonNull List<Mensaje> objects) {
         super(context, 0, objects);
         SharedPreferences pref = context.getSharedPreferences("ChatPrefs", Context.MODE_PRIVATE);
         currentUserId = pref.getInt("id_usuario", -1);
+        tamanoFuente = context.getSharedPreferences("AjustesPrefs", Context.MODE_PRIVATE)
+                .getInt("tamano_fuente", 15);
     }
 
     @NonNull
@@ -47,6 +50,7 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
         if (mensaje != null) {
             textNombre.setText(mensaje.getNombre());
             textMensaje.setText(mensaje.getMensaje());
+            textMensaje.setTextSize(tamanoFuente);
             textFecha.setText(mensaje.getFechaHora());
 
             if (mensaje.getIdUsuario() == currentUserId) {
