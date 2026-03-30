@@ -41,7 +41,7 @@ import retrofit2.Response;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText editEmail, editPassword;
-    private Button btnLogin, btnGoogleLogin, textResendVerification;
+    private Button btnLogin, btnGoogleLogin, textResendVerification, btnVerificarCorreoLogin;
     private TextView textGoToRegister;
 
     private ChatApiServices api;
@@ -72,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
         btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         textGoToRegister = findViewById(R.id.textGoToRegister);
         textResendVerification = findViewById(R.id.textResendVerification);
+        btnVerificarCorreoLogin = findViewById(R.id.btnVerificarCorreoLogin);
 
         String prefillEmail = getIntent().getStringExtra("PREFILL_EMAIL");
         boolean showVerificationHint = getIntent().getBooleanExtra("SHOW_VERIFICATION_HINT", false);
@@ -89,6 +90,7 @@ public class LoginActivity extends AppCompatActivity {
 
         btnGoogleLogin.setOnClickListener(v -> loginConGoogle());
         textResendVerification.setOnClickListener(v -> reenviarVerificacion());
+        btnVerificarCorreoLogin.setOnClickListener(v -> mostrarDialogoVerificarCorreo());
         textGoToRegister.setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
     }
@@ -272,6 +274,71 @@ public class LoginActivity extends AppCompatActivity {
                 || normalized.contains("correo no verificado")
                 || normalized.contains("email no verificado")
                 || normalized.contains("not verified");
+    }
+
+    private void mostrarDialogoVerificarCorreo() {
+        android.widget.EditText inputEmail = new android.widget.EditText(this);
+        inputEmail.setHint("Correo electrónico");
+        inputEmail.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        inputEmail.setPadding(48, 32, 48, 32);
+
+        String emailActual = editEmail.getText().toString().trim();
+        if (!emailActual.isEmpty()) {
+            inputEmail.setText(emailActual);
+            inputEmail.setSelection(emailActual.length());
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Verificar correo")
+                .setMessage("Introduce el correo al que enviar el código de verificación.")
+                .setView(inputEmail)
+                .setPositiveButton("Enviar", (dialog, which) -> {
+                    String email = inputEmail.getText().toString().trim();
+                    if (email.isEmpty()) {
+                        Toast.makeText(this, "Introduce un correo", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    enviarCodigoVerificacion(email);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void enviarCodigoVerificacion(String email) {
+        api.reenviarVerificacionEmail(email).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    String body = response.isSuccessful() && response.body() != null
+                            ? response.body().string()
+                            : (response.errorBody() != null ? response.errorBody().string() : "");
+
+                    if (esEmailYaVerificado(body)) {
+                        Toast.makeText(LoginActivity.this, "Este correo ya está verificado", Toast.LENGTH_SHORT).show();
+                    } else if (response.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "Código de verificación enviado a " + email, Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(LoginActivity.this, "No se encontró ese correo o no se pudo enviar", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(LoginActivity.this, "Error al procesar la respuesta", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(LoginActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean esEmailYaVerificado(String body) {
+        if (body == null) return false;
+        String lower = body.toLowerCase();
+        return lower.contains("already_verified")
+                || lower.contains("ya verificado")
+                || lower.contains("ya está verificado")
+                || lower.contains("email_verified");
     }
 
     private void reenviarVerificacion() {

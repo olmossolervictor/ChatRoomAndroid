@@ -102,10 +102,16 @@
             android:clickable="true"
             android:focusable="true"
             android:layout_marginBottom="16dp"/>
-            android:layout_marginBottom="16dp"
+
+        <Button
+            android:id="@+id/btnVerificarCorreoLogin"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:strokeColor="#FF00FF"
-            android:textColor="#FF00FF"/>
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Verificar correo"
+            android:textColor="#FF00FF"
+            android:layout_marginBottom="16dp"
+            app:strokeColor="#FF00FF"/>
 
         <TextView
             android:id="@+id/textGoToRegister"

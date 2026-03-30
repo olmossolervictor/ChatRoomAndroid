@@ -221,7 +221,6 @@ public class ScannerActivity extends AppCompatActivity {
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        // Continuamos aunque el servidor devuelva error (ej. ya estaba unido)
                         obtenerInfoSalaYFinalizar(idSala);
                     }
 
