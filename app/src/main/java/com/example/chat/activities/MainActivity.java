@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         drawerSalirSala.setOnClickListener(v -> {
-            expulsarUsuario("Has salido de la sala");
+            salirDeSalaManualmente();
         });
         editMessage = findViewById(R.id.editMessage);
         btnSend = findViewById(R.id.btnSend);
@@ -182,7 +182,30 @@ public class MainActivity extends AppCompatActivity {
             );
         }
     }
+    private void salirDeSalaManualmente() {
+        // Detenemos las recargas automáticas
+        if (handler != null && refreshRunnable != null) {
+            handler.removeCallbacks(refreshRunnable);
+        }
 
+        Toast.makeText(this, "Saliendo y borrando datos...", Toast.LENGTH_SHORT).show();
+
+        // Avisamos al servidor y ESPERAMOS su respuesta antes de irnos
+        RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        // El servidor ya nos ha borrado, ahora sí volvemos al inicio
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        // Si falla el internet, nos vamos de todas formas
+                        finish();
+                    }
+                });
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -314,33 +337,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void enviarMensajeAlServidor(String mensajeLimpio) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
-        android.util.Log.d("DEBUG_CHAT", "Enviando a Sala: [" + currentSalaId + "] Usuario: " + currentUserId);
 
-        // Enviamos el mensaje tal cual lo escribió el usuario
+        // Bloqueamos el botón temporalmente para no mandar mensajes repetidos
+        btnSend.setEnabled(false);
+
         api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        btnSend.setEnabled(true); // Desbloqueamos el botón
+
                         if (response.isSuccessful()) {
-                            // Vaciamos la caja de texto tras enviar
+                            // Vaciamos la caja de texto
                             editMessage.setText("");
-                            // Refrescamos la lista para ver nuestro mensaje
+
+                            // Obligamos a la app a descargar la lista real de la base de datos
+                            // (Cuando Javi lo arregle, el mensaje aparecerá aquí)
                             obtenerMensajes();
                         } else {
-                            int code = response.code();
-                            android.util.Log.e("ERROR_SERVER", "Código: " + code
-                                    + " | URL: " + call.request().url());
-                            Toast.makeText(MainActivity.this,
-                                    "Error " + code + ": El servidor rechazó el mensaje",
-                                    Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Error " + response.code() + " del servidor", Toast.LENGTH_LONG).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        android.util.Log.e("ERROR_RED", "Fallo total: " + t.getMessage());
-                        Toast.makeText(MainActivity.this,
-                                "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        btnSend.setEnabled(true);
+                        Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -451,9 +473,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
         final String[] tiposDenuncia = {
-            "Información falsa",
-            "Comentario obsceno",
-            "Otro"
+                "Información falsa",
+                "Comentario obsceno",
+                "Otro"
         };
         final String[] tipoDenunciaSeleccionado = {""};
         final EditText[] editRazon = {null};
@@ -467,7 +489,7 @@ public class MainActivity extends AppCompatActivity {
 
         Spinner spinnerTipo = new Spinner(this);
         android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
-            this, android.R.layout.simple_spinner_item, tiposDenuncia);
+                this, android.R.layout.simple_spinner_item, tiposDenuncia);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipo.setAdapter(adapter);
         spinnerTipo.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
@@ -515,21 +537,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void enviarDenuncia(int idUsuarioDenunciado, String tipo, String razon) {
         RetrofitClient.getChatApiServices()
-            .crearDenuncia(currentUserId, idUsuarioDenunciado, tipo, razon)
-            .enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(MainActivity.this, "Denuncia registrada correctamente", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Error al registrar denuncia", Toast.LENGTH_SHORT).show();
+                .crearDenuncia(currentUserId, idUsuarioDenunciado, tipo, razon)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, "Denuncia registrada correctamente", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Error al registrar denuncia", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Toast.makeText(MainActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
-                }
-            });
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Toast.makeText(MainActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Override

@@ -102,13 +102,13 @@
             android:paddingStart="24dp"
             android:paddingEnd="24dp">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/imgDrawerFoto"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:src="@android:drawable/ic_menu_camera"
-                android:background="@android:color/white"
-                android:scaleType="centerCrop"
+                app:civ_border_width="2dp"
+                app:civ_border_color="#FFFFFF"
                 android:layout_marginBottom="12dp"/>
 
             <TextView
