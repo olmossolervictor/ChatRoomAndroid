@@ -143,12 +143,11 @@ public class RegisterActivity extends AppCompatActivity {
         editFechaNac.setOnClickListener(v -> mostrarCalendario());
 
         isEditMode = getIntent().getBooleanExtra("MODO_EDICION", false);
+
         if (isEditMode) {
-            setupEditMode();
-            // Si estamos editando perfil, ocultamos la caja de los términos
-            if (layoutTerminos != null) {
-                layoutTerminos.setVisibility(View.GONE);
-            }
+            prepararPantallaParaEdicion();
+        } else {
+            prepararPantallaParaRegistro();
         }
 
         configurarTextWatcherEmail();
@@ -240,6 +239,44 @@ public class RegisterActivity extends AppCompatActivity {
         } else {
             openGallery();
         }
+    }
+    private void prepararPantallaParaEdicion() {
+        // 1. Cambiamos los textos principales
+        if (textTitle != null) textTitle.setText("Editar Mi Perfil");
+        btnRegister.setText("Guardar Cambios");
+
+        // 2. Ocultamos los términos y el botón de volver al login
+        if (layoutTerminos != null) layoutTerminos.setVisibility(View.GONE);
+        if (textBackToLogin != null) textBackToLogin.setVisibility(View.GONE);
+        if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE); // Ocultamos sugerencias por si acaso
+
+        // 3. BLOQUEO DE CAMPOS (Se pondrán grises y no se podrán tocar)
+        editNombre.setEnabled(false);
+        editApellidos.setEnabled(false);
+        editFechaNac.setEnabled(false);
+        editFechaNac.setClickable(false); // Para evitar que se abra el calendario
+        editTelefono.setEnabled(false);
+        editEmail.setEnabled(false);
+
+        // 4. Asegurarnos de que Usuario y Contraseña sí están activos
+        // (Asegúrate de tener declarada la variable editNombreUsuario arriba en tu clase)
+        editNombreUsuario.setEnabled(true);
+        editPassword.setEnabled(true);
+
+        // Le indicamos qué pasa con la contraseña
+        editPassword.setHint("Nueva contraseña (en blanco para mantenerla)");
+
+        // 5. Cargamos los datos actuales del usuario en las cajas de texto
+        cargarDatosUsuario();
+    }
+
+    private void prepararPantallaParaRegistro() {
+        // Configuraciones normales de registro por si acaso
+        textTitle.setText("Registro de Usuario");
+        btnRegister.setText("Registrarse");
+        layoutTerminos.setVisibility(View.VISIBLE);
+        textBackToLogin.setVisibility(View.VISIBLE);
+        editPassword.setHint("Contraseña");
     }
 
     private void openCamera() {

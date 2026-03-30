@@ -24,15 +24,15 @@
             android:gravity="center"
             android:layout_marginBottom="16dp"/>
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgUser"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginBottom="12dp"
             android:layout_gravity="center"
             android:src="@android:drawable/ic_menu_camera"
-            android:background="@android:color/darker_gray"
-            android:layout_marginBottom="8dp"
-            android:scaleType="centerCrop"/>
+            app:civ_border_color="#FFFFFF"
+            app:civ_border_width="2dp" />
 
         <Button
             android:id="@+id/btnSelectPhoto"
@@ -102,28 +102,6 @@
             android:layout_marginBottom="6dp"/>
 
         <EditText
-            android:id="@+id/editRegEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Correo electrónico"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#B3FFFFFF"
-            android:backgroundTint="#FFFFFF"
-            android:inputType="textEmailAddress"
-            android:textSize="14sp"
-            android:layout_marginBottom="2dp"/>
-
-        <TextView
-            android:id="@+id/textEmailError"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ya existe una cuenta con este correo electrónico"
-            android:textColor="#FF6B6B"
-            android:textSize="12sp"
-            android:visibility="gone"
-            android:layout_marginBottom="6dp"/>
-
-        <EditText
             android:id="@+id/editRegNombreUsuario"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -166,6 +144,27 @@
                 android:orientation="horizontal"
                 android:gravity="center_horizontal"/>
         </LinearLayout>
+        <EditText
+            android:id="@+id/editRegEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Correo electrónico"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#B3FFFFFF"
+            android:backgroundTint="#FFFFFF"
+            android:inputType="textEmailAddress"
+            android:textSize="14sp"
+            android:layout_marginBottom="2dp"/>
+
+        <TextView
+            android:id="@+id/textEmailError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ya existe una cuenta con este correo electrónico"
+            android:textColor="#FF6B6B"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_marginBottom="6dp"/>
 
         <EditText
             android:id="@+id/editRegPassword"

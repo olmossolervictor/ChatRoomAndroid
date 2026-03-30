@@ -273,7 +273,34 @@ public class HomeActivity extends AppCompatActivity {
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
     }
+    private void mostrarDialogoAjustes() {
+        String[] opciones = {
+                "Notificaciones",
+                "Privacidad",
+                "Almacenamiento en caché",
+                "Acerca de la aplicación"
+        };
 
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle("Ajustes");
+        builder.setItems(opciones, (dialog, which) -> {
+            switch (which) {
+                case 0:
+                    Toast.makeText(this, "Notificaciones — próximamente", Toast.LENGTH_SHORT).show();
+                    break;
+                case 1:
+                    Toast.makeText(this, "Privacidad — próximamente", Toast.LENGTH_SHORT).show();
+                    break;
+                case 2:
+                    Toast.makeText(this, "Almacenamiento en caché — próximamente", Toast.LENGTH_SHORT).show();
+                    break;
+                case 3:
+                    Toast.makeText(this, "v1.0 - ChatRoom App", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        });
+        builder.show();
+    }
 
     private void mostrarDialogoTerminos() {
         String terminosTexto = "TÉRMINOS Y CONDICIONES\n\n" +
