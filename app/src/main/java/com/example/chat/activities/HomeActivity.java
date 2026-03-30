@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -102,8 +103,20 @@ public class HomeActivity extends AppCompatActivity {
         // Click en menú lateral
         btnMenuDrawer.setOnClickListener(v -> drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
 
-        // Ambos botones hacen lo mismo: Abrir escaner
-        View.OnClickListener scanAction = v -> startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE);
+        View.OnClickListener scanAction = v -> {
+            boolean faltaCamara = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED;
+            boolean faltaUbicacion = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED;
+
+            if (faltaCamara || faltaUbicacion) {
+                // Si falta alguno, le pedimos LOS DOS a la vez
+                androidx.core.app.ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        3000);
+            } else {
+                // Si ya tiene los dos, entra directo al escaner
+                startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE);
+            }
+        };
         btnScanQRHomeAbajo.setOnClickListener(scanAction);
         btnScanQRHomeCentro.setOnClickListener(scanAction);
 
@@ -456,6 +469,33 @@ public class HomeActivity extends AppCompatActivity {
                         Toast.makeText(HomeActivity.this, "Error al cargar notificaciones", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 3000) {
+            boolean camaraAceptada = false;
+            boolean ubicacionAceptada = false;
+
+            // Revisamos qué ha respondido a cada cosa
+            for (int i = 0; i < permissions.length; i++) {
+                if (permissions[i].equals(android.Manifest.permission.CAMERA) && grantResults[i] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    camaraAceptada = true;
+                }
+                if (permissions[i].equals(android.Manifest.permission.ACCESS_FINE_LOCATION) && grantResults[i] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    ubicacionAceptada = true;
+                }
+            }
+
+            // Si ha aceptado AMBOS, le dejamos pasar
+            if (camaraAceptada && ubicacionAceptada) {
+                startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE);
+            } else {
+                // Si ha rechazado alguno, bloqueamos el acceso
+                Toast.makeText(this, "Para acceder al escáner necesitas aceptar los permisos de Cámara y Ubicación", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
 }

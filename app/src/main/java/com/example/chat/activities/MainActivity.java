@@ -240,10 +240,14 @@ public class MainActivity extends AppCompatActivity {
                 obtenerMensajes();
                 verificarTiempoSesion();
                 verificarUbicacion();
-                handler.postDelayed(this, 3000);
+
+                // CAMBIO 1: Aquí controlas cuánto tarda en volver a ejecutarse (60000 = 1 minuto)
+                handler.postDelayed(this, 60000);
             }
         };
-        handler.postDelayed(refreshRunnable, 3000);
+
+        // CAMBIO 2: Aquí controlas cuánto tarda en empezar la primera vez al abrir el chat
+        handler.postDelayed(refreshRunnable, 60000);
     }
 
     // ─── Verificación de tiempo ───────────────────────────────────────────────
@@ -357,10 +361,31 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
                         if (response.isSuccessful() && response.body() != null) {
+
+                            // 1. Guardamos dónde está mirando el usuario ahora mismo
+                            int index = listMessages.getFirstVisiblePosition();
+                            View v = listMessages.getChildAt(0);
+                            int top = (v == null) ? 0 : (v.getTop() - listMessages.getPaddingTop());
+
+                            // 2. Comprobamos si el usuario estaba mirando el último mensaje
+                            boolean estabaAbajoDelTodo = false;
+                            if (listMessages.getLastVisiblePosition() >= adapter.getCount() - 1) {
+                                estabaAbajoDelTodo = true;
+                            }
+
+                            // 3. Actualizamos la lista con los mensajes nuevos
                             listaMensajes.clear();
                             listaMensajes.addAll(response.body());
                             adapter.notifyDataSetChanged();
-                            listMessages.setSelection(adapter.getCount() - 1);
+
+                            // 4. Decidimos qué hacer con la pantalla
+                            if (estabaAbajoDelTodo) {
+                                // Si estaba leyendo lo último, le enseñamos lo nuevo (hace scroll abajo)
+                                listMessages.setSelection(adapter.getCount() - 1);
+                            } else {
+                                // Si estaba leyendo mensajes antiguos arriba, le dejamos donde estaba
+                                listMessages.setSelectionFromTop(index, top);
+                            }
                         }
                     }
 

@@ -75,8 +75,9 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
                 textFecha.setText("");
             }
             // ---------------------------------
+
+            // Aplicamos el tamaño de fuente al texto del mensaje (¡pero NO sobrescribimos la fecha!)
             textMensaje.setTextSize(tamanoFuente);
-            textFecha.setText(mensaje.getFechaHora());
 
             if (mensaje.getIdUsuario() == currentUserId) {
                 container.setBackgroundResource(R.drawable.bubble_me);

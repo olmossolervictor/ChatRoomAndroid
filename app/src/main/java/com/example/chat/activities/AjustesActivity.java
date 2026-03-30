@@ -1,8 +1,12 @@
 package com.example.chat.activities;
 
-import android.content.IntentSender;
+import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
@@ -10,23 +14,16 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.chat.R;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.Priority;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.Task;
 
 public class AjustesActivity extends AppCompatActivity {
 
-    private static final int GPS_SETTINGS_REQUEST_CODE = 1001;
     static final String PREFS = "AjustesPrefs";
 
-    private Switch switchGps, switchModoOscuro, switchMantenerPantalla, switchNotificaciones;
+    private Switch switchGps, switchModoOscuro, switchMantenerPantalla, switchNotificaciones, switchCamara;
     private RadioGroup radioTamanoFuente;
     private SharedPreferences prefs;
 
@@ -39,6 +36,7 @@ public class AjustesActivity extends AppCompatActivity {
 
         ImageButton btnBackAjustes = findViewById(R.id.btnBackAjustes);
         switchGps = findViewById(R.id.switchGps);
+        switchCamara = findViewById(R.id.switchCamara); // NUEVO
         switchModoOscuro = findViewById(R.id.switchModoOscuro);
         switchMantenerPantalla = findViewById(R.id.switchMantenerPantalla);
         switchNotificaciones = findViewById(R.id.switchNotificaciones);
@@ -46,7 +44,7 @@ public class AjustesActivity extends AppCompatActivity {
 
         btnBackAjustes.setOnClickListener(v -> finish());
 
-        // --- Cargar valores guardados ---
+        // --- Cargar valores guardados (Diseño) ---
         switchModoOscuro.setChecked(prefs.getBoolean("modo_oscuro", false));
         switchMantenerPantalla.setChecked(prefs.getBoolean("mantener_pantalla", false));
         switchNotificaciones.setChecked(prefs.getBoolean("notificaciones", true));
@@ -56,13 +54,11 @@ public class AjustesActivity extends AppCompatActivity {
         else if (tamano == 18) radioTamanoFuente.check(R.id.radioFuenteGrande);
         else radioTamanoFuente.check(R.id.radioFuenteNormal);
 
-        // --- Listeners ---
-
+        // --- Listeners de Diseño ---
         switchModoOscuro.setOnCheckedChangeListener((b, isChecked) -> {
             prefs.edit().putBoolean("modo_oscuro", isChecked).apply();
             AppCompatDelegate.setDefaultNightMode(isChecked
-                    ? AppCompatDelegate.MODE_NIGHT_YES
-                    : AppCompatDelegate.MODE_NIGHT_NO);
+                    ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         });
 
         switchMantenerPantalla.setOnCheckedChangeListener((b, isChecked) ->
@@ -77,36 +73,42 @@ public class AjustesActivity extends AppCompatActivity {
             else if (checkedId == R.id.radioFuenteGrande) size = 18;
             prefs.edit().putInt("tamano_fuente", size).apply();
         });
-
-        switchGps.setOnCheckedChangeListener((b, isChecked) -> {
-            if (isChecked) verificarYActivarGPS();
-            else Toast.makeText(this,
-                    "Para desactivar el GPS ve a los ajustes del teléfono.",
-                    Toast.LENGTH_LONG).show();
-        });
     }
 
-    private void verificarYActivarGPS() {
-        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000).build();
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+    // Usamos onResume para que, si el usuario vuelve de los ajustes de Android, los switches se actualicen solos
+    @Override
+    protected void onResume() {
+        super.onResume();
+        actualizarSwitchesPermisos();
+    }
 
-        task.addOnSuccessListener(this, r -> {
-            Toast.makeText(this, "El GPS ya está activado", Toast.LENGTH_SHORT).show();
-            switchGps.setChecked(true);
-        });
+    private void actualizarSwitchesPermisos() {
+        // Leemos si el sistema Android nos ha dado permiso DE VERDAD
+        boolean tieneGps = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean tieneCamara = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
 
-        task.addOnFailureListener(this, e -> {
-            if (e instanceof ResolvableApiException) {
-                try {
-                    ((ResolvableApiException) e).startResolutionForResult(this, GPS_SETTINGS_REQUEST_CODE);
-                } catch (IntentSender.SendIntentException ignored) {
-                    switchGps.setChecked(false);
-                }
-            } else {
-                switchGps.setChecked(false);
-            }
-        });
+        // Quitamos los listeners un momento para que no hagan doble ejecución
+        switchGps.setOnCheckedChangeListener(null);
+        switchCamara.setOnCheckedChangeListener(null);
+
+        switchGps.setChecked(tieneGps);
+        switchCamara.setChecked(tieneCamara);
+
+        // Volvemos a poner los listeners
+        switchGps.setOnCheckedChangeListener((b, isChecked) -> manejarPermiso(Manifest.permission.ACCESS_FINE_LOCATION, isChecked));
+        switchCamara.setOnCheckedChangeListener((b, isChecked) -> manejarPermiso(Manifest.permission.CAMERA, isChecked));
+    }
+
+    private void manejarPermiso(String permiso, boolean isChecked) {
+        if (isChecked) {
+            // Si lo activa, le pedimos permiso a Android
+            ActivityCompat.requestPermissions(this, new String[]{permiso}, 100);
+        } else {
+            // Si lo desactiva, le mandamos a la pantalla de la app en Android para que lo quite de verdad
+            Toast.makeText(this, "Desactívalo manualmente desde los ajustes de la aplicación", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        }
     }
 }
