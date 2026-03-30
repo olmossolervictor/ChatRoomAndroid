@@ -16,11 +16,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -110,6 +112,8 @@ public class MainActivity extends AppCompatActivity {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             // 1. Añadimos "| WindowInsetsCompat.Type.ime()" para sumar la altura del teclado
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 
             // 2. Le decimos a la lista de mensajes que baje al último mensaje al abrir el teclado
@@ -166,6 +170,33 @@ public class MainActivity extends AppCompatActivity {
         unirseASalaEnServidor(currentSalaId);
         obtenerMensajes();
         iniciarAutoRefresco();
+        solicitarPermisoUbicacionSiNecesario();
+    }
+
+    private void solicitarPermisoUbicacionSiNecesario() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE
+            );
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                // Solo avisar si la sala tiene geovalla activa
+                if (salaLatitud != 0 || salaLongitud != 0) {
+                    Toast.makeText(this,
+                            "Sin permiso de ubicación no se puede verificar si estás dentro del área de la sala",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        }
     }
 
     private void iniciarAutoRefresco() {
@@ -359,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnDenunciar.setOnClickListener(v -> {
             dialog.dismiss();
-            Toast.makeText(this, "Denuncia enviada", Toast.LENGTH_SHORT).show();
+            mostrarDialogoDenuncias(otherUserId);
         });
 
         dialog.show();
@@ -375,7 +406,12 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             try {
-                                JSONObject json = new JSONObject(response.body().string());
+                                String bodyStr = response.body().string();
+                                JSONObject json = new JSONObject(bodyStr);
+                                if (!json.has("id_chat_privado")) {
+                                    Toast.makeText(MainActivity.this, "Respuesta inesperada: " + bodyStr, Toast.LENGTH_LONG).show();
+                                    return;
+                                }
                                 int idChatPrivado = json.getInt("id_chat_privado");
                                 Intent intent = new Intent(MainActivity.this, PrivateChatActivity.class);
                                 intent.putExtra("ID_CHAT_PRIVADO", idChatPrivado);
@@ -383,13 +419,22 @@ public class MainActivity extends AppCompatActivity {
                                 intent.putExtra("OTHER_USER_ID", otherUserId);
                                 intent.putExtra("OTHER_USER_NAME", otherUserName);
                                 startActivity(intent);
-                            } catch (Exception e) { e.printStackTrace(); }
+                            } catch (Exception e) {
+                                Toast.makeText(MainActivity.this, "Error al parsear respuesta: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            try {
+                                String errorBody = response.errorBody() != null ? response.errorBody().string() : "sin detalle";
+                                Toast.makeText(MainActivity.this, "Error " + response.code() + ": " + errorBody, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                Toast.makeText(MainActivity.this, "Error " + response.code(), Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(MainActivity.this, "Error al conectar", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -403,6 +448,89 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
+    }
+
+    private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
+        final String[] tiposDenuncia = {
+            "Información falsa",
+            "Comentario obsceno",
+            "Otro"
+        };
+        final String[] tipoDenunciaSeleccionado = {""};
+        final EditText[] editRazon = {null};
+
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle("Enviar Denuncia");
+
+        LinearLayout layoutDenuncia = new LinearLayout(this);
+        layoutDenuncia.setOrientation(LinearLayout.VERTICAL);
+        layoutDenuncia.setPadding(16, 16, 16, 16);
+
+        Spinner spinnerTipo = new Spinner(this);
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+            this, android.R.layout.simple_spinner_item, tiposDenuncia);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTipo.setAdapter(adapter);
+        spinnerTipo.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                tipoDenunciaSeleccionado[0] = tiposDenuncia[position];
+                if (position == 2) {
+                    if (editRazon[0] == null) {
+                        editRazon[0] = new EditText(MainActivity.this);
+                        editRazon[0].setHint("Explica la razón de tu denuncia");
+                        editRazon[0].setVisibility(View.VISIBLE);
+                        layoutDenuncia.addView(editRazon[0]);
+                    } else {
+                        editRazon[0].setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    if (editRazon[0] != null) {
+                        editRazon[0].setVisibility(View.GONE);
+                    }
+                }
+            }
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+
+        layoutDenuncia.addView(spinnerTipo);
+
+        builder.setView(layoutDenuncia);
+        builder.setPositiveButton("Enviar", (dialog, which) -> {
+            if (tipoDenunciaSeleccionado[0].isEmpty()) {
+                Toast.makeText(MainActivity.this, "Selecciona un tipo de denuncia", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String razon = "";
+            if (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) {
+                razon = editRazon[0].getText().toString().trim();
+            }
+
+            enviarDenuncia(idUsuarioDenunciado, tipoDenunciaSeleccionado[0], razon);
+        });
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    private void enviarDenuncia(int idUsuarioDenunciado, String tipo, String razon) {
+        RetrofitClient.getChatApiServices()
+            .crearDenuncia(currentUserId, idUsuarioDenunciado, tipo, razon)
+            .enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(MainActivity.this, "Denuncia registrada correctamente", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Error al registrar denuncia", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     @Override

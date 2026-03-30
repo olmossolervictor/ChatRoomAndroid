@@ -139,18 +139,6 @@ public class ScannerActivity extends AppCompatActivity {
         androidx.camera.core.Preview preview = new androidx.camera.core.Preview.Builder().build();
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
-        List<androidx.camera.core.CameraInfo> camaras = cameraProvider.getAvailableCameraInfos();
-        if (camaras.isEmpty()) {
-            Toast.makeText(this, "No se encontró ninguna cámara", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-
-        // Selector original: toma todas las cámaras disponibles (compatible con cámaras virtuales)
-        CameraSelector cameraSelector = new CameraSelector.Builder()
-                .addCameraFilter(list -> new ArrayList<>(list))
-                .build();
-
         imageAnalysisRef = new ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
@@ -160,7 +148,28 @@ public class ScannerActivity extends AppCompatActivity {
         activarAnalizador();
 
         cameraProvider.unbindAll();
-        cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysisRef);
+
+        // Intentar primero cámara trasera, luego frontal, luego cualquiera disponible
+        CameraSelector cameraSelector;
+        if (!cameraProvider.getAvailableCameraInfos().isEmpty()) {
+            boolean tieneTraser = false;
+            try { tieneTraser = cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA); } catch (Exception ignored) {}
+            cameraSelector = tieneTraser
+                    ? CameraSelector.DEFAULT_BACK_CAMERA
+                    : CameraSelector.DEFAULT_FRONT_CAMERA;
+        } else {
+            // Emulador u otros dispositivos sin cámara estándar: intentar con filtro abierto
+            cameraSelector = new CameraSelector.Builder()
+                    .addCameraFilter(list -> new ArrayList<>(list))
+                    .build();
+        }
+
+        try {
+            cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysisRef);
+        } catch (Exception e) {
+            Log.e(TAG, "No se pudo enlazar la cámara: " + e.getMessage());
+            Toast.makeText(this, "No se pudo iniciar la cámara", Toast.LENGTH_LONG).show();
+        }
     }
 
     /** Asigna (o reasigna) el analizador de QR al ImageAnalysis existente. */

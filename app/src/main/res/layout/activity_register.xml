@@ -124,6 +124,50 @@
             android:layout_marginBottom="6dp"/>
 
         <EditText
+            android:id="@+id/editRegNombreUsuario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre de usuario"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#B3FFFFFF"
+            android:backgroundTint="#FFFFFF"
+            android:inputType="text"
+            android:textSize="14sp"
+            android:layout_marginBottom="2dp"/>
+
+        <TextView
+            android:id="@+id/textNombreUsuarioError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Este nombre de usuario ya existe"
+            android:textColor="#FF6B6B"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_marginBottom="6dp"/>
+
+        <LinearLayout
+            android:id="@+id/layoutSugerencias"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="6dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nombres de usuario sugeridos:"
+                android:textColor="#FFB74D"
+                android:textSize="12sp"
+                android:layout_marginBottom="4dp"/>
+            <LinearLayout
+                android:id="@+id/layoutBotonesSugerencias"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal"/>
+        </LinearLayout>
+
+        <EditText
             android:id="@+id/editRegPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

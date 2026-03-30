@@ -91,7 +91,7 @@
             android:text="@string/google_login_button"
             android:layout_marginBottom="16dp"/>
 
-        <TextView
+        <Button
             android:id="@+id/textResendVerification"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -102,6 +102,10 @@
             android:clickable="true"
             android:focusable="true"
             android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:strokeColor="#FF00FF"
+            android:textColor="#FF00FF"/>
 
         <TextView
             android:id="@+id/textGoToRegister"

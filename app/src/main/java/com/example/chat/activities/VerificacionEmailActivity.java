@@ -38,6 +38,7 @@ import retrofit2.Response;
 public class VerificacionEmailActivity extends AppCompatActivity {
 
     private String verificacionEmail = "";
+    private String verificacionNombreUsuario = "";
     private String verificacionNombre = "";
     private String verificacionApellidos = "";
     private String verificacionFecha = "";
@@ -63,6 +64,7 @@ public class VerificacionEmailActivity extends AppCompatActivity {
             finish();
             return;
         }
+        verificacionNombreUsuario = getIntent().getStringExtra("VERIFICACION_NOMBRE_USUARIO");
         verificacionNombre = getIntent().getStringExtra("VERIFICACION_NOMBRE");
         verificacionApellidos = getIntent().getStringExtra("VERIFICACION_APELLIDOS");
         verificacionFecha = getIntent().getStringExtra("VERIFICACION_FECHA");
@@ -163,7 +165,7 @@ public class VerificacionEmailActivity extends AppCompatActivity {
             return;
         }
 
-        api.verificarCodigo(verificacionEmail, codigo,
+        api.verificarCodigo(verificacionEmail, codigo, verificacionNombreUsuario,
                 verificacionNombre, verificacionApellidos, verificacionFecha,
                 verificacionTelefono, verificacionPassword, verificacionFoto)
                 .enqueue(new Callback<ResponseBody>() {

@@ -41,8 +41,8 @@ import retrofit2.Response;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText editEmail, editPassword;
-    private Button btnLogin, btnGoogleLogin;
-    private TextView textGoToRegister, textResendVerification;
+    private Button btnLogin, btnGoogleLogin, textResendVerification;
+    private TextView textGoToRegister;
 
     private ChatApiServices api;
     private CredentialManager credentialManager;
@@ -80,7 +80,6 @@ public class LoginActivity extends AppCompatActivity {
             pendingVerificationEmail = prefillEmail;
         }
         if (showVerificationHint) {
-            textResendVerification.setVisibility(TextView.VISIBLE);
             Toast.makeText(this, R.string.register_success_check_email, Toast.LENGTH_LONG).show();
         }
 
@@ -261,7 +260,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void mostrarEstadoNoVerificado(String email) {
         pendingVerificationEmail = email;
-        textResendVerification.setVisibility(TextView.VISIBLE);
         Toast.makeText(this, R.string.email_not_verified, Toast.LENGTH_LONG).show();
     }
 

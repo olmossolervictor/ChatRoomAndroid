@@ -11,6 +11,7 @@ import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -19,19 +20,7 @@ public interface ChatApiServices {
     // --- USUARIOS ---
 
     @FormUrlEncoded
-    @POST("usuarios/registrar")
-    Call<ResponseBody> registrarUsuario(
-            @Field("nombre") String nombre,
-            @Field("apellidos") String apellidos,
-            @Field("fecha_nacimiento") String fecha_nacimiento,
-            @Field("email") String email,
-            @Field("telefono") String telefono,
-            @Field("password") String password,
-            @Field("foto") String foto
-    );
-
-    @FormUrlEncoded
-    @POST("usuarios/registrar")
+    @POST("usuarios/iniciar-registro")
     Call<ResponseBody> iniciarRegistro(
             @Field("email") String email
     );
@@ -123,6 +112,11 @@ public interface ChatApiServices {
             @Query("email") String email
     );
 
+    @GET("usuarios/sugerir-nombre-usuario")
+    Call<ResponseBody> sugerirNombreUsuario(
+            @Query("base") String base
+    );
+
     @GET("usuarios/buscar")
     Call<ResponseBody> buscarUsuarioPorEmail(
             @Query("email") String email
@@ -153,13 +147,15 @@ public interface ChatApiServices {
 
     @GET("chat/privado/mensajes")
     Call<List<Mensaje>> getMensajesPrivados(
-            @Query("id_chat_privado") int idChatPrivado
+            @Query("id_usuario_1") int idUsuario1,
+            @Query("id_usuario_2") int idUsuario2
     );
 
     @FormUrlEncoded
     @POST("chat/privado/enviar")
     Call<ResponseBody> enviarMensajePrivado(
-            @Field("id_chat_privado") int idChatPrivado,
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2,
             @Field("id_usuario_emisor") int idUsuarioEmisor,
             @Field("mensaje") String mensaje
     );
@@ -171,6 +167,7 @@ public interface ChatApiServices {
     Call<ResponseBody> verificarCodigo(
             @Field("email") String email,
             @Field("code") String code,
+            @Field("nombre_usuario") String nombreUsuario,
             @Field("nombre") String nombre,
             @Field("apellidos") String apellidos,
             @Field("fecha_nacimiento") String fechaNacimiento,
@@ -179,9 +176,47 @@ public interface ChatApiServices {
             @Field("foto") String foto
     );
 
+
     @FormUrlEncoded
     @POST("usuarios/verificar-google")
     Call<ResponseBody> verificarConGoogle(
             @Field("id_token") String idToken
+    );
+
+    // --- DENUNCIAS ---
+
+    @FormUrlEncoded
+    @POST("denuncias/crear")
+    Call<ResponseBody> crearDenuncia(
+            @Field("id_usuario_denunciante") int idUsuarioDenunciante,
+            @Field("id_usuario_denunciado") int idUsuarioDenunciado,
+            @Field("tipo_denuncia") String tipoDenuncia,
+            @Field("razon_denuncia") String razonDenuncia
+    );
+
+    // --- NOTIFICACIONES ---
+
+    @GET("notificaciones/obtener")
+    Call<ResponseBody> obtenerNotificaciones(
+            @Query("id_usuario") int idUsuario
+    );
+
+    @GET("notificaciones/no-leidas")
+    Call<ResponseBody> obtenerNotificacionesNoLeidas(
+            @Query("id_usuario") int idUsuario
+    );
+
+    @FormUrlEncoded
+    @POST("notificaciones/crear")
+    Call<ResponseBody> crearNotificacion(
+            @Field("id_usuario_receptor") int idUsuarioReceptor,
+            @Field("id_usuario_remitente") int idUsuarioRemitente,
+            @Field("tipo_notificacion") String tipoNotificacion,
+            @Field("contenido") String contenido
+    );
+
+    @PUT("notificaciones/marcar-leida/{id}")
+    Call<ResponseBody> marcarNotificacionComoLeida(
+            @Path("id") int id
     );
 }
