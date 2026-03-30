@@ -53,6 +53,12 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Aplicar modo oscuro guardado antes de inflar la vista
+        boolean modoOscuro = getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("modo_oscuro", false);
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(modoOscuro
+                ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+                : androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
+
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         if (pref.getInt("id_usuario", -1) != -1) {
             startActivity(new Intent(this, HomeActivity.class));

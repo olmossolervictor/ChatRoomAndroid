@@ -130,6 +130,16 @@ public interface ChatApiServices {
     );
 
     @FormUrlEncoded
+    @POST("chat/expulsar")
+    Call<ResponseBody> expulsarDeChat(
+            @Field("id_usuario_admin") int idUsuarioAdmin,
+            @Field("id_usuario_expulsado") int idUsuarioExpulsado,
+            @Field("id_sala") String idSala,
+            @Field("motivo") String motivo,
+            @Field("duracion_minutos") int duracionMinutos
+    );
+
+    @FormUrlEncoded
     @POST("salas/salir")
     Call<ResponseBody> salirDeSala(
             @Field("id_usuario") int idUsuario,

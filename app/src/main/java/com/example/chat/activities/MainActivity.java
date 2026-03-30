@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.graphics.Color;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout layoutInputMessage;
 
     private boolean isAdmin = false;
+    private TextView textTiempoRestante;
 
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
@@ -107,6 +109,10 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        if (getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("mantener_pantalla", false)) {
+            getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
 
@@ -143,13 +149,19 @@ public class MainActivity extends AppCompatActivity {
         btnSend = findViewById(R.id.btnSend);
         listMessages = findViewById(R.id.listMessages);
         layoutInputMessage = findViewById(R.id.layoutInputMessage);
+        textTiempoRestante = findViewById(R.id.textTiempoRestante);
 
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessages.setAdapter(adapter);
 
         if (isAdmin) {
-            // Admin: solo puede ver el chat, no escribir ni abrir chat privado
             layoutInputMessage.setVisibility(View.GONE);
+            listMessages.setOnItemClickListener((parent, view, position, id) -> {
+                Mensaje msg = listaMensajes.get(position);
+                if (msg.getIdUsuario() != currentUserId) {
+                    mostrarDialogoExpulsion(msg.getIdUsuario(), msg.getNombre());
+                }
+            });
         } else {
             btnSend.setOnClickListener(v -> {
                 String mensaje = editMessage.getText().toString().trim();
@@ -246,8 +258,15 @@ public class MainActivity extends AppCompatActivity {
                             try {
                                 JSONObject json = new JSONObject(response.body().string());
                                 if (json.has("expirado") && json.getBoolean("expirado")) {
-                                    expulsarUsuario("Tu tiempo en la sala ha terminado");
+                                    String motivo = json.optString("motivo", "");
+                                    String msg = motivo.isEmpty()
+                                            ? "Tu tiempo en la sala ha terminado"
+                                            : "Has sido expulsado de la sala por: " + motivo;
+                                    expulsarUsuario(msg);
+                                    return;
                                 }
+                                long minutos = json.optLong("minutos_restantes", -1);
+                                actualizarTimerSesion(minutos);
                             } catch (Exception e) { e.printStackTrace(); }
                         }
                     }
@@ -255,6 +274,29 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
+    }
+
+    private void actualizarTimerSesion(long minutos) {
+        if (minutos < 0) {
+            textTiempoRestante.setVisibility(View.GONE);
+            return;
+        }
+        textTiempoRestante.setVisibility(View.VISIBLE);
+
+        long horas = minutos / 60;
+        long mins = minutos % 60;
+        String texto = horas > 0
+                ? String.format("Tiempo restante: %dh %02dm", horas, mins)
+                : String.format("Tiempo restante: %dm", mins);
+        textTiempoRestante.setText(texto);
+
+        if (minutos >= 60) {
+            textTiempoRestante.setBackgroundColor(Color.parseColor("#388E3C")); // verde
+        } else if (minutos >= 30) {
+            textTiempoRestante.setBackgroundColor(Color.parseColor("#F57C00")); // naranja
+        } else {
+            textTiempoRestante.setBackgroundColor(Color.parseColor("#D32F2F")); // rojo
+        }
     }
 
     // ─── Verificación de ubicación ────────────────────────────────────────────
@@ -552,6 +594,64 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void mostrarDialogoExpulsion(int idUsuarioExpulsado, String nombreUsuario) {
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(48, 24, 48, 0);
+
+        android.widget.EditText editMotivo = new android.widget.EditText(this);
+        editMotivo.setHint("Motivo de la expulsión");
+        editMotivo.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+        layout.addView(editMotivo);
+
+        String[] opciones = {"Permanente", "10 minutos", "30 minutos", "1 hora", "2 horas", "24 horas"};
+        int[] minutos =      {0,            10,           30,           60,       120,       1440};
+
+        android.widget.Spinner spinner = new android.widget.Spinner(this);
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item, opciones);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        android.widget.LinearLayout.LayoutParams spinnerParams =
+                new android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        spinnerParams.topMargin = 24;
+        layout.addView(spinner, spinnerParams);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Expulsar a " + nombreUsuario)
+                .setView(layout)
+                .setPositiveButton("Expulsar", (dialog, which) -> {
+                    String motivo = editMotivo.getText().toString().trim();
+                    if (motivo.isEmpty()) {
+                        Toast.makeText(this, "Indica el motivo", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    int duracion = minutos[spinner.getSelectedItemPosition()];
+                    RetrofitClient.getChatApiServices()
+                            .expulsarDeChat(currentUserId, idUsuarioExpulsado, currentSalaId, motivo, duracion)
+                            .enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    if (response.isSuccessful()) {
+                                        String durStr = duracion == 0 ? "permanentemente" : "por " + opciones[spinner.getSelectedItemPosition()];
+                                        Toast.makeText(MainActivity.this,
+                                                nombreUsuario + " expulsado " + durStr, Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(MainActivity.this, "Error al expulsar", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    Toast.makeText(MainActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     @Override
