@@ -208,11 +208,11 @@ public class HomeActivity extends AppCompatActivity {
                             listaMisSalas.addAll(response.body());
                         }
                         salaAdapter.notifyDataSetChanged();
-                        actualizarVistasSalas(); // ACTUALIZAMOS LA VISTA DESPUÉS DE RECIBIR DATOS
+                        actualizarVistasSalas();
                     }
                     @Override
                     public void onFailure(Call<List<Sala>> call, Throwable t) {
-                        actualizarVistasSalas(); // POR SI FALLA LA RED, MOSTRAMOS VACÍO
+                        actualizarVistasSalas();
                     }
                 });
     }
@@ -261,6 +261,14 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void comprobarRolUsuario() {
+        // Comprobación inmediata con lo guardado en SharedPrefs
+        SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
+        String rolGuardado = pref.getString("rol", "").toLowerCase();
+        if ("owner".equals(rolGuardado)) {
+            drawerGestionUsuarios.setVisibility(View.VISIBLE);
+        }
+
+        // Refresco desde la API por si el rol cambió
         RetrofitClient.getChatApiServices().getRolUsuario(currentUserId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
@@ -270,10 +278,11 @@ public class HomeActivity extends AppCompatActivity {
                                 JSONObject json = new JSONObject(response.body().string());
                                 int idRol = json.optInt("id_rol", 3);
                                 String nombreRol = json.optString("rol", "usuario").toLowerCase();
-                                getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit()
-                                        .putString("rol", nombreRol).apply();
+                                pref.edit().putString("rol", nombreRol).apply();
                                 if (idRol == 1 || "owner".equals(nombreRol)) {
                                     drawerGestionUsuarios.setVisibility(View.VISIBLE);
+                                } else {
+                                    drawerGestionUsuarios.setVisibility(View.GONE);
                                 }
                             } catch (Exception e) { e.printStackTrace(); }
                         }

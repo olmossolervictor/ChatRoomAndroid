@@ -47,7 +47,7 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 
 | Package | Contents |
 |---------|----------|
-| `activities` | `LoginActivity`, `HomeActivity`, `RegisterActivity`, `VerificacionEmailActivity`, `ScannerActivity`, `MainActivity`, `PrivateChatActivity`, `UserManagementActivity` |
+| `activities` | `LoginActivity`, `HomeActivity`, `RegisterActivity`, `VerificacionEmailActivity`, `ScannerActivity`, `MainActivity`, `PrivateChatActivity`, `UserManagementActivity`, `AjustesActivity` |
 | `adapters` | `MensajeAdapter` (chat bubbles), `SalaAdapter` (room list) |
 | `models` | `Mensaje`, `Sala` |
 | `network` | `ChatApiServices` (Retrofit interface), `RetrofitClient` (singleton), `FormUrlEncoded` (custom annotation) |
@@ -58,7 +58,8 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 |-------|------|
 | `network/ChatApiServices` | All API endpoints; add new endpoints here |
 | `network/RetrofitClient` | Singleton Retrofit/OkHttp — do not modify |
-| `activities/HomeActivity` | Room list + QR scan button + navigation drawer (profile, logout, admin) |
+| `activities/HomeActivity` | Room list (two states: `layoutConSalas` / `layoutSinSalas`) + QR scan button + navigation drawer (profile, logout, admin) |
+| `activities/AjustesActivity` | Settings screen with GPS toggle (prompts system dialog to enable GPS via `LocationSettingsRequest`) |
 | `activities/ScannerActivity` | Scans QR → calls `unirseASala` → fetches room info → returns to Home |
 | `activities/MainActivity` | Group chat; polls messages + time + geofence every 3s |
 | `activities/UserManagementActivity` | Search user by email, promote/demote to admin; only reachable by `owner` role |
@@ -86,7 +87,7 @@ LoginActivity → HomeActivity → ScannerActivity (QR scan) → MainActivity (g
 
 **Email verification:** `RegisterActivity` navigates to `VerificacionEmailActivity` after form submission, passing all user data as Intent extras (`VERIFICACION_EMAIL`, `VERIFICACION_NOMBRE`, etc.). The user enters a 6-digit code; on success, the account is created and the user is sent to `LoginActivity`. Login returns `email_not_verified` status (or HTTP 403) for accounts that bypassed this step, showing a "resend verification" link that calls `reenviarVerificacionEmail`.
 
-**Navigation drawer (HomeActivity):** Hamburger menu opens a side drawer with: edit profile (→ `RegisterActivity` with `MODO_EDICION=true`), settings (placeholder), user management (owner-only), terms (placeholder), and logout.
+**Navigation drawer (HomeActivity):** Hamburger menu opens a side drawer with: edit profile (→ `RegisterActivity` with `MODO_EDICION=true`), settings (→ `AjustesActivity`), user management (owner-only), terms (placeholder), reports/complaints (`drawerDenuncias`, placeholder), and logout.
 
 **Profile photo:** Stored and returned as Base64 string from the API; decoded with `Base64.decode` before display.
 
