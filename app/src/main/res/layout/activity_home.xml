@@ -41,45 +41,70 @@
                 android:paddingStart="8dp"/>
         </LinearLayout>
 
-        <FrameLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:padding="16dp">
+            android:layout_height="match_parent">
 
-            <ListView
-                android:id="@+id/listSalas"
+            <LinearLayout
+                android:id="@+id/layoutConSalas"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone"> <ListView
+                android:id="@+id/listSalas"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:padding="16dp"
                 android:divider="@android:color/darker_gray"
                 android:dividerHeight="1dp"/>
 
-            <TextView
-                android:id="@+id/textEmptySalas"
+                <Button
+                    android:id="@+id/btnScanQRHomeAbajo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:text="ESCANEAR NUEVO QR"
+                    android:padding="14dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutSinSalas"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="No estás en ninguna sala"
-                android:textColor="#AAAAAA"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
                 android:gravity="center"
-                android:textSize="15sp"
-                android:visibility="gone"/>
-        </FrameLayout>
+                android:padding="32dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:src="@android:drawable/ic_menu_camera"
+                    app:tint="#CCCCCC"
+                    android:layout_marginBottom="16dp"/>
 
-            <Button
-                android:id="@+id/btnScanQRHome"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="ESCANEAR QR"
-                android:padding="14dp"
-                android:layout_marginBottom="8dp"/>
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/textEmptySalas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No estás en ninguna sala."
+                    android:textColor="#888888"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="24dp"/>
+
+                <Button
+                    android:id="@+id/btnScanQRHomeCentro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ESCANEAR QR"
+                    android:paddingStart="32dp"
+                    android:paddingEnd="32dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"/>
+            </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 
     <LinearLayout

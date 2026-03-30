@@ -1,7 +1,6 @@
 package com.example.chat.activities;
 
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -10,12 +9,12 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -28,16 +27,6 @@ import com.example.chat.models.Sala;
 import com.example.chat.network.RetrofitClient;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.Priority;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.Task;
-
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -54,9 +43,11 @@ public class HomeActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private ListView listSalas;
-    private TextView textEmptySalas;
-    private Button btnScanQR;
     private ImageButton btnMenuDrawer;
+
+    // Vistas para gestionar los estados vacío/con salas
+    private LinearLayout layoutConSalas, layoutSinSalas;
+    private Button btnScanQRHomeAbajo, btnScanQRHomeCentro;
 
     // Drawer views
     private ImageView imgDrawerFoto;
@@ -80,9 +71,13 @@ public class HomeActivity extends AppCompatActivity {
 
         drawerLayout = findViewById(R.id.drawerLayout);
         listSalas = findViewById(R.id.listSalas);
-        textEmptySalas = findViewById(R.id.textEmptySalas);
-        btnScanQR = findViewById(R.id.btnScanQRHome);
         btnMenuDrawer = findViewById(R.id.btnMenuDrawer);
+
+        // Instanciamos los nuevos layouts
+        layoutConSalas = findViewById(R.id.layoutConSalas);
+        layoutSinSalas = findViewById(R.id.layoutSinSalas);
+        btnScanQRHomeAbajo = findViewById(R.id.btnScanQRHomeAbajo);
+        btnScanQRHomeCentro = findViewById(R.id.btnScanQRHomeCentro);
 
         imgDrawerFoto = findViewById(R.id.imgDrawerFoto);
         textDrawerNombre = findViewById(R.id.textDrawerNombre);
@@ -97,18 +92,20 @@ public class HomeActivity extends AppCompatActivity {
 
         salaAdapter = new SalaAdapter(this, listaMisSalas);
         listSalas.setAdapter(salaAdapter);
-        listSalas.setEmptyView(textEmptySalas);
 
+        // Click en lista de salas
         listSalas.setOnItemClickListener((parent, view, position, id) -> {
             Sala sala = listaMisSalas.get(position);
             abrirSala(sala.getIdSala() != null ? sala.getIdSala() : sala.getNombre());
         });
 
-        btnMenuDrawer.setOnClickListener(v -> drawerLayout.openDrawer(
-                androidx.core.view.GravityCompat.START));
+        // Click en menú lateral
+        btnMenuDrawer.setOnClickListener(v -> drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
 
-        btnScanQR.setOnClickListener(v ->
-                startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE));
+        // Ambos botones hacen lo mismo: Abrir escaner
+        View.OnClickListener scanAction = v -> startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE);
+        btnScanQRHomeAbajo.setOnClickListener(scanAction);
+        btnScanQRHomeCentro.setOnClickListener(scanAction);
 
         drawerEditarPerfil.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
@@ -117,7 +114,6 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // MAGIA AQUÍ: Redirige a la nueva pantalla de Ajustes
         drawerAjustes.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
             startActivity(new Intent(this, AjustesActivity.class));
@@ -160,6 +156,16 @@ public class HomeActivity extends AppCompatActivity {
         actualizarBadgeNotificaciones();
     }
 
+    private void actualizarVistasSalas() {
+        if (listaMisSalas.isEmpty()) {
+            layoutConSalas.setVisibility(View.GONE);
+            layoutSinSalas.setVisibility(View.VISIBLE);
+        } else {
+            layoutSinSalas.setVisibility(View.GONE);
+            layoutConSalas.setVisibility(View.VISIBLE);
+        }
+    }
+
     private void cargarPerfilDrawer() {
         RetrofitClient.getChatApiServices().getUsuario(currentUserId)
                 .enqueue(new Callback<ResponseBody>() {
@@ -172,15 +178,15 @@ public class HomeActivity extends AppCompatActivity {
                                 String nombre = json.optString("nombre", "");
                                 String apellidos = json.optString("apellidos", "");
 
-                                // Priorizar nombre_usuario si está disponible
                                 String displayName = !nombreUsuario.isEmpty() ? nombreUsuario : (nombre + " " + apellidos).trim();
                                 textDrawerNombre.setText(displayName);
 
                                 String foto = json.optString("foto", "");
                                 if (!foto.isEmpty()) {
                                     byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
-                                    imgDrawerFoto.setImageBitmap(
-                                            BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
+                                    imgDrawerFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
+                                } else {
+                                    imgDrawerFoto.setImageResource(android.R.drawable.ic_menu_camera);
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -202,9 +208,12 @@ public class HomeActivity extends AppCompatActivity {
                             listaMisSalas.addAll(response.body());
                         }
                         salaAdapter.notifyDataSetChanged();
+                        actualizarVistasSalas(); // ACTUALIZAMOS LA VISTA DESPUÉS DE RECIBIR DATOS
                     }
                     @Override
-                    public void onFailure(Call<List<Sala>> call, Throwable t) {}
+                    public void onFailure(Call<List<Sala>> call, Throwable t) {
+                        actualizarVistasSalas(); // POR SI FALLA LA RED, MOSTRAMOS VACÍO
+                    }
                 });
     }
 
@@ -272,34 +281,6 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
-    }
-    private void mostrarDialogoAjustes() {
-        String[] opciones = {
-                "Notificaciones",
-                "Privacidad",
-                "Almacenamiento en caché",
-                "Acerca de la aplicación"
-        };
-
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
-        builder.setTitle("Ajustes");
-        builder.setItems(opciones, (dialog, which) -> {
-            switch (which) {
-                case 0:
-                    Toast.makeText(this, "Notificaciones — próximamente", Toast.LENGTH_SHORT).show();
-                    break;
-                case 1:
-                    Toast.makeText(this, "Privacidad — próximamente", Toast.LENGTH_SHORT).show();
-                    break;
-                case 2:
-                    Toast.makeText(this, "Almacenamiento en caché — próximamente", Toast.LENGTH_SHORT).show();
-                    break;
-                case 3:
-                    Toast.makeText(this, "v1.0 - ChatRoom App", Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        });
-        builder.show();
     }
 
     private void mostrarDialogoTerminos() {

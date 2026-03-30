@@ -59,6 +59,9 @@
         <activity
             android:name="com.example.chat.activities.UserManagementActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.AjustesActivity"
+            android:exported="false" />
 
     </application>
 

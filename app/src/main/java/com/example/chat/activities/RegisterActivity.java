@@ -210,12 +210,26 @@ public class RegisterActivity extends AppCompatActivity {
 
     // 📷 LÓGICA DE FOTO Y PERMISOS
     private void mostrarOpcionesFoto() {
-        String[] opciones = {"Hacer foto con la Cámara", "Elegir de la Galería"};
+        // ¿Mostramos la opción de eliminar? Solo si está editando el perfil o si ya había elegido una foto
+        boolean mostrarEliminar = isEditMode || !encodedImage.isEmpty();
+
+        String[] opciones;
+        if (mostrarEliminar) {
+            opciones = new String[]{"Hacer foto con la Cámara", "Elegir de la Galería", "Eliminar foto"};
+        } else {
+            opciones = new String[]{"Hacer foto con la Cámara", "Elegir de la Galería"};
+        }
+
         new AlertDialog.Builder(this)
                 .setTitle("Elige una foto de perfil")
                 .setItems(opciones, (dialog, which) -> {
-                    if (which == 0) checkPermissionAndOpenCamera();
-                    else checkPermissionAndOpenGallery();
+                    if (which == 0) {
+                        checkPermissionAndOpenCamera();
+                    } else if (which == 1) {
+                        checkPermissionAndOpenGallery();
+                    } else if (which == 2 && mostrarEliminar) {
+                        eliminarFoto();
+                    }
                 })
                 .show();
     }
@@ -240,33 +254,35 @@ public class RegisterActivity extends AppCompatActivity {
             openGallery();
         }
     }
+    public void eliminarFoto(){
+        imgUser.setImageResource(android.R.drawable.ic_menu_camera); // Ponemos el icono por defecto
+        encodedImage = ""; // Vaciamos el texto para que al servidor le llegue en blanco
+        Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show();
+    }
     private void prepararPantallaParaEdicion() {
-        // 1. Cambiamos los textos principales
         if (textTitle != null) textTitle.setText("Editar Mi Perfil");
         btnRegister.setText("Guardar Cambios");
 
-        // 2. Ocultamos los términos y el botón de volver al login
         if (layoutTerminos != null) layoutTerminos.setVisibility(View.GONE);
         if (textBackToLogin != null) textBackToLogin.setVisibility(View.GONE);
-        if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE); // Ocultamos sugerencias por si acaso
+        if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
 
-        // 3. BLOQUEO DE CAMPOS (Se pondrán grises y no se podrán tocar)
+        // BLOQUEO DE CAMPOS
         editNombre.setEnabled(false);
         editApellidos.setEnabled(false);
         editFechaNac.setEnabled(false);
-        editFechaNac.setClickable(false); // Para evitar que se abra el calendario
+        editFechaNac.setClickable(false);
         editTelefono.setEnabled(false);
         editEmail.setEnabled(false);
 
-        // 4. Asegurarnos de que Usuario y Contraseña sí están activos
-        // (Asegúrate de tener declarada la variable editNombreUsuario arriba en tu clase)
-        editNombreUsuario.setEnabled(true);
+        // CAMPOS EDITABLES
+        if (editNombreUsuario != null) editNombreUsuario.setEnabled(true);
         editPassword.setEnabled(true);
-
-        // Le indicamos qué pasa con la contraseña
         editPassword.setHint("Nueva contraseña (en blanco para mantenerla)");
 
-        // 5. Cargamos los datos actuales del usuario en las cajas de texto
+        // RECUPERAMOS TU ID DE USUARIO (Súper importante)
+        currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
+
         cargarDatosUsuario();
     }
 
@@ -368,29 +384,45 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void cargarDatosUsuario() {
+        if (currentUserId == -1) return; // Si no hay ID, no hacemos la petición
+
         RetrofitClient.getChatApiServices().getUsuario(currentUserId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     try {
                         JSONObject json = new JSONObject(response.body().string());
-                        editNombre.setText(json.getString("nombre"));
-                        editApellidos.setText(json.getString("apellidos"));
-                        fechaSeleccionada = json.getString("fechaNacimiento");
+
+                        editNombre.setText(json.optString("nombre", ""));
+                        editApellidos.setText(json.optString("apellidos", ""));
+
+                        fechaSeleccionada = json.optString("fechaNacimiento", "");
                         editFechaNac.setText(fechaSeleccionada);
-                        emailOriginal = json.getString("email");
+
+                        emailOriginal = json.optString("email", "");
                         editEmail.setText(emailOriginal);
-                        editTelefono.setText(json.getString("telefono"));
-                        editPassword.setText("");
+
+                        editTelefono.setText(json.optString("telefono", ""));
+
+                        // CARGAMOS EL NOMBRE DE USUARIO (EL NUEVO CAMPO)
+                        if (editNombreUsuario != null) {
+                            editNombreUsuario.setText(json.optString("nombre_usuario", ""));
+                        }
+
+                        editPassword.setText(""); // Dejamos la contraseña en blanco por seguridad
+
                         String fotoBase64 = json.optString("foto", "");
                         if (!fotoBase64.isEmpty()) {
                             encodedImage = fotoBase64;
                             byte[] decoded = Base64.decode(fotoBase64, Base64.DEFAULT);
                             imgUser.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
                         }
-                    } catch (Exception e) { e.printStackTrace(); }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
+
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(RegisterActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
