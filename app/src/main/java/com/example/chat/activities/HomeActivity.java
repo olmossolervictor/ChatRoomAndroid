@@ -1,6 +1,7 @@
 package com.example.chat.activities;
 
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -120,7 +121,6 @@ public class HomeActivity extends AppCompatActivity {
         drawerAjustes.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
             startActivity(new Intent(this, AjustesActivity.class));
-            mostrarDialogoAjustes();
         });
 
         drawerGestionUsuarios.setOnClickListener(v -> {
@@ -274,50 +274,6 @@ public class HomeActivity extends AppCompatActivity {
                 });
     }
 
-    private void verificarYActivarGPS() {
-        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000).build();
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-        task.addOnSuccessListener(this, r ->
-                Toast.makeText(this, "El GPS ya está activado", Toast.LENGTH_SHORT).show());
-        task.addOnFailureListener(this, e -> {
-            if (e instanceof ResolvableApiException) {
-                try {
-                    ((ResolvableApiException) e).startResolutionForResult(this, GPS_SETTINGS_REQUEST_CODE);
-                } catch (IntentSender.SendIntentException ignored) {}
-            }
-        });
-    }
-
-    private void mostrarDialogoAjustes() {
-        String[] opciones = {
-            "Notificaciones",
-            "Privacidad",
-            "Almacenamiento en caché",
-            "Acerca de la aplicación"
-        };
-
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
-        builder.setTitle("Ajustes");
-        builder.setItems(opciones, (dialog, which) -> {
-            switch (which) {
-                case 0:
-                    Toast.makeText(this, "Notificaciones — próximamente", Toast.LENGTH_SHORT).show();
-                    break;
-                case 1:
-                    Toast.makeText(this, "Privacidad — próximamente", Toast.LENGTH_SHORT).show();
-                    break;
-                case 2:
-                    Toast.makeText(this, "Almacenamiento en caché — próximamente", Toast.LENGTH_SHORT).show();
-                    break;
-                case 3:
-                    Toast.makeText(this, "v1.0 - ChatRoom App", Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        });
-        builder.show();
-    }
 
     private void mostrarDialogoTerminos() {
         String terminosTexto = "TÉRMINOS Y CONDICIONES\n\n" +

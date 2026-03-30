@@ -77,7 +77,6 @@ public class RegisterActivity extends AppCompatActivity {
     private final Handler debounceHandler = new Handler();
     private Runnable emailCheckRunnable;
     private boolean emailYaExiste = false;
-    private TextView textVerTerminos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

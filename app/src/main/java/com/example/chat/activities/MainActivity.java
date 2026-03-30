@@ -109,11 +109,10 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             // 1. Añadimos "| WindowInsetsCompat.Type.ime()" para sumar la altura del teclado
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 
             // 2. Le decimos a la lista de mensajes que baje al último mensaje al abrir el teclado
