@@ -3,40 +3,44 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="6dp">
 
     <LinearLayout
         android:id="@+id/containerMensaje"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp"
+        android:padding="12dp"
+        android:background="@drawable/bubble_others"
         android:elevation="2dp">
 
+        <!-- Nombre -->
         <TextView
             android:id="@+id/textNombre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:textColor="#075E54" />
+            android:textColor="@color/primary" />
 
+        <!-- Mensaje -->
         <TextView
             android:id="@+id/textMensaje"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
-            android:layout_marginTop="2dp" />
+            android:layout_marginTop="4dp" />
 
+        <!-- Fecha -->
         <TextView
             android:id="@+id/textFecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="10sp"
             android:layout_gravity="end"
-            android:layout_marginTop="4dp"
-            android:textColor="#757575" />
+            android:layout_marginTop="6dp"
+            android:textColor="@color/text_secondary" />
 
     </LinearLayout>
 

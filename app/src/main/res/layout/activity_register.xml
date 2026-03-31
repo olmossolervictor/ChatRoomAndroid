@@ -1,227 +1,331 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    android:fillViewport="true"
-    android:padding="24dp">
+    android:background="@drawable/bg_login">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:id="@+id/textTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Registro de Usuario"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"/>
-
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/imgUser"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginBottom="12dp"
-            android:layout_gravity="center"
-            android:src="@android:drawable/ic_menu_camera"
-            app:civ_border_color="#FFFFFF"
-            app:civ_border_width="2dp" />
-
-        <Button
-            android:id="@+id/btnSelectPhoto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Seleccionar Foto"
-            android:textSize="12sp"
-            android:layout_marginBottom="16dp"/>
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:baselineAligned="false"
-            android:layout_marginBottom="6dp">
-
-            <EditText
-                android:id="@+id/editRegNombre"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:hint="Nombre"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#B3FFFFFF"
-                android:backgroundTint="#FFFFFF"
-                android:inputType="textPersonName"
-                android:textSize="14sp"/>
-
-            <EditText
-                android:id="@+id/editRegApellidos"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:hint="Apellidos"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#B3FFFFFF"
-                android:backgroundTint="#FFFFFF"
-                android:inputType="textPersonName"
-                android:textSize="14sp"/>
-        </LinearLayout>
-
-        <EditText
-            android:id="@+id/editRegEdad"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Fecha de Nacimiento"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#B3FFFFFF"
-            android:backgroundTint="#FFFFFF"
-            android:inputType="number"
-            android:textSize="14sp"
-            android:layout_marginBottom="6dp"/>
-
-        <EditText
-            android:id="@+id/editRegTelefono"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Teléfono"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#B3FFFFFF"
-            android:backgroundTint="#FFFFFF"
-            android:inputType="phone"
-            android:textSize="14sp"
-            android:layout_marginBottom="6dp"/>
-
-        <EditText
-            android:id="@+id/editRegNombreUsuario"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Nombre de usuario"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#B3FFFFFF"
-            android:backgroundTint="#FFFFFF"
-            android:inputType="text"
-            android:textSize="14sp"
-            android:layout_marginBottom="2dp"/>
-
-        <TextView
-            android:id="@+id/textNombreUsuarioError"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Este nombre de usuario ya existe"
-            android:textColor="#FF6B6B"
-            android:textSize="12sp"
-            android:visibility="gone"
-            android:layout_marginBottom="6dp"/>
-
-        <LinearLayout
-            android:id="@+id/layoutSugerencias"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginBottom="6dp">
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/textTitle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nombres de usuario sugeridos:"
-                android:textColor="#FFB74D"
-                android:textSize="12sp"
-                android:layout_marginBottom="4dp"/>
+                android:text="@string/reg_title"
+                android:textColor="@color/primary"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reg_subtitle"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- FOTO DE PERFIL -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/imgUser"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@android:drawable/ic_menu_camera"
+                    app:civ_border_color="@color/primary"
+                    app:civ_border_width="2dp" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnSelectPhoto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    app:fabSize="mini"
+                    app:srcCompat="@android:drawable/ic_menu_add"
+                    app:backgroundTint="@color/primary"
+                    app:tint="@android:color/white"
+                    android:contentDescription="@string/reg_btn_photo" />
+            </FrameLayout>
+
+            <!-- NOMBRE Y APELLIDOS -->
             <LinearLayout
-                android:id="@+id/layoutBotonesSugerencias"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_horizontal"/>
-        </LinearLayout>
-        <EditText
-            android:id="@+id/editRegEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Correo electrónico"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#B3FFFFFF"
-            android:backgroundTint="#FFFFFF"
-            android:inputType="textEmailAddress"
-            android:textSize="14sp"
-            android:layout_marginBottom="2dp"/>
+                android:layout_marginBottom="12dp">
 
-        <TextView
-            android:id="@+id/textEmailError"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ya existe una cuenta con este correo electrónico"
-            android:textColor="#FF6B6B"
-            android:textSize="12sp"
-            android:visibility="gone"
-            android:layout_marginBottom="6dp"/>
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxBackgroundColor="@color/background_secondary"
+                    app:hintTextColor="@color/text_secondary">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editRegNombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/reg_nombre_hint"
+                        android:inputType="textPersonName"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <EditText
-            android:id="@+id/editRegPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Contraseña"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#B3FFFFFF"
-            android:backgroundTint="#FFFFFF"
-            android:inputType="textPassword"
-            android:textSize="14sp"
-            android:layout_marginBottom="16dp"/>
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxBackgroundColor="@color/background_secondary"
+                    app:hintTextColor="@color/text_secondary">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editRegApellidos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/reg_apellidos_hint"
+                        android:inputType="textPersonName"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/layoutTerminos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp"
-            android:gravity="center_vertical">
-
-            <CheckBox
-                android:id="@+id/checkTerminos"
-                android:layout_width="wrap_content"
+            <!-- DATOS PERSONALES -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clickable="false"
-                android:focusable="false"
-                app:buttonTint="#FFFFFF" />
+                android:layout_marginBottom="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxBackgroundColor="@color/background_secondary"
+                app:startIconDrawable="@android:drawable/ic_menu_my_calendar"
+                app:hintTextColor="@color/text_secondary">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editRegEdad"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/reg_fecha_nac_hint"
+                    android:inputType="number"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxBackgroundColor="@color/background_secondary"
+                app:startIconDrawable="@android:drawable/stat_sys_phone_call"
+                app:hintTextColor="@color/text_secondary">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editRegTelefono"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/reg_telefono_hint"
+                    android:inputType="phone"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- CUENTA -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutRegNombreUsuario"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxBackgroundColor="@color/background_secondary"
+                app:startIconDrawable="@android:drawable/ic_menu_edit"
+                app:hintTextColor="@color/text_secondary">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editRegNombreUsuario"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/reg_username_hint"
+                    android:inputType="text"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
-                android:id="@+id/textVerTerminos"
+                android:id="@+id/textNombreUsuarioError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reg_error_username_exists"
+                android:textColor="@color/error"
+                android:textSize="12sp"
+                android:visibility="gone"
+                android:layout_marginStart="12dp"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:id="@+id/layoutSugerencias"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginBottom="12dp"
+                android:padding="8dp"
+                android:background="@color/background_secondary">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reg_suggested_usernames"
+                    android:textColor="@color/primary"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp"/>
+                <LinearLayout
+                    android:id="@+id/layoutBotonesSugerencias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_horizontal"/>
+            </LinearLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutRegEmail"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxBackgroundColor="@color/background_secondary"
+                app:startIconDrawable="@android:drawable/ic_dialog_email"
+                app:hintTextColor="@color/text_secondary">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editRegEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/reg_email_hint"
+                    android:inputType="textEmailAddress"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/textEmailError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reg_error_email_exists"
+                android:textColor="@color/error"
+                android:textSize="12sp"
+                android:visibility="gone"
+                android:layout_marginStart="12dp"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxBackgroundColor="@color/background_secondary"
+                app:endIconMode="password_toggle"
+                app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+                app:hintTextColor="@color/text_secondary">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editRegPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/reg_password_hint"
+                    android:inputType="textPassword"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- TÉRMINOS -->
+            <LinearLayout
+                android:id="@+id/layoutTerminos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp"
+                android:gravity="center_vertical">
+
+                <CheckBox
+                    android:id="@+id/checkTerminos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:buttonTint="@color/primary" />
+
+                <TextView
+                    android:id="@+id/textVerTerminos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reg_terms_accept"
+                    android:textColor="@color/primary"
+                    android:textSize="13sp"
+                    android:padding="4dp" />
+            </LinearLayout>
+
+            <!-- BOTÓN REGISTRO -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRegister"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="@string/reg_btn_register"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_button"
+                app:backgroundTint="@null"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:id="@+id/textBackToLogin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Acepto los términos y condiciones legales"
-                android:textColor="#4DD0E1"
-                android:textSize="13sp"
-                android:clickable="true"
-                android:focusable="true" />
+                android:text="@string/reg_back_to_login"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:padding="8dp"
+                android:layout_marginBottom="24dp"/>
+
         </LinearLayout>
-
-        <Button
-            android:id="@+id/btnRegister"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Registrarse"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:id="@+id/textBackToLogin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="¿Ya tienes cuenta? Inicia sesión"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"/>
-
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
