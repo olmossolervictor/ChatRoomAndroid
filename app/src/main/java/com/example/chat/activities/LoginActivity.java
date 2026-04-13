@@ -21,7 +21,6 @@ import androidx.credentials.CustomCredential;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
-import androidx.core.content.ContextCompat;
 
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
@@ -41,8 +40,8 @@ import retrofit2.Response;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText editEmail, editPassword;
-    private Button btnLogin, btnGoogleLogin, textResendVerification, btnVerificarCorreoLogin;
-    private TextView textGoToRegister;
+    private Button btnLogin, btnGoogleLogin, btnVerificarCorreoLogin;
+    private TextView textGoToRegister, textResendVerification;
 
     private ChatApiServices api;
     private CredentialManager credentialManager;
@@ -101,12 +100,6 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
     }
 
-    // =========================================================
-    // 📜 ALERTA DE TÉRMINOS CON SCROLL OBLIGATORIO
-    // =========================================================
-
-    // =========================================================
-
     private void configurarEstadoGoogle() {
         String webClientId = getString(R.string.google_web_client_id);
         boolean googleDisponible = !TextUtils.isEmpty(webClientId);
@@ -127,7 +120,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         pendingVerificationEmail = email;
-        textResendVerification.setVisibility(TextView.GONE);
+        textResendVerification.setVisibility(View.GONE);
 
         api.loginUsuario(email, password).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -268,6 +261,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void mostrarEstadoNoVerificado(String email) {
         pendingVerificationEmail = email;
+        textResendVerification.setVisibility(View.VISIBLE);
         Toast.makeText(this, R.string.email_not_verified, Toast.LENGTH_LONG).show();
     }
 
