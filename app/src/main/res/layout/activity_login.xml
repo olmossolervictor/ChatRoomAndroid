@@ -15,32 +15,37 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:layout_margin="24dp"
             android:padding="24dp"
-            android:gravity="center">
+            android:background="@drawable/bg_card"
+            android:elevation="10dp">
 
-            <!-- Espaciador para centrar mejor el contenido -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"/>
-
-            <!-- LOGO / TITULO -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="40sp"
+                android:layout_gravity="center"
+                android:layout_marginTop="40dp"/>
+            <!-- TÍTULO -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/login_title"
                 android:textColor="@color/primary"
-                android:textSize="36sp"
+                android:textSize="38sp"
                 android:textStyle="bold"
+                android:layout_gravity="center"
                 android:layout_marginBottom="8dp"/>
 
+            <!-- SUBTÍTULO -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/login_subtitle"
                 android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                android:layout_marginBottom="40dp"/>
+                android:textSize="15sp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="28dp"/>
 
             <!-- EMAIL -->
             <com.google.android.material.textfield.TextInputLayout
@@ -48,14 +53,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
-                app:boxBackgroundColor="@color/background_secondary"
-                app:boxStrokeColor="@color/primary"
+                app:boxBackgroundColor="#232323"
+                app:boxStrokeColor="#2A2A2A"
                 app:boxStrokeWidthFocused="2dp"
-                app:hintTextColor="@color/text_secondary"
                 app:startIconDrawable="@android:drawable/ic_dialog_email"
                 app:startIconTint="@color/text_secondary">
 
@@ -64,7 +64,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/login_email_hint"
-                    android:inputType="textEmailAddress"
                     android:textColor="@color/text_primary"
                     android:textColorHint="@color/text_secondary"/>
             </com.google.android.material.textfield.TextInputLayout>
@@ -75,16 +74,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
                 app:boxBackgroundColor="@color/background_secondary"
-                app:boxStrokeColor="@color/primary"
+                app:boxStrokeColor="#2A2A2A"
                 app:boxStrokeWidthFocused="2dp"
                 app:endIconMode="password_toggle"
-                app:endIconTint="@color/text_secondary"
-                app:hintTextColor="@color/text_secondary"
                 app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
                 app:startIconTint="@color/text_secondary">
 
@@ -93,7 +86,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/login_password_hint"
-                    android:inputType="textPassword"
                     android:textColor="@color/text_primary"
                     android:textColorHint="@color/text_secondary"/>
             </com.google.android.material.textfield.TextInputLayout>
@@ -105,12 +97,10 @@
                 android:layout_height="56dp"
                 android:text="@string/login_button_text"
                 android:textAllCaps="false"
-                android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 android:background="@drawable/bg_button"
                 app:backgroundTint="@null"
-                app:cornerRadius="20dp"
                 android:layout_marginBottom="16dp"/>
 
             <!-- BOTÓN GOOGLE -->
@@ -121,9 +111,8 @@
                 android:text="@string/login_google_button"
                 android:textAllCaps="false"
                 android:textColor="@color/text_primary"
-                app:strokeColor="@color/primary"
+                app:strokeColor="#2A2A2A"
                 app:strokeWidth="1dp"
-                app:cornerRadius="20dp"
                 android:backgroundTint="@color/background_secondary"
                 android:layout_marginBottom="16dp"/>
 
@@ -138,36 +127,32 @@
                 android:textColor="@color/primary"
                 android:layout_marginBottom="8dp"/>
 
-            <!-- REENVIAR VERIFICACIÓN -->
             <TextView
                 android:id="@+id/textResendVerification"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/login_resend_prompt"
+                android:text="Reenviar verificación"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
-                android:padding="8dp"
-                android:layout_marginBottom="16dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
                 android:visibility="gone"/>
 
-            <!-- TEXTO REGISTRO -->
+            <!-- REGISTRO -->
             <TextView
                 android:id="@+id/textGoToRegister"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/login_goto_register"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:padding="8dp"
-                android:layout_marginTop="8dp"/>
-
-            <!-- Espaciador final -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"/>
+                android:textColor="@color/primary"
+                android:textStyle="bold"
+                android:layout_gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"/>
 
         </LinearLayout>
+
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

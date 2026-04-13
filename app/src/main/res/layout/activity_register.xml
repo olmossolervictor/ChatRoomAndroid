@@ -9,7 +9,11 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -51,16 +55,15 @@
                     app:civ_border_color="@color/primary"
                     app:civ_border_width="2dp" />
 
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                <Button
                     android:id="@+id/btnSelectPhoto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="bottom|end"
-                    app:fabSize="mini"
-                    app:srcCompat="@android:drawable/ic_menu_add"
-                    app:backgroundTint="@color/primary"
-                    app:tint="@android:color/white"
-                    android:contentDescription="@string/reg_btn_photo" />
+                    android:background="@color/primary"
+                    android:text="+"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"/>
             </FrameLayout>
 
             <!-- NOMBRE Y APELLIDOS -->
