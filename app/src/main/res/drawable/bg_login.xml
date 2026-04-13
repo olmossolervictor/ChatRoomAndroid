@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <gradient
-        android:angle="270"
-        android:startColor="#0F0F10"
-        android:endColor="#1C1C1E"
-        android:type="linear"/>
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo base -->
+    <item>
+        <shape>
+            <solid android:color="#0D0D0D"/>
+        </shape>
+    </item>
+
+    <!-- Glow MUY suave -->
+    <item android:top="-400dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#7C4DFF"
+                android:endColor="@android:color/transparent"
+                android:angle="270"/>
+        </shape>
+    </item>
+
+</layer-list>

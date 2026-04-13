@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- FONDOS -->
     <color name="background_dark">#0D0D0D</color>
-    <color name="card_dark">#1A1A1A</color>
+    <color name="background_secondary">#1E1E1E</color>
+    <color name="card_dark">#171717</color>
+
+    <!-- PRINCIPALES -->
     <color name="primary">#7C4DFF</color>
     <color name="primary_dark">#5E35B1</color>
-    <color name="accent">#00E5FF</color>
+
+    <!-- TEXTO -->
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#B0B0B0</color>
+
+    <!-- OTROS -->
+    <color name="error">#FF4C4C</color>
+
 </resources>

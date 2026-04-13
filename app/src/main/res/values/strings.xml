@@ -1,78 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- APP -->
     <string name="app_name">ChatRoom</string>
 
-    <!-- Login Strings -->
+    <!-- LOGIN -->
     <string name="login_title">ChatRoom</string>
-    <string name="login_subtitle">Conecta en tiempo real</string>
+    <string name="login_subtitle">Conecta. Habla. Disfruta.</string>
     <string name="login_email_hint">Correo electrónico</string>
     <string name="login_password_hint">Contraseña</string>
-    <string name="login_button_text">Iniciar sesión</string>
+    <string name="login_button_text">Entrar</string>
     <string name="login_google_button">Continuar con Google</string>
     <string name="login_verify_email_text">Verificar correo</string>
     <string name="login_resend_prompt">¿No recibiste el código? Reenviar</string>
-    <string name="login_goto_register">¿No tienes cuenta? Regístrate</string>
+    <string name="login_goto_register">¿Nuevo aquí? Crea tu cuenta</string>
 
-    <!-- Register Strings -->
+    <!-- REGISTER -->
     <string name="reg_title">Crea tu cuenta</string>
-    <string name="reg_subtitle">Únete a la comunidad de ChatRoom</string>
+    <string name="reg_subtitle">Únete a la comunidad ChatRoom</string>
     <string name="reg_nombre_hint">Nombre</string>
     <string name="reg_apellidos_hint">Apellidos</string>
-    <string name="reg_fecha_nac_hint">Fecha de Nacimiento</string>
+    <string name="reg_fecha_nac_hint">Fecha de nacimiento</string>
     <string name="reg_telefono_hint">Teléfono</string>
     <string name="reg_username_hint">Nombre de usuario</string>
     <string name="reg_email_hint">Correo electrónico</string>
     <string name="reg_password_hint">Contraseña</string>
-    <string name="reg_btn_photo">Seleccionar Foto</string>
-    <string name="reg_btn_register">Registrarse</string>
-    <string name="reg_terms_accept">Acepto los términos y condiciones legales</string>
+    <string name="reg_btn_photo">Seleccionar foto</string>
+    <string name="reg_btn_register">Crear cuenta</string>
+    <string name="reg_terms_accept">Acepto los términos y condiciones</string>
     <string name="reg_back_to_login">¿Ya tienes cuenta? Inicia sesión</string>
     <string name="reg_error_username_exists">Este nombre de usuario ya existe</string>
     <string name="reg_error_email_exists">Ya existe una cuenta con este correo</string>
     <string name="reg_suggested_usernames">Sugerencias:</string>
 
-    <!-- Messages & Status -->
+    <!-- MENSAJES -->
     <string name="register_success_check_email">Registro completado. Revisa tu correo para verificar tu cuenta antes de iniciar sesión.</string>
-    <string name="email_not_verified">Tu correo todavía no está verificado.</string>
+    <string name="email_not_verified">Tu correo aún no está verificado</string>
     <string name="resend_verification">Reenviar verificación</string>
-    <string name="google_not_configured">Configura GOOGLE_WEB_CLIENT_ID en local.properties para usar Google</string>
+    <string name="google_not_configured">Función de Google no disponible</string>
 
-    <!-- Verification Dialog/Activity -->
+    <!-- CHAT -->
+    <string name="chat_hint">Escribe un mensaje...</string>
+
+    <!-- VERIFICACIÓN -->
     <string name="verificacion_titulo">Verifica tu cuenta</string>
     <string name="verificacion_subtitulo">Enviamos un código de 6 dígitos a:\n%1$s</string>
     <string name="verificar_codigo">Verificar código</string>
     <string name="verificar_google">Verificar con Google</string>
     <string name="reenviar_codigo">Reenviar código</string>
-    <string name="verificacion_exitosa">¡Cuenta verificada! Ya puedes iniciar sesión.</string>
-    <string name="codigo_enviado">Código de verificación enviado a tu correo</string>
+    <string name="verificacion_exitosa">¡Cuenta verificada! Ya puedes iniciar sesión</string>
+    <string name="codigo_enviado">Código enviado a tu correo</string>
     <string name="codigo_incorrecto">Código incorrecto o expirado</string>
 
+    <!-- TÉRMINOS -->
     <string name="terminos_legales">
         <b>Última actualización: 27 de marzo de 2026</b>\n\n
-        <b>1. Aviso Legal e Información del Titular (LSSI-CE)</b>\n
-        En cumplimiento de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa que la aplicación ChatRoomQR es propiedad de ChatRoomQR , con NIF/DNI [TU_NIF_O_DNI] y correo electrónico de contacto: soporte@chatroomqr.com.\n\n
-        <b>2. Términos y Condiciones de Uso</b>\n\n
-        <b>2.1. Objeto y Aceptación</b>\n
-        El presente documento regula el acceso y uso de la aplicación ChatRoomQR. Al crear una cuenta, el usuario manifiesta haber leído, entendido y aceptado estos términos en su totalidad.\n\n
-        <b>2.2. Requisitos de Usuario</b>\n
-        Para registrarse, el usuario debe tener al menos 18 años de edad. El usuario es el único responsable de mantener la confidencialidad de sus credenciales.\n\n
-        <b>2.3. Propiedad Intelectual</b>\n
-        El software, diseño gráfico, logotipos y contenidos de la aplicación son propiedad exclusiva de ChatRoomQR y están protegidos por la Ley de Propiedad Intelectual española. Queda prohibida la reproducción o descompilación de la APK.\n\n
-        <b>2.4. Limitación de Responsabilidad</b>\n
-        - Disponibilidad: No se garantiza el funcionamiento ininterrumpido de la app.\n
-        - Daños: El desarrollador no será responsable por daños indirectos derivados del uso de la aplicación, salvo que la legislación de consumidores y usuarios (TRLGDCU) disponga lo contrario.\n\n
-        <b>3. Política de Privacidad (RGPD y LOPDGDD)</b>\n\n
-        <b>3.1. Tratamiento de Datos</b>\n
-        De conformidad con el Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 (LOPDGDD), informamos que los datos recabados (email, contraseñas encriptadas y datos de uso) serán tratados con la finalidad de gestionar la cuenta del usuario y el correcto funcionamiento de los chats y la geolocalización.\n\n
-        <b>3.2. Proveedores de Servicios (Terceros)</b>\n
-        Utilizamos servicios de terceros que pueden procesar datos, tales como Google Play Services y Firebase (Google), los cuales cumplen con los estándares de seguridad europeos.\n\n
-        <b>3.3. Derechos ARCO-POL</b>\n
-        El usuario puede ejercer en cualquier momento sus derechos de Acceso, Rectificación, Cancelación, Oposición, Portabilidad y Limitación del tratamiento enviando un correo a [TU_EMAIL_DE_SOPORTE].\n\n
-        <b>4. Normas de Conducta y Moderación</b>\n\n
-        <b>4.1. Restricciones de Identidad y Contenido</b>\n
-        El usuario se compromete a usar un lenguaje cívico. Queda estrictamente prohibido el uso de lenguaje ofensivo, discriminatorio, o suplantar la identidad de administradores o terceros.\n\n
-        <b>4.2. Derecho de Expulsión</b>\n
-        Los administradores o moderadores tienen la autoridad para supervisar el chat y podrán expulsar (banear) de forma temporal o permanente a cualquier usuario que incumpla estas normas, pudiendo conllevar la suspensión total de la cuenta.\n\n
-        <b>5. Legislación Aplicable y Jurisdicción</b>\n
-        Estos términos se rigen por la legislación española. Para la resolución de cualquier controversia que pudiera derivarse del uso de la aplicación, las partes se someten a los Juzgados y Tribunales del domicilio del usuario (si es consumidor) o a los de Murcia, España.
+        <b>1. Aviso Legal</b>\n
+        ChatRoomQR es propiedad de su desarrollador. Para contacto: soporte@chatroomqr.com.\n\n
+
+        <b>2. Uso de la aplicación</b>\n
+        Debes tener al menos 18 años. El usuario es responsable de su cuenta.\n\n
+
+        <b>3. Privacidad</b>\n
+        Los datos se utilizan únicamente para el funcionamiento de la app.\n\n
+
+        <b>4. Normas</b>\n
+        No se permite lenguaje ofensivo ni suplantación de identidad.\n\n
+
+        <b>5. Jurisdicción</b>\n
+        Legislación española. Tribunales de Murcia.
     </string>
+
 </resources>
