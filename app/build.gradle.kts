@@ -29,12 +29,7 @@ android {
     }
 
     signingConfigs {
-        getByName("debug") {
-            storeFile = rootProject.file("keystore/debug.keystore")
-            storePassword = "judio123"
-            keyAlias = "Victor"
-            keyPassword = "judio123"
-        }
+
     }
 
     defaultConfig {
@@ -50,7 +45,7 @@ android {
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("debug")
+
         }
         release {
             isMinifyEnabled = false

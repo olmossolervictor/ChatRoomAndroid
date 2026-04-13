@@ -7,4 +7,7 @@
     <color name="accent">#00E5FF</color>
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#B0B0B0</color>
+
+    <color name="background_secondary">#F5F5F5</color>
+    <color name="error">#D32F2F</color>
 </resources>

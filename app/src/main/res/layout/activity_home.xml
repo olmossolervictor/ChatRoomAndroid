@@ -160,7 +160,7 @@
             android:id="@+id/drawerEditarPerfil"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="  Editar perfil"
+            android:text="Editar perfil"
             android:textSize="15sp"
             android:padding="18dp"
             android:drawableStart="@android:drawable/ic_menu_edit"
