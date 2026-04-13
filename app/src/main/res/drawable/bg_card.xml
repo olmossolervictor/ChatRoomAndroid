@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Fondo con profundidad -->
+    <!-- Fondo más elegante -->
     <gradient
-        android:startColor="#1E1E1E"
-        android:endColor="#141414"
+        android:startColor="#202020"
+        android:endColor="#121212"
         android:angle="270"/>
 
-    <!-- Bordes redondeados -->
-    <corners android:radius="28dp"/>
+    <!-- Bordes -->
+    <corners android:radius="30dp"/>
 
-    <!-- Borde suave -->
+    <!-- Borde más sutil -->
     <stroke
         android:width="1dp"
-        android:color="#2F2F2F"/>
+        android:color="#333333"/>
 
-    <!-- Padding interno (clave para que respire mejor) -->
+    <!-- Padding interno -->
     <padding
-        android:left="6dp"
-        android:right="6dp"
-        android:top="6dp"
-        android:bottom="6dp"/>
+        android:left="8dp"
+        android:right="8dp"
+        android:top="8dp"
+        android:bottom="8dp"/>
 
 </shape>

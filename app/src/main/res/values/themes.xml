@@ -1,8 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Base.Theme.Chat" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <!-- Fondo general -->
+        <item name="android:windowBackground">#0D0D0D</item>
+
+        <!-- Barra superior (STATUS BAR) -->
+        <item name="android:statusBarColor">#0D0D0D</item>
+
+        <!-- Quitamos el morado feo -->
+        <item name="colorPrimary">#0D0D0D</item>
+        <item name="colorSecondary">#7C4DFF</item>
+
+        <!-- Texto -->
+        <item name="android:textColorPrimary">#FFFFFF</item>
+
     </style>
 
     <style name="Theme.Chat" parent="Base.Theme.Chat" />
@@ -11,4 +23,5 @@
         <item name="android:background">@drawable/digit_field_border</item>
         <item name="android:padding">8dp</item>
     </style>
+
 </resources>
