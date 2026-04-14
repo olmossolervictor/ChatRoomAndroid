@@ -69,6 +69,19 @@ public class PrivateChatActivity extends AppCompatActivity {
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessagesPrivate.setAdapter(adapter);
 
+        // --- COPIA Y PEGA ESTO AQUÍ ---
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
+            androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() | androidx.core.view.WindowInsetsCompat.Type.ime());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+
+            // Esto hace que si el teclado se abre, la lista baje al último mensaje
+            if (listMessagesPrivate != null && adapter != null && adapter.getCount() > 0) {
+                listMessagesPrivate.postDelayed(() -> listMessagesPrivate.setSelection(adapter.getCount() - 1), 100);
+            }
+            return insets;
+        });
+        // ------------------------------
+
         btnSendPrivate.setOnClickListener(v -> enviarMensajePrivado());
 
         obtenerMensajesPrivados();
