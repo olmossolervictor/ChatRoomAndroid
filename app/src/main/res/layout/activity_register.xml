@@ -118,13 +118,13 @@
                         app:hintTextColor="@color/text_secondary">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editRegNombre"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textPersonName"
-                            android:textColor="@color/text_main"
-                            android:textColorHint="@color/text_secondary"
-                            android:textSize="14sp" />
+                        android:id="@+id/editRegNombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:textColor="@color/text_main"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
