@@ -35,7 +35,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class VerificacionEmailActivity extends AppCompatActivity {
+public class VerificacionEmailActivity extends BaseActivity {
 
     private String verificacionEmail = "";
     private String verificacionNombreUsuario = "";

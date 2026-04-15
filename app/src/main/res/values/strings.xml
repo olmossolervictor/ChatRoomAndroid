@@ -58,20 +58,84 @@
     <string name="hide_password">Ocultar contraseña</string>
 
     <!-- TÉRMINOS -->
-    <string name="terminos_legales">
-        <![CDATA[
-<b>Última actualización: 27 de marzo de 2026</b><br/><br/>
-<b>1. Aviso Legal</b><br/>
-ChatRoomQR es propiedad de su desarrollador. Para contacto: soporte@chatroomqr.com.<br/><br/>
-<b>2. Uso de la aplicación</b><br/>
-Debes tener al menos 18 años. El usuario es responsable de su cuenta.<br/><br/>
-<b>3. Privacidad</b><br/>
-Los datos se utilizan únicamente para el funcionamiento de la app.<br/><br/>
-<b>4. Normas</b><br/>
-No se permite lenguaje ofensivo ni suplantación de identidad.<br/><br/>
-<b>5. Jurisdicción</b><br/>
-Legislación española. Tribunales de Murcia.
-        ]]>
-    </string>
+    <string name="terminos_legales"><![CDATA[
+    <h3>NORMATIVA LEGAL APLICABLE A UNA APLICACIÓN DE CHAT (ACTUALIZADA A 2026)</h3>
+    <p>Este informe resume las leyes y regulaciones vigentes que afectan al funcionamiento, gestión y elaboración de Términos y Condiciones de un servicio de chat, público o privado, instalado en dispositivos móviles. Toda la normativa incluida se encuentra actualizada según las últimas modificaciones recogidas hasta finales de 2025 e inicios de 2026.</p>
+
+    <b>Reglamento General de Protección de Datos (RGPD – Reglamento UE 2016/679)</b><br>
+    Es la normativa principal dentro de la Unión Europea que regula el tratamiento de datos personales, el consentimiento, los derechos de los usuarios, la transferencia de datos y la seguridad en los sistemas informáticos. A partir de 2026, sigue plenamente vigente sin cambios sustanciales, según la información consolidada publicada por la Agencia Española de Protección de Datos.<br><br>
+
+    <b>Ley Orgánica 3/2018 de Protección de Datos Personales y Garantía de los Derechos Digitales (LOPDGDD – España)</b><br>
+    Complementa y desarrolla el RGPD en el territorio español. Su última actualización consolidada aparece publicada el 29 de diciembre de 2025 y se mantiene en vigor en 2026. Regula derechos digitales, privacidad en comunicaciones, tratamiento de datos, obligaciones del responsable y delegados de protección de datos.<br><br>
+
+    <b>Ley 34/2002 de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE)</b><br>
+    Regula el uso de servicios digitales, obligaciones de información al usuario, responsabilidad de prestadores de servicios online, contenidos ilícitos y obligaciones en comunicaciones electrónicas. Confirmada como normativa vigente en 2026 según la AEPD.<br><br>
+
+    <b>Ley 11/2022 General de Telecomunicaciones</b><br>
+    Normativa española sobre infraestructura y servicios de comunicaciones electrónicas. Incluye obligaciones vinculadas a privacidad, integridad de comunicaciones y acceso por autoridades competentes cuando sea legalmente requerido. Sigue vigente a 2026.<br><br>
+
+    <b>Marco legal sobre privacidad de comunicaciones electrónicas</b><br>
+    Normativa que regula la protección de conversaciones privadas entre usuarios, su confidencialidad y restricciones en la difusión de contenidos sin consentimiento de ambas partes. Incluye obligaciones sobre no difundir chats privados y sobre la necesidad de requerimiento judicial o de autoridad competente para acceder a comunicaciones privadas.<br><br>
+
+    <b>Obligaciones de seguridad según el Esquema Nacional de Seguridad (ENS)</b><br>
+    El ENS establece medidas mínimas de seguridad para sistemas que tratan datos personales. Está confirmado vigente y actualizado al 2026 según el Senado de España.<br><br>
+
+    <b>Normativas de conducta aplicadas en chats y servicios de mensajería</b><br>
+    Las normas que prohíben lenguaje ofensivo, contenido inapropiado, spam, acoso, amenazas o actividades ilegales siguen el estándar de políticas de uso aceptable establecidas por plataformas de comunicación ampliamente adoptadas y actualizadas a 2025–2026.<br><br>
+
+    <b>Actualización normativa para 2026</b><br>
+    Las instituciones oficiales han reafirmado que el marco aplicable continúa vigente y ha sido revisado recientemente, sin modificaciones sustanciales nuevas durante 2026, aunque incrementan las exigencias de cumplimiento normativo para empresas según criterios de compliance.<br><br>
+
+    <hr>
+
+    <h3>TÉRMINOS Y CONDICIONES DE USO DE LA APLICACIÓN</h3>
+
+    <b>Objeto del documento</b><br>
+    Los presentes Términos y Condiciones de Uso regulan la relación entre el usuario y el titular de la Aplicación, así como las normas de uso, responsabilidades, tratamiento de datos personales y condiciones legales aplicables al servicio.<br><br>
+
+    <b>Aceptación de los Términos y Requisitos de edad</b><br>
+    El uso de la Aplicación implica la aceptación plena de estos Términos. El acceso está estrictamente limitado a personas <b>mayores de 18 años</b>.<br><br>
+
+    <b>Tratamiento de datos personales</b><br>
+    Se recopilan los siguientes datos:
+    <ul>
+        <li>Datos de registro (correo electrónico, teléfono, nombre de usuario).</li>
+        <li>Mensajes enviados y recibidos.</li>
+        <li>Imágenes, audios y archivos compartidos.</li>
+        <li>Metadatos de uso y permisos otorgados (cámara, ubicación).</li>
+    </ul>
+
+    <b>Custodia y Cesión de datos:</b><br>
+    Los administradores serán los custodios de todos los datos. Los datos no serán entregados a terceros salvo requerimiento expreso de la autoridad competente o por obligación legal.<br><br>
+
+    <b>Normas de uso</b><br>
+    El usuario se compromete a:
+    <ul>
+        <li>No utilizar la Aplicación para actividades ilegales.</li>
+        <li>No acosar, amenazar, insultar o difamar a otros usuarios.</li>
+        <li>No difundir contenido ofensivo, violento, discriminatorio o ilícito.</li>
+        <li>No enviar spam ni intentar vulnerar la seguridad del sistema.</li>
+    </ul>
+
+    <hr>
+
+    <h3>TÉRMINOS Y CONDICIONES – CHAT PÚBLICO Y PRIVADO</h3>
+
+    <b>Privacidad y confidencialidad (Chat Privado)</b><br>
+    Las conversaciones privadas están protegidas por la normativa vigente. La comunicación entre usuarios es confidencial y su contenido no podrá ser difundido sin consentimiento de ambas partes.<br><br>
+
+    <b>Moderación y sanciones</b><br>
+    El sistema podrá tomar medidas de control, que incluyen:
+    <ul>
+        <li>Silenciar temporalmente al usuario.</li>
+        <li>Expulsarlo de la sala.</li>
+        <li>Bloquear permanentemente su acceso al servicio.</li>
+    </ul>
+
+    <b>Contacto</b><br>
+    Email: soporte@chatroomqr.com<br>
+    Dirección: yyyyyy<br>
+    Teléfono: 999 99 99 99
+]]></string>
 
 </resources>

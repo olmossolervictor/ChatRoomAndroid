@@ -59,7 +59,6 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
-                <!-- FOTO DE PERFIL -->
                 <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -95,12 +94,11 @@
                         app:cornerRadius="21dp" />
                 </FrameLayout>
 
-                <!-- NOMBRE Y APELLIDOS -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="14dp">
+                    android:layout_marginBottom="16dp">
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -157,12 +155,11 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <!-- DATOS PERSONALES -->
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="14dp"
+                    android:layout_marginBottom="16dp"
                     android:hint="@string/reg_fecha_nac_hint"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusTopStart="18dp"
@@ -190,7 +187,7 @@
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="14dp"
+                    android:layout_marginBottom="16dp"
                     android:hint="@string/reg_telefono_hint"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusTopStart="18dp"
@@ -209,18 +206,18 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="phone"
+                        android:maxLength="9"
                         android:textColor="@color/text_main"
                         android:textColorHint="@color/text_secondary"
                         android:textSize="14sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- CUENTA -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/layoutRegNombreUsuario"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginBottom="16dp"
                     android:hint="@string/reg_username_hint"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusTopStart="18dp"
@@ -249,7 +246,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="-10dp"
+                    android:layout_marginBottom="12dp"
                     android:text="@string/reg_error_username_exists"
                     android:textColor="@color/register_error"
                     android:textSize="12sp"
@@ -261,7 +259,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:visibility="gone"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginBottom="16dp"
                     android:padding="12dp"
                     android:background="@drawable/bg_input">
 
@@ -287,7 +285,7 @@
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginBottom="16dp"
                     android:hint="@string/reg_email_hint"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusTopStart="18dp"
@@ -316,7 +314,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="-10dp"
+                    android:layout_marginBottom="12dp"
                     android:text="@string/reg_error_email_exists"
                     android:textColor="@color/register_error"
                     android:textSize="12sp"
@@ -326,7 +325,7 @@
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="18dp"
+                    android:layout_marginBottom="16dp"
                     android:hint="@string/reg_password_hint"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusTopStart="18dp"
@@ -352,13 +351,12 @@
                         android:textSize="14sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- TÉRMINOS -->
                 <LinearLayout
                     android:id="@+id/layoutTerminos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="22dp"
+                    android:layout_marginBottom="24dp"
                     android:gravity="center_vertical">
 
                     <CheckBox
@@ -377,7 +375,6 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
-                <!-- BOTÓN REGISTRO -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegister"
                     android:layout_width="match_parent"

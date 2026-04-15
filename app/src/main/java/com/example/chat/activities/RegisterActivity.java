@@ -49,7 +49,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends BaseActivity {
 
     private EditText editNombre, editApellidos, editFechaNac, editEmail, editTelefono, editPassword, editNombreUsuario;
     private TextView textEmailError, textNombreUsuarioError;
@@ -100,14 +100,10 @@ public class RegisterActivity extends AppCompatActivity {
         checkTerminos = findViewById(R.id.checkTerminos);
         layoutTerminos = findViewById(R.id.layoutTerminos);
         textVerTerminos = findViewById(R.id.textVerTerminos);
+
+        checkTerminos.setClickable(false);
         if (textVerTerminos != null) {
             textVerTerminos.setOnClickListener(v -> mostrarAlertaTerminos());
-        }
-        textVerTerminos = findViewById(R.id.textVerTerminos);
-
-        // Agregar listener para mostrar términos al hacer clic
-        if (textVerTerminos != null) {
-            textVerTerminos.setOnClickListener(v -> mostrarDialogoTerminos());
         }
 
         // Vinculamos nombre de usuario y sus elementos
@@ -162,8 +158,13 @@ public class RegisterActivity extends AppCompatActivity {
         ScrollView scrollView = new ScrollView(this);
         TextView textView = new TextView(this);
 
-        // Carga el texto desde tu archivo strings.xml
-        textView.setText(getString(R.string.terminos_legales));
+        // AQUÍ ESTÁ LA CORRECCIÓN: Le decimos que lea el XML como HTML
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            textView.setText(android.text.Html.fromHtml(getString(R.string.terminos_legales), android.text.Html.FROM_HTML_MODE_COMPACT));
+        } else {
+            textView.setText(android.text.Html.fromHtml(getString(R.string.terminos_legales)));
+        }
+
         textView.setPadding(50, 40, 50, 40);
         textView.setTextSize(14);
         textView.setTextColor(ContextCompat.getColor(this, android.R.color.black));
@@ -174,11 +175,9 @@ public class RegisterActivity extends AppCompatActivity {
                 .setView(scrollView)
                 .setCancelable(false)
                 .setPositiveButton("Aceptar", (d, which) -> {
-                    // Si acepta, marcamos el checkbox automáticamente
                     checkTerminos.setChecked(true);
                 })
                 .setNegativeButton("Rechazar", (d, which) -> {
-                    // Si rechaza, lo desmarcamos por si acaso y avisamos
                     checkTerminos.setChecked(false);
                     Toast.makeText(RegisterActivity.this, "Debes aceptar los términos para registrarte", Toast.LENGTH_SHORT).show();
                 })
@@ -433,6 +432,8 @@ public class RegisterActivity extends AppCompatActivity {
     private boolean validarCampos(boolean passwordObligatoria) {
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
+        // 1. Recogemos el texto del nuevo campo (Añadido)
+        String nombreUsuario = editNombreUsuario != null ? editNombreUsuario.getText().toString().trim() : "";
         String email = editEmail.getText().toString().trim();
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
@@ -440,11 +441,27 @@ public class RegisterActivity extends AppCompatActivity {
         // VALIDACIÓN DE LOS TÉRMINOS LEGALES (Solo si es un registro nuevo)
         if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
             Toast.makeText(this, "Debes aceptar los términos y condiciones legales", Toast.LENGTH_LONG).show();
-            // Le damos un pequeño efecto visual para que se fije
             checkTerminos.requestFocus();
             return false;
         }
 
+        // VALIDACIÓN: NOMBRE DE USUARIO (Nuevo)
+        if (nombreUsuario.isEmpty()) {
+            if (editNombreUsuario != null) {
+                editNombreUsuario.setError("El nombre de usuario es obligatorio");
+                editNombreUsuario.requestFocus();
+            }
+            return false;
+        }
+        if (nombreUsuario.length() < 4) {
+            if (editNombreUsuario != null) {
+                editNombreUsuario.setError("Mínimo 4 caracteres");
+                editNombreUsuario.requestFocus();
+            }
+            return false;
+        }
+
+        // VALIDACIÓN: NOMBRE Y APELLIDOS
         if (nombre.isEmpty()) {
             editNombre.setError("El nombre es obligatorio");
             editNombre.requestFocus();
@@ -472,11 +489,13 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
+        // VALIDACIÓN: FECHA DE NACIMIENTO
         if (fechaSeleccionada.isEmpty()) {
             editFechaNac.setError("Selecciona tu fecha de nacimiento");
             return false;
         }
 
+        // VALIDACIÓN: EMAIL
         if (email.isEmpty() || !email.contains("@")) {
             editEmail.setError("Introduce un correo electrónico válido");
             editEmail.requestFocus();
@@ -488,16 +507,31 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
-        if (!telefono.matches("[0-9]{9}")) {
-            editTelefono.setError("El teléfono debe tener exactamente 9 dígitos (solo números)");
+        // VALIDACIÓN: TELÉFONO (Actualizado)
+        // El Regex "^[0-9]{9}$" asegura que sean EXACTAMENTE 9 números, ni más ni menos.
+        if (!telefono.matches("^[0-9]{9}$")) {
+            editTelefono.setError("El teléfono debe tener exactamente 9 números");
             editTelefono.requestFocus();
             return false;
         }
 
-        if (passwordObligatoria && password.isEmpty()) {
-            editPassword.setError("La contraseña es obligatoria");
-            editPassword.requestFocus();
-            return false;
+        // VALIDACIÓN: CONTRASEÑA FUERTE (Actualizado)
+        if (passwordObligatoria || (!passwordObligatoria && !password.isEmpty())) {
+            if (password.isEmpty()) {
+                editPassword.setError("La contraseña es obligatoria");
+                editPassword.requestFocus();
+                return false;
+            }
+
+            // Regex:
+            // (?=.*[A-Z])   -> Al menos una mayúscula
+            // (?=.*[!@#\\$%\\^&\\*\\_\\-\\+\\=]) -> Al menos un símbolo especial
+            // .{8,}         -> Longitud mínima de 8
+            if (!password.matches("^(?=.*[A-Z])(?=.*[!@#\\$%\\^&\\*\\_\\-\\+\\=]).{8,}$")) {
+                editPassword.setError("Debe tener 8 caracteres, 1 mayúscula y 1 símbolo (!@#_*-...)");
+                editPassword.requestFocus();
+                return false;
+            }
         }
 
         return true;
@@ -531,7 +565,6 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
     }
-
     private void registrar() {
         if (!validarCampos(true)) return;
 
@@ -594,40 +627,6 @@ public class RegisterActivity extends AppCompatActivity {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
         return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-    }
-
-    private void mostrarDialogoTerminos() {
-        String terminosTexto = "TÉRMINOS Y CONDICIONES\n\n" +
-                "1. Uso del Servicio\n" +
-                "Al utilizar esta aplicación, aceptas estos términos y condiciones. Si no estás de acuerdo, no uses la aplicación.\n\n" +
-                "2. Cuentas de Usuario\n" +
-                "Eres responsable de mantener la confidencialidad de tu contraseña y de toda la actividad que ocurra bajo tu cuenta.\n\n" +
-                "3. Contenido\n" +
-                "No debes publicar contenido ofensivo, ilegal o que infrinja derechos de terceros.\n\n" +
-                "4. Privacidad\n" +
-                "Tu información personal será tratada según nuestra política de privacidad.\n\n" +
-                "5. Limitación de Responsabilidad\n" +
-                "No somos responsables por daños indirectos o pérdida de datos.\n\n" +
-                "6. Cambios en los Términos\n" +
-                "Podemos modificar estos términos en cualquier momento. El uso continuado de la aplicación implica aceptación de los cambios.\n\n" +
-                "7. Terminación\n" +
-                "Podemos suspender tu cuenta por violación de estos términos.\n\n" +
-                "8. Ley Aplicable\n" +
-                "Estos términos se rigen por la ley aplicable en tu país.";
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Términos y Condiciones");
-        builder.setMessage(terminosTexto);
-        builder.setPositiveButton("Acepto", (dialog, which) -> {
-            checkTerminos.setChecked(true);
-            dialog.dismiss();
-        });
-        builder.setNegativeButton("Cancelar", (dialog, which) -> {
-            checkTerminos.setChecked(false);
-            dialog.dismiss();
-        });
-        builder.setCancelable(false);
-        builder.show();
     }
 
     private void validarNombreUsuario(String nombreUsuario) {

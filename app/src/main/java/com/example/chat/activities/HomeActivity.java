@@ -38,7 +38,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseActivity {
 
     private static final int SCAN_QR_REQUEST_CODE = 2000;
 
@@ -306,28 +306,21 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void mostrarDialogoTerminos() {
-        String terminosTexto = "TÉRMINOS Y CONDICIONES\n\n" +
-                "1. Uso del Servicio\n" +
-                "Al utilizar esta aplicación, aceptas estos términos y condiciones. Si no estás de acuerdo, no uses la aplicación.\n\n" +
-                "2. Cuentas de Usuario\n" +
-                "Eres responsable de mantener la confidencialidad de tu contraseña y de toda la actividad que ocurra bajo tu cuenta.\n\n" +
-                "3. Contenido\n" +
-                "No debes publicar contenido ofensivo, ilegal o que infrinja derechos de terceros.\n\n" +
-                "4. Privacidad\n" +
-                "Tu información personal será tratada según nuestra política de privacidad.\n\n" +
-                "5. Limitación de Responsabilidad\n" +
-                "No somos responsables por daños indirectos o pérdida de datos.\n\n" +
-                "6. Cambios en los Términos\n" +
-                "Podemos modificar estos términos en cualquier momento. El uso continuado de la aplicación implica aceptación de los cambios.\n\n" +
-                "7. Terminación\n" +
-                "Podemos suspender tu cuenta por violación de estos términos.\n\n" +
-                "8. Ley Aplicable\n" +
-                "Estos términos se rigen por la ley aplicable en tu país.";
+        // 1. Obtenemos el texto del strings.xml y lo convertimos a formato visual HTML
+        CharSequence terminosFormateados;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            terminosFormateados = android.text.Html.fromHtml(getString(R.string.terminos_legales), android.text.Html.FROM_HTML_MODE_COMPACT);
+        } else {
+            terminosFormateados = android.text.Html.fromHtml(getString(R.string.terminos_legales));
+        }
 
+        // 2. Construimos el diálogo igual que antes, pero pasándole la variable formateada
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
         builder.setTitle("Términos y Condiciones");
-        builder.setMessage(terminosTexto);
+        builder.setMessage(terminosFormateados);
         builder.setPositiveButton("Aceptar", (dialog, which) -> dialog.dismiss());
+
+        // Al mostrar un texto largo en .setMessage(), Android le pone scroll automáticamente
         builder.show();
     }
 

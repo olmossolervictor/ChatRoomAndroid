@@ -19,7 +19,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.chat.R;
 
-public class AjustesActivity extends AppCompatActivity {
+public class AjustesActivity extends BaseActivity {
 
     static final String PREFS = "AjustesPrefs";
 
