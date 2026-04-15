@@ -1,18 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="bg_main">#090B16</color>
+    <color name="bg_top_glow">#1A1D3A</color>
+    <color name="bg_bottom_glow">#180A24</color>
 
-    <!-- FONDOS -->
-    <color name="background_dark">#0D0D0D</color>
-    <color name="error">#D32F2F</color>
-    <color name="background_secondary">#1E1E1E</color>
-    <color name="card_dark">#171717</color>
+    <color name="card_bg">#14182E</color>
+    <color name="card_stroke">#2B315C</color>
 
-    <!-- PRINCIPALES -->
-    <color name="primary">#7C4DFF</color>
-    <color name="primary_dark">#5E35B1</color>
+    <color name="primary_start">#7B61FF</color>
+    <color name="primary_end">#FF4FBF</color>
+    <color name="accent_blue">#4CC9F0</color>
 
-    <!-- TEXTO -->
+    <color name="text_main">#FFFFFF</color>
+    <color name="text_secondary">#AEB3D1</color>
+    <color name="hint_soft">#8C93B8</color>
+
+    <color name="input_bg">#1C2140</color>
+    <color name="input_border">#343B70</color>
+
+    <color name="error_soft">#FF7B9C</color>
+
+    <color name="primary">#FF4FBF</color>
     <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#B0B0B0</color>
+    <color name="login_input_fill">#1C2140</color>
+    <color name="login_input_stroke">#343B70</color>
+    <color name="accent_neon">#9F7BFF</color>
+    <color name="register_error">#FF7B9C</color>
+    <!-- 🌙 FONDOS -->
+      <!-- fondo principal -->
+    <color name="bg_secondary">#0F132C</color>      <!-- variación fondo -->
+
+    <!-- 💎 CARD -->
+         <!-- card principal -->
+    <color name="card_bg_soft">#232A55</color>      <!-- card secundaria -->
+
+
+    <color name="input_focus">#7B61FF</color>
+
+    <!-- 🔥 ACENTOS (LO IMPORTANTE) -->
+    <color name="accent_primary">#7B61FF</color>    <!-- morado -->
+
+
+
+    <color name="text_hint">#7E88C7</color>
+
+    <!-- OTROS -->
+    <color name="error">#FF4C4C</color>
 
 </resources>

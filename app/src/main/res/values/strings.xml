@@ -9,11 +9,11 @@
     <string name="login_subtitle">Conecta. Habla. Disfruta.</string>
     <string name="login_email_hint">Correo electrónico</string>
     <string name="login_password_hint">Contraseña</string>
-    <string name="login_button_text">Entrar</string>
+    <string name="login_button_text">Iniciar sesión</string>
     <string name="login_google_button">Continuar con Google</string>
     <string name="login_verify_email_text">Verificar correo</string>
     <string name="login_resend_prompt">¿No recibiste el código? Reenviar</string>
-    <string name="login_goto_register">¿Nuevo aquí? Crea tu cuenta</string>
+    <string name="login_goto_register">¿No tienes cuenta? Regístrate</string>
 
     <!-- REGISTER -->
     <string name="reg_title">Crea tu cuenta</string>
@@ -34,10 +34,10 @@
     <string name="reg_suggested_usernames">Sugerencias:</string>
 
     <!-- MENSAJES -->
-    <string name="register_success_check_email">Registro completado. Revisa tu correo para verificar tu cuenta antes de iniciar sesión.</string>
+    <string name="register_success_check_email">Registro completado. Revisa tu correo para verificar tu cuenta.</string>
     <string name="email_not_verified">Tu correo aún no está verificado</string>
     <string name="resend_verification">Reenviar verificación</string>
-    <string name="google_not_configured">Función de Google no disponible</string>
+    <string name="google_not_configured">Próximamente disponible</string>
 
     <!-- CHAT -->
     <string name="chat_hint">Escribe un mensaje...</string>
@@ -48,27 +48,30 @@
     <string name="verificar_codigo">Verificar código</string>
     <string name="verificar_google">Verificar con Google</string>
     <string name="reenviar_codigo">Reenviar código</string>
-    <string name="verificacion_exitosa">¡Cuenta verificada! Ya puedes iniciar sesión</string>
+    <string name="verificacion_exitosa">¡Cuenta verificada! Ya puedes iniciar sesión.</string>
     <string name="codigo_enviado">Código enviado a tu correo</string>
     <string name="codigo_incorrecto">Código incorrecto o expirado</string>
 
+    <!-- GENERALES -->
+    <string name="back">Volver</string>
+    <string name="show_password">Mostrar contraseña</string>
+    <string name="hide_password">Ocultar contraseña</string>
+
     <!-- TÉRMINOS -->
     <string name="terminos_legales">
-        <b>Última actualización: 27 de marzo de 2026</b>\n\n
-        <b>1. Aviso Legal</b>\n
-        ChatRoomQR es propiedad de su desarrollador. Para contacto: soporte@chatroomqr.com.\n\n
-
-        <b>2. Uso de la aplicación</b>\n
-        Debes tener al menos 18 años. El usuario es responsable de su cuenta.\n\n
-
-        <b>3. Privacidad</b>\n
-        Los datos se utilizan únicamente para el funcionamiento de la app.\n\n
-
-        <b>4. Normas</b>\n
-        No se permite lenguaje ofensivo ni suplantación de identidad.\n\n
-
-        <b>5. Jurisdicción</b>\n
-        Legislación española. Tribunales de Murcia.
+        <![CDATA[
+<b>Última actualización: 27 de marzo de 2026</b><br/><br/>
+<b>1. Aviso Legal</b><br/>
+ChatRoomQR es propiedad de su desarrollador. Para contacto: soporte@chatroomqr.com.<br/><br/>
+<b>2. Uso de la aplicación</b><br/>
+Debes tener al menos 18 años. El usuario es responsable de su cuenta.<br/><br/>
+<b>3. Privacidad</b><br/>
+Los datos se utilizan únicamente para el funcionamiento de la app.<br/><br/>
+<b>4. Normas</b><br/>
+No se permite lenguaje ofensivo ni suplantación de identidad.<br/><br/>
+<b>5. Jurisdicción</b><br/>
+Legislación española. Tribunales de Murcia.
+        ]]>
     </string>
 
 </resources>

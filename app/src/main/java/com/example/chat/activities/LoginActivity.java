@@ -40,8 +40,8 @@ import retrofit2.Response;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText editEmail, editPassword;
-    private Button btnLogin, btnGoogleLogin, btnVerificarCorreoLogin;
-    private TextView textGoToRegister, textResendVerification;
+    private Button btnLogin, btnGoogleLogin, textResendVerification, btnVerificarCorreoLogin;
+    private TextView textGoToRegister;
 
     private ChatApiServices api;
     private CredentialManager credentialManager;

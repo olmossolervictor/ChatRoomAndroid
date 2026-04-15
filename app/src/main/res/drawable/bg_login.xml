@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Fondo base -->
-    <item>
-        <shape>
-            <solid android:color="#0D0D0D"/>
-        </shape>
-    </item>
-
-    <!-- Glow MUY suave -->
-    <item android:top="-400dp">
-        <shape android:shape="rectangle">
-            <gradient
-                android:startColor="#7C4DFF"
-                android:endColor="@android:color/transparent"
-                android:angle="270"/>
-        </shape>
-    </item>
-
-</layer-list>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:startColor="@color/bg_main"
+        android:endColor="@color/bg_secondary"
+        android:angle="270"/>
+</shape>
