@@ -129,8 +129,6 @@ public class PrivateChatActivity extends BaseActivity {
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             editMessagePrivate.setText("");
-                            // Crear notificación para el usuario receptor
-                            crearNotificacionMensajePrivado(mensaje);
                             obtenerMensajesPrivados();
                         }
                     }
@@ -138,22 +136,6 @@ public class PrivateChatActivity extends BaseActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         Toast.makeText(PrivateChatActivity.this, "Error al enviar", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void crearNotificacionMensajePrivado(String contenido) {
-        RetrofitClient.getChatApiServices()
-                .crearNotificacion(otherUserId, currentUserId, "mensaje_privado", contenido)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        // Notificación creada silenciosamente
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        // Error silencioso para no interrumpir al usuario
                     }
                 });
     }

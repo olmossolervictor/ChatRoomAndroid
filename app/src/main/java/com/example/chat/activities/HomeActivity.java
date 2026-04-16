@@ -330,7 +330,7 @@ public class HomeActivity extends BaseActivity {
             return;
         }
         RetrofitClient.getChatApiServices()
-                .obtenerNotificacionesNoLeidas(currentUserId)
+                .getNoLeidosPrivados(currentUserId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -356,7 +356,7 @@ public class HomeActivity extends BaseActivity {
 
     private void mostrarNotificaciones() {
         RetrofitClient.getChatApiServices()
-                .obtenerNotificaciones(currentUserId)
+                .getNoLeidosPrivados(currentUserId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -372,30 +372,24 @@ public class HomeActivity extends BaseActivity {
                                     return;
                                 }
 
-                                // Construir listas paralelas: texto visible e info de navegación
                                 List<String> items = new ArrayList<>();
                                 List<Integer> remitenteIds = new ArrayList<>();
                                 List<String> remitenteNombres = new ArrayList<>();
-                                List<Integer> notifIds = new ArrayList<>();
+                                List<Integer> mensajeIds = new ArrayList<>();
 
                                 for (int i = 0; i < array.length(); i++) {
                                     JSONObject n = array.getJSONObject(i);
-                                    String tipo = n.optString("tipo_notificacion", "");
-                                    String contenido = n.optString("contenido", "");
-                                    boolean leida = n.optBoolean("leida", false);
-                                    String nombreRemitente = n.optString("nombre_remitente", "Alguien");
-                                    int idRemitente = n.optInt("id_usuario_remitente", -1);
-                                    int idNotif = n.optInt("id_notificacion", -1);
-                                    String prefijo = leida ? "" : "● ";
+                                    String contenido = n.optString("mensaje", "");
+                                    String nombreUsuario = n.optString("nombre_usuario", "");
+                                    String nombre = n.optString("nombre", "Alguien");
+                                    String nombreRemitente = !nombreUsuario.isEmpty() ? nombreUsuario : nombre;
+                                    int idRemitente = n.optInt("id_usuario", -1);
+                                    int idMensaje = n.optInt("id", -1);
 
-                                    if ("mensaje_privado".equals(tipo)) {
-                                        items.add(prefijo + nombreRemitente + ": " + contenido);
-                                    } else {
-                                        items.add(prefijo + contenido);
-                                    }
+                                    items.add("● " + nombreRemitente + ": " + contenido);
                                     remitenteIds.add(idRemitente);
                                     remitenteNombres.add(nombreRemitente);
-                                    notifIds.add(idNotif);
+                                    mensajeIds.add(idMensaje);
                                 }
 
                                 ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -417,12 +411,12 @@ public class HomeActivity extends BaseActivity {
                                     dialog.dismiss();
                                     int idRemitente = remitenteIds.get(position);
                                     String nombreRemitente = remitenteNombres.get(position);
-                                    int idNotif = notifIds.get(position);
+                                    int idMensaje = mensajeIds.get(position);
 
-                                    // Marcar como leída
-                                    if (idNotif != -1) {
+                                    // Marcar mensaje como leído
+                                    if (idMensaje != -1) {
                                         RetrofitClient.getChatApiServices()
-                                                .marcarNotificacionComoLeida(idNotif)
+                                                .marcarLeidoPrivado(idMensaje)
                                                 .enqueue(new Callback<ResponseBody>() {
                                                     @Override public void onResponse(Call<ResponseBody> c, Response<ResponseBody> r) {}
                                                     @Override public void onFailure(Call<ResponseBody> c, Throwable t) {}

@@ -204,29 +204,15 @@ public interface ChatApiServices {
             @Field("razon_denuncia") String razonDenuncia
     );
 
-    // --- NOTIFICACIONES ---
+    // --- NOTIFICACIONES (mensajes privados no leídos) ---
 
-    @GET("notificaciones/obtener")
-    Call<ResponseBody> obtenerNotificaciones(
+    @GET("chat/privado/no-leidos")
+    Call<ResponseBody> getNoLeidosPrivados(
             @Query("id_usuario") int idUsuario
     );
 
-    @GET("notificaciones/no-leidas")
-    Call<ResponseBody> obtenerNotificacionesNoLeidas(
-            @Query("id_usuario") int idUsuario
-    );
-
-    @FormUrlEncoded
-    @POST("notificaciones/crear")
-    Call<ResponseBody> crearNotificacion(
-            @Field("id_usuario_receptor") int idUsuarioReceptor,
-            @Field("id_usuario_remitente") int idUsuarioRemitente,
-            @Field("tipo_notificacion") String tipoNotificacion,
-            @Field("contenido") String contenido
-    );
-
-    @PUT("notificaciones/marcar-leida/{id}")
-    Call<ResponseBody> marcarNotificacionComoLeida(
+    @PUT("chat/privado/marcar-leido/{id}")
+    Call<ResponseBody> marcarLeidoPrivado(
             @Path("id") int id
     );
 }
