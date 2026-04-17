@@ -169,6 +169,14 @@ public interface ChatApiServices {
             @Field("id_usuario_emisor") int idUsuarioEmisor,
             @Field("mensaje") String mensaje
     );
+    // Aviso de que YO estoy escribiendo
+    @POST("chat/escribiendo")
+    Call<ResponseBody> notificarEscribiendo(@Query("idRemitente") int idRemitente, @Query("idDestinatario") int idDestinatario);
+
+    // Pregunto si EL OTRO está escribiendo
+    // Pregunto si EL OTRO está escribiendo
+    @GET("chat/estado/{miId}/{suId}")
+    Call<Boolean> getEstadoEscribiendo(@Path("miId") int miId, @Path("suId") int suId);
 
     // --- EMAIL VERIFICATION ---
 

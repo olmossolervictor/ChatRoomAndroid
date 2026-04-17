@@ -27,6 +27,32 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:divider="@null" />
+        <LinearLayout
+            android:id="@+id/layoutTyping"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ProgressBar
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:indeterminateTint="#1565C0"
+                style="?android:attr/progressBarStyleSmall" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="La otra persona está escribiendo..."
+                android:textSize="12sp"
+                android:textStyle="italic"
+                android:layout_marginStart="8dp"
+                android:textColor="#666666"/>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

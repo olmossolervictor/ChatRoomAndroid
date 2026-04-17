@@ -2,18 +2,16 @@ package com.example.chat.activities;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable; // NUEVO
+import android.text.TextWatcher; // NUEVO
 import android.view.MenuItem;
+import android.view.View; // NUEVO
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.chat.R;
@@ -44,6 +42,10 @@ public class PrivateChatActivity extends BaseActivity {
     private int otherUserId;
     private String otherUserName;
 
+    // VARIABLES PARA LA ANIMACIÓN
+    private long ultimoAvisoEscribiendo = 0;
+    private LinearLayout layoutTyping;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,22 +67,42 @@ public class PrivateChatActivity extends BaseActivity {
         listMessagesPrivate = findViewById(R.id.listMessagesPrivate);
         editMessagePrivate = findViewById(R.id.editMessagePrivate);
         btnSendPrivate = findViewById(R.id.btnSendPrivate);
+        layoutTyping = findViewById(R.id.layoutTyping); // Vinculamos el ID del XML
 
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessagesPrivate.setAdapter(adapter);
 
-        // --- COPIA Y PEGA ESTO AQUÍ ---
+        // Ajuste automático cuando sale el teclado
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() | androidx.core.view.WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 
-            // Esto hace que si el teclado se abre, la lista baje al último mensaje
             if (listMessagesPrivate != null && adapter != null && adapter.getCount() > 0) {
                 listMessagesPrivate.postDelayed(() -> listMessagesPrivate.setSelection(adapter.getCount() - 1), 100);
             }
             return insets;
         });
-        // ------------------------------
+
+        // --- NUEVO: ESCUCHADOR DE ESCRITURA PARA AVISAR AL OTRO ---
+        editMessagePrivate.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    long tiempoActual = System.currentTimeMillis();
+                    // Solo avisamos al servidor una vez cada 2 segundos para no saturarlo
+                    if (tiempoActual - ultimoAvisoEscribiendo > 2000) {
+                        ultimoAvisoEscribiendo = tiempoActual;
+                        notificarEscribiendoAlServidor();
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
 
         btnSendPrivate.setOnClickListener(v -> enviarMensajePrivado());
 
@@ -93,10 +115,41 @@ public class PrivateChatActivity extends BaseActivity {
             @Override
             public void run() {
                 obtenerMensajesPrivados();
+                comprobarSiElOtroEscribe(); // NUEVO: Pregunta si debe mostrar la animación
                 handler.postDelayed(this, 3000);
             }
         };
         handler.postDelayed(refreshRunnable, 3000);
+    }
+
+    // --- NUEVO MÉTODO: NOTIFICAR AL SERVIDOR QUE YO ESCRIBO ---
+    private void notificarEscribiendoAlServidor() {
+        RetrofitClient.getChatApiServices()
+                .notificarEscribiendo(currentUserId, otherUserId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
+    }
+
+    // --- NUEVO MÉTODO: PREGUNTAR SI EL OTRO ESTÁ ESCRIBIENDO ---
+    private void comprobarSiElOtroEscribe() {
+        RetrofitClient.getChatApiServices()
+                .getEstadoEscribiendo(currentUserId, otherUserId)
+                .enqueue(new Callback<Boolean>() {
+                    @Override
+                    public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            boolean estaEscribiendo = response.body();
+                            // Muestra u oculta el layoutTyping que pusimos en el XML
+                            layoutTyping.setVisibility(estaEscribiendo ? View.VISIBLE : View.GONE);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Boolean> call, Throwable t) {}
+                });
     }
 
     private void obtenerMensajesPrivados() {
@@ -109,10 +162,9 @@ public class PrivateChatActivity extends BaseActivity {
                             listaMensajes.clear();
                             listaMensajes.addAll(response.body());
                             adapter.notifyDataSetChanged();
-                            listMessagesPrivate.setSelection(adapter.getCount() - 1);
+                            // listMessagesPrivate.setSelection(adapter.getCount() - 1); // Lo comentamos para que no salte todo el rato
                         }
                     }
-
                     @Override
                     public void onFailure(Call<List<Mensaje>> call, Throwable t) {}
                 });
@@ -132,7 +184,6 @@ public class PrivateChatActivity extends BaseActivity {
                             obtenerMensajesPrivados();
                         }
                     }
-
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         Toast.makeText(PrivateChatActivity.this, "Error al enviar", Toast.LENGTH_SHORT).show();
@@ -150,11 +201,7 @@ public class PrivateChatActivity extends BaseActivity {
     }
 
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
-        final String[] tiposDenuncia = {
-            "Información falsa",
-            "Comentario obsceno",
-            "Otro"
-        };
+        final String[] tiposDenuncia = {"Información falsa", "Comentario obsceno", "Otro"};
         final String[] tipoDenunciaSeleccionado = {""};
         final EditText[] editRazon = {null};
 
@@ -166,10 +213,9 @@ public class PrivateChatActivity extends BaseActivity {
         layoutDenuncia.setPadding(16, 16, 16, 16);
 
         android.widget.Spinner spinnerTipo = new android.widget.Spinner(this);
-        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
-            this, android.R.layout.simple_spinner_item, tiposDenuncia);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTipo.setAdapter(adapter);
+        android.widget.ArrayAdapter<String> adapterSpinner = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tiposDenuncia);
+        adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTipo.setAdapter(adapterSpinner);
         spinnerTipo.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
@@ -178,15 +224,11 @@ public class PrivateChatActivity extends BaseActivity {
                     if (editRazon[0] == null) {
                         editRazon[0] = new EditText(PrivateChatActivity.this);
                         editRazon[0].setHint("Explica la razón de tu denuncia");
-                        editRazon[0].setVisibility(android.view.View.VISIBLE);
                         layoutDenuncia.addView(editRazon[0]);
-                    } else {
-                        editRazon[0].setVisibility(android.view.View.VISIBLE);
                     }
-                } else {
-                    if (editRazon[0] != null) {
-                        editRazon[0].setVisibility(android.view.View.GONE);
-                    }
+                    editRazon[0].setVisibility(View.VISIBLE);
+                } else if (editRazon[0] != null) {
+                    editRazon[0].setVisibility(View.GONE);
                 }
             }
             @Override
@@ -194,19 +236,9 @@ public class PrivateChatActivity extends BaseActivity {
         });
 
         layoutDenuncia.addView(spinnerTipo);
-
         builder.setView(layoutDenuncia);
         builder.setPositiveButton("Enviar", (dialog, which) -> {
-            if (tipoDenunciaSeleccionado[0].isEmpty()) {
-                Toast.makeText(PrivateChatActivity.this, "Selecciona un tipo de denuncia", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            String razon = "";
-            if (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) {
-                razon = editRazon[0].getText().toString().trim();
-            }
-
+            String razon = (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) ? editRazon[0].getText().toString().trim() : "";
             enviarDenuncia(idUsuarioDenunciado, tipoDenunciaSeleccionado[0], razon);
         });
         builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
@@ -215,21 +247,17 @@ public class PrivateChatActivity extends BaseActivity {
 
     private void enviarDenuncia(int idUsuarioDenunciado, String tipo, String razon) {
         RetrofitClient.getChatApiServices()
-            .crearDenuncia(currentUserId, idUsuarioDenunciado, tipo, razon)
-            .enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(PrivateChatActivity.this, "Denuncia registrada correctamente", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(PrivateChatActivity.this, "Error al registrar denuncia", Toast.LENGTH_SHORT).show();
+                .crearDenuncia(currentUserId, idUsuarioDenunciado, tipo, razon)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(PrivateChatActivity.this, "Denuncia registrada correctamente", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Toast.makeText(PrivateChatActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
-                }
-            });
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
     }
 
     @Override
