@@ -31,6 +31,7 @@ public interface ChatApiServices {
             @Path("id_usuario") int idUsuario,
             @Field("nombre") String nombre,
             @Field("apellidos") String apellidos,
+            @Field("nombre_usuario") String nombreUsuario,
             @Field("fecha_nacimiento") String fecha_nacimiento,
             @Field("email") String email,
             @Field("telefono") String telefono,
