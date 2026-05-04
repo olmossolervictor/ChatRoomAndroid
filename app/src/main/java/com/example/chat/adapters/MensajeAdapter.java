@@ -23,6 +23,18 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
     private int currentUserId;
     private int tamanoFuente;
 
+    // --- NUEVO: INTERFAZ Y SETTER PARA EL CLIC DEL NOMBRE ---
+    public interface OnNombreClickListener {
+        void onNombreClick(Mensaje mensaje);
+    }
+
+    private OnNombreClickListener listener;
+
+    public void setOnNombreClickListener(OnNombreClickListener listener) {
+        this.listener = listener;
+    }
+    // --------------------------------------------------------
+
     public MensajeAdapter(@NonNull Context context, @NonNull List<Mensaje> objects) {
         super(context, 0, objects);
         SharedPreferences pref = context.getSharedPreferences("ChatPrefs", Context.MODE_PRIVATE);
@@ -49,6 +61,15 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
 
         if (mensaje != null) {
             textNombre.setText(mensaje.getNombre());
+
+            // --- NUEVO: DETECTAR CLIC SOLO EN EL NOMBRE ---
+            textNombre.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onNombreClick(mensaje);
+                }
+            });
+            // ----------------------------------------------
+
             textMensaje.setText(mensaje.getMensaje());
 
             // --- MAGIA DEL FORMATO DE HORA ---

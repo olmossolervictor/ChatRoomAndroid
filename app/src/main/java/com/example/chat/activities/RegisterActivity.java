@@ -277,7 +277,6 @@ public class RegisterActivity extends BaseActivity {
         // CAMPOS EDITABLES
         if (editNombreUsuario != null) editNombreUsuario.setEnabled(true);
         editPassword.setEnabled(true);
-        editPassword.setHint("Nueva contraseña (en blanco para mantenerla)");
 
         // RECUPERAMOS TU ID DE USUARIO (Súper importante)
         currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
@@ -438,12 +437,7 @@ public class RegisterActivity extends BaseActivity {
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
-        // VALIDACIÓN DE LOS TÉRMINOS LEGALES (Solo si es un registro nuevo)
-        if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
-            Toast.makeText(this, "Debes aceptar los términos y condiciones legales", Toast.LENGTH_LONG).show();
-            checkTerminos.requestFocus();
-            return false;
-        }
+
 
         // VALIDACIÓN: NOMBRE DE USUARIO (Nuevo)
         if (nombreUsuario.isEmpty()) {
@@ -532,6 +526,12 @@ public class RegisterActivity extends BaseActivity {
                 editPassword.requestFocus();
                 return false;
             }
+        }
+        // VALIDACIÓN DE LOS TÉRMINOS LEGALES (Solo si es un registro nuevo)
+        if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
+            Toast.makeText(this, "Debes aceptar los términos y condiciones legales", Toast.LENGTH_LONG).show();
+            checkTerminos.requestFocus();
+            return false;
         }
 
         return true;
