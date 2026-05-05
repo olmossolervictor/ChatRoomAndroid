@@ -2,268 +2,197 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_login">
+    android:fitsSystemWindows="true">
+
+    <!-- ELEMENTO DECORATIVO SUPERIOR (GLOW) -->
+    <View
+        android:layout_width="320dp"
+        android:layout_height="320dp"
+        android:layout_marginTop="-160dp"
+        android:layout_marginEnd="-160dp"
+        android:background="@drawable/bg_icon_chat"
+        android:alpha="0.2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ScrollView
         android:id="@+id/scrollLogin"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:fillViewport="true"
-        android:overScrollMode="never"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingTop="52dp"
-            android:paddingEnd="24dp"
-            android:paddingBottom="28dp">
+            android:paddingHorizontal="32dp"
+            android:paddingBottom="48dp"
+            android:gravity="center_horizontal">
 
-            <!-- ICONO SUPERIOR -->
-            <FrameLayout
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/bg_icon_chat"
-                android:elevation="4dp">
+            <!-- LOGO MODERNO EN TARJETA -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="80dp"
+                app:cardBackgroundColor="@color/surface_card"
+                app:cardCornerRadius="30dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/border_subtle"
+                app:cardElevation="12dp">
 
                 <ImageView
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="26dp"
                     android:src="@android:drawable/ic_dialog_email"
-                    android:tint="@android:color/white" />
-            </FrameLayout>
+                    app:tint="@color/primary" />
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- TÍTULO -->
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvChatroom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="18dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tvChatroom"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/poppins_regular"
-                    android:letterSpacing="0.04"
-                    android:text="CHATROOM "
-                    android:textColor="@color/text_primary"
-                    android:textSize="30sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvQr"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/poppins_regular"
-                    android:letterSpacing="0.04"
-                    android:text="QR"
-                    android:textColor="@color/accent_neon"
-                    android:textSize="30sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:layout_marginTop="32dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="Chatroom"
+                android:textColor="@color/text_high"
+                android:textSize="36sp"
+                android:letterSpacing="-0.04" />
 
             <TextView
                 android:id="@+id/tvLoginSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
+                android:layout_marginTop="8dp"
                 android:text="@string/login_subtitle"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textColor="@color/text_medium"
+                android:textSize="15sp"
+                android:letterSpacing="0.02" />
 
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="30dp" />
-
-            <!-- CARD -->
+            <!-- CONTENEDOR DE FORMULARIO (Tarjeta sutil) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_card"
-                android:elevation="8dp"
-                android:orientation="vertical"
-                android:paddingStart="22dp"
-                android:paddingTop="24dp"
-                android:paddingEnd="22dp"
-                android:paddingBottom="22dp">
+                android:layout_marginTop="48dp"
+                android:orientation="vertical">
 
                 <!-- EMAIL -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilEmail"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
                     android:hint="@string/login_email_hint"
-                    app:boxBackgroundColor="@color/input_bg"
-                    app:boxCornerRadiusTopStart="20dp"
-                    app:boxCornerRadiusTopEnd="20dp"
-                    app:boxCornerRadiusBottomStart="20dp"
-                    app:boxCornerRadiusBottomEnd="20dp"
-                    app:boxStrokeColor="@color/input_border"
-                    app:boxStrokeWidth="1dp"
-                    app:boxStrokeWidthFocused="2dp"
-                    app:hintTextColor="@color/text_hint"
-                    app:startIconDrawable="@android:drawable/ic_dialog_email"
-                    app:startIconTint="@color/accent_primary">
+                    app:startIconDrawable="@android:drawable/ic_dialog_email">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingVertical="18dp"
                         android:inputType="textEmailAddress"
-                        android:maxLines="1"
-                        android:paddingTop="6dp"
-                        android:paddingBottom="6dp"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_hint"
-                        android:textCursorDrawable="@drawable/cursor_blanco"
+                        android:textColor="@color/text_high"
                         android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- PASSWORD -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilPassword"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
                     android:hint="@string/login_password_hint"
-                    app:boxBackgroundColor="@color/input_bg"
-                    app:boxCornerRadiusTopStart="20dp"
-                    app:boxCornerRadiusTopEnd="20dp"
-                    app:boxCornerRadiusBottomStart="20dp"
-                    app:boxCornerRadiusBottomEnd="20dp"
-                    app:boxStrokeColor="@color/input_border"
-                    app:boxStrokeWidth="1dp"
-                    app:boxStrokeWidthFocused="2dp"
                     app:endIconMode="password_toggle"
-                    app:endIconTint="@color/accent_primary"
-                    app:hintTextColor="@color/text_hint"
-                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
-                    app:startIconTint="@color/accent_primary">
+                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingVertical="18dp"
                         android:inputType="textPassword"
-                        android:maxLines="1"
-                        android:paddingTop="6dp"
-                        android:paddingBottom="6dp"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_hint"
-                        android:textCursorDrawable="@drawable/cursor_blanco"
+                        android:textColor="@color/text_high"
                         android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- REENVIAR -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/textResendVerification"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:layout_marginTop="10dp"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:padding="0dp"
                     android:text="@string/login_resend_prompt"
-                    android:textAllCaps="false"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="13sp"
-                    android:visibility="gone"
-                    app:backgroundTint="@android:color/transparent"
-                    app:rippleColor="#20FFFFFF" />
+                    android:textSize="12sp"
+                    android:textColor="@color/primary"
+                    android:fontFamily="@font/poppins_bold"
+                    android:visibility="gone" />
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp" />
-
-                <!-- LOGIN -->
+                <!-- BOTÓN PRINCIPAL -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="58dp"
-                    android:layout_marginBottom="14dp"
+                    android:layout_height="62dp"
+                    android:layout_marginTop="36dp"
                     android:background="@drawable/bg_button"
                     android:text="@string/login_button_text"
-                    android:textAllCaps="false"
                     android:textColor="@android:color/white"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:fontFamily="@font/poppins_bold"
+                    android:letterSpacing="0.04"
                     app:backgroundTint="@null"
-                    app:cornerRadius="29dp"
-                    app:elevation="0dp"
-                    app:rippleColor="#40FFFFFF" />
+                    app:cornerRadius="24dp"
+                    app:elevation="8dp" />
 
-                <!-- GOOGLE -->
+                <!-- BOTÓN GOOGLE -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGoogleLogin"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
-                    android:layout_height="58dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_button_secondary"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="20dp"
                     android:text="@string/login_google_button"
-                    android:textAllCaps="false"
-                    android:textColor="@color/text_primary"
                     android:textSize="15sp"
-                    app:backgroundTint="@null"
-                    app:cornerRadius="29dp"
-                    app:elevation="0dp"
-                    app:rippleColor="#25FFFFFF" />
+                    android:textColor="@color/text_high"
+                    app:strokeColor="@color/border_active"
+                    app:strokeWidth="1.5dp"
+                    app:cornerRadius="24dp" />
 
-                <!-- VERIFICAR -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnVerificarCorreoLogin"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:padding="0dp"
-                    android:text="@string/login_verify_email_text"
-                    android:textAllCaps="false"
-                    android:textColor="@color/accent_neon"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="@android:color/transparent"
-                    app:rippleColor="#20FFFFFF" />
-
-                <Space
+                <!-- FOOTER -->
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="14dp" />
-
-                <!-- REGISTRO -->
-                <TextView
-                    android:id="@+id/textGoToRegister"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="48dp"
                     android:gravity="center"
-                    android:text="@string/login_goto_register"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:orientation="vertical">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnVerificarCorreoLogin"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/login_verify_email_text"
+                        android:textColor="@color/primary"
+                        android:fontFamily="@font/poppins_bold"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textGoToRegister"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:padding="12dp"
+                        android:text="@string/login_goto_register"
+                        android:textColor="@color/text_high"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/poppins_bold" />
+                </LinearLayout>
+
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

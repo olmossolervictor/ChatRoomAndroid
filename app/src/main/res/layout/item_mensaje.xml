@@ -3,44 +3,48 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="6dp">
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
 
     <LinearLayout
         android:id="@+id/containerMensaje"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp"
-        android:background="@drawable/bubble_others"
-        android:elevation="2dp">
+        android:paddingLeft="14dp"
+        android:paddingRight="14dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:background="@drawable/bubble_others">
 
-        <!-- Nombre -->
+        <!-- Nombre del Remitente (Solo visible en mensajes ajenos) -->
         <TextView
             android:id="@+id/textNombre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:textColor="@color/primary" />
+            android:textColor="@color/accent_blue" />
 
-        <!-- Mensaje -->
+        <!-- Cuerpo del Mensaje -->
         <TextView
             android:id="@+id/textMensaje"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:layout_marginTop="4dp" />
+            android:textColor="@color/text_high"
+            android:textSize="16sp" />
 
-        <!-- Fecha -->
+        <!-- Hora -->
         <TextView
             android:id="@+id/textFecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="10sp"
             android:layout_gravity="end"
-            android:layout_marginTop="6dp"
-            android:textColor="@color/text_secondary" />
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_medium" />
 
     </LinearLayout>
 

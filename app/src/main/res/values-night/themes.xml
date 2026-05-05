@@ -1,7 +1,60 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Chat" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <style name="Theme.Chat" parent="Base.Theme.Chat">
+        <!-- En modo oscuro, los iconos de la barra de estado deben ser blancos -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/bg_secondary</item>
+
+        <!-- Refinamiento de contraste para modo noche -->
+        <item name="colorSurface">@color/bg_main</item>
+        <item name="colorSurfaceVariant">@color/surface_card</item>
+        <item name="colorOnSurfaceVariant">@color/text_medium</item>
+
+        <!-- Elevación y bordes de componentes -->
+        <item name="materialCardViewStyle">@style/Widget.App.CardView.Night</item>
+        <item name="textInputStyle">@style/Widget.App.TextInputLayout.Night</item>
+    </style>
+
+    <!-- Estilo de input específico para modo noche -->
+    <style name="Widget.App.TextInputLayout.Night" parent="Widget.App.TextInputLayout">
+        <item name="boxBackgroundColor">@color/surface_input</item>
+        <item name="boxStrokeColor">@color/primary</item>
+        <item name="hintTextColor">@color/secondary</item>
+        <item name="startIconTint">@color/text_low</item>
+        <item name="endIconTint">@color/text_low</item>
+    </style>
+
+    <!-- Estilo personalizado para MaterialDatePicker (NOCHE ELEGANTE) -->
+    <style name="ThemeOverlay.App.MaterialCalendar" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSurface">@color/bg_secondary</item>
+        <item name="colorOnSurface">@color/text_high</item>
+        <item name="colorOnSurfaceVariant">@color/text_medium</item>
+        <item name="android:windowIsFloating">true</item>
+
+        <!-- Botones integrados -->
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Button.TextButton.Night</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Button.TextButton.Night</item>
+
+        <item name="materialCalendarStyle">@style/Widget.App.MaterialCalendar.Night</item>
+        <item name="materialCalendarHeaderSelection">@style/Widget.App.MaterialCalendar.HeaderSelection</item>
+        <item name="materialCalendarHeaderToggleButton">@style/Widget.App.MaterialCalendar.HeaderToggleButton</item>
+    </style>
+
+    <style name="Widget.App.MaterialCalendar.Night" parent="Widget.Material3.MaterialCalendar">
+        <item name="android:windowBackground">@color/bg_secondary</item>
+    </style>
+
+    <style name="Widget.App.Button.TextButton.Night" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+    </style>
+
+    <style name="Widget.App.CardView.Night" parent="Widget.App.CardView">
+        <item name="cardBackgroundColor">@color/surface_card</item>
+        <item name="strokeColor">@color/border_subtle</item>
+        <item name="cardElevation">4dp</item>
     </style>
 </resources>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 🌑 PREMIUM NIGHTCLUB DARK MODE -->
+    <color name="primary">#7C4DFF</color>          <!-- Deep Purple Neón -->
+    <color name="primary_variant">#B388FF</color>
+    <color name="secondary">#00E5FF</color>        <!-- Cyan Neón -->
+    <color name="accent_blue">#2979FF</color>
+
+    <!-- ALERTAS DARK (Modo elegante) -->
+    <color name="error_main">#FF5252</color>
+    <color name="error_bg">#2C1B1B</color>         <!-- Fondo rojizo muy oscuro -->
+    <color name="warning_main">#FFAB00</color>
+    <color name="warning_bg">#2C251B</color>
+    <color name="success_main">#00C853</color>
+    <color name="success_bg">#1B2C21</color>
+    <color name="info_main">#00B0FF</color>
+    <color name="info_bg">#1B252C</color>
+
+    <!-- Fondos con profundidad -->
+    <color name="bg_main">#0B0E14</color>          <!-- Negro Profundo -->
+    <color name="bg_secondary">#141824</color>     <!-- Slate Oscuro para gradiente -->
+    <color name="surface_card">#1A1F2E</color>     <!-- Tarjetas elevadas -->
+    <color name="surface_input">#0F121A</color>    <!-- Inputs más oscuros que el card -->
+    <color name="surface_highlight">#2D2B55</color> <!-- Glow sutil -->
+
+    <!-- Textos con jerarquía clara -->
+    <color name="text_high">#F8FAFC</color>        <!-- Blanco puro -->
+    <color name="text_medium">#94A3B8</color>      <!-- Gris Slate (Mejor contraste) -->
+    <color name="text_low">#475569</color>         <!-- Gris Slate apagado -->
+
+    <!-- Bordes nítidos -->
+    <color name="border_subtle">#1E293B</color>
+    <color name="border_active">#334155</color>
+    <color name="border_focus">#6366F1</color>
+
+    <color name="error">#F87171</color>
+    <color name="error_soft">#450A0A</color>
+    <color name="success">#34D399</color>
+
+    <color name="gradient_start">#6366F1</color>
+    <color name="gradient_end">#EC4899</color>
+
+    <!-- ALIAS -->
+    <color name="card_bg">@color/surface_card</color>
+    <color name="card_bg_soft">@color/surface_highlight</color>
+    <color name="card_stroke">@color/border_subtle</color>
+    <color name="text_main">@color/text_high</color>
+    <color name="text_secondary">@color/text_medium</color>
+    <color name="text_hint">@color/text_low</color>
+    <color name="hint_soft">@color/text_low</color>
+    <color name="input_bg">@color/surface_input</color>
+    <color name="input_border">@color/border_active</color>
+    <color name="input_focus">@color/border_focus</color>
+    <color name="primary_start">@color/gradient_start</color>
+    <color name="primary_end">@color/gradient_end</color>
+    <color name="accent_primary">@color/primary</color>
+    <color name="accent_neon">@color/primary_variant</color>
+</resources>

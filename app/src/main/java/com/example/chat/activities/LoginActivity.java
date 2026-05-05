@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.credentials.Credential;
 import androidx.credentials.CredentialManager;
@@ -25,6 +26,10 @@ import androidx.credentials.exceptions.GetCredentialException;
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
 import com.example.chat.network.RetrofitClient;
+import com.example.chat.utils.AlertHelper;
+import com.example.chat.utils.AlertHelper.AlertType;
+import android.text.Editable;
+import android.text.TextWatcher;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
@@ -39,25 +44,24 @@ import retrofit2.Response;
 
 public class LoginActivity extends BaseActivity {
 
+    // Componentes de la interfaz de usuario
     private EditText editEmail, editPassword;
     private Button btnLogin, btnGoogleLogin, textResendVerification, btnVerificarCorreoLogin;
     private TextView textGoToRegister;
 
+    // Servicios de red y gestión de credenciales
     private ChatApiServices api;
     private CredentialManager credentialManager;
     private Executor mainExecutor;
+    
+    // Variables de estado temporal
     private String pendingVerificationEmail = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Aplicar modo oscuro guardado antes de inflar la vista
-        boolean modoOscuro = getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("modo_oscuro", false);
-        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(modoOscuro
-                ? androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-                : androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
-
+        // Verificación de sesión activa para redirección automática
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         if (pref.getInt("id_usuario", -1) != -1) {
             startActivity(new Intent(this, HomeActivity.class));
@@ -67,10 +71,21 @@ public class LoginActivity extends BaseActivity {
 
         setContentView(R.layout.activity_login);
 
+        // Inicialización de servicios y componentes
         api = RetrofitClient.getChatApiServices();
         credentialManager = CredentialManager.create(this);
         mainExecutor = ContextCompat.getMainExecutor(this);
 
+        inicializarVistas();
+        configurarListeners();
+        configurarValidacionDinamica();
+        configurarEstadoGoogle();
+    }
+
+    /**
+     * Vincula las variables con los componentes del layout XML.
+     */
+    private void inicializarVistas() {
         editEmail = findViewById(R.id.editEmail);
         editPassword = findViewById(R.id.editPassword);
         btnLogin = findViewById(R.id.btnLogin);
@@ -78,49 +93,91 @@ public class LoginActivity extends BaseActivity {
         textGoToRegister = findViewById(R.id.textGoToRegister);
         textResendVerification = findViewById(R.id.textResendVerification);
         btnVerificarCorreoLogin = findViewById(R.id.btnVerificarCorreoLogin);
-
-        String prefillEmail = getIntent().getStringExtra("PREFILL_EMAIL");
-        boolean showVerificationHint = getIntent().getBooleanExtra("SHOW_VERIFICATION_HINT", false);
-        if (!TextUtils.isEmpty(prefillEmail)) {
-            editEmail.setText(prefillEmail);
-            pendingVerificationEmail = prefillEmail;
-        }
-        if (showVerificationHint) {
-            Toast.makeText(this, R.string.register_success_check_email, Toast.LENGTH_LONG).show();
-        }
-
-        configurarEstadoGoogle();
-
-        btnLogin.setOnClickListener(v -> login());
-
-        btnGoogleLogin.setOnClickListener(v -> loginConGoogle());
-        textResendVerification.setOnClickListener(v -> reenviarVerificacion());
-        btnVerificarCorreoLogin.setOnClickListener(v -> mostrarDialogoVerificarCorreo());
-        textGoToRegister.setOnClickListener(v ->
-                startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
     }
 
+    /**
+     * Configura los eventos de click para los elementos interactivos.
+     */
+    private void configurarListeners() {
+        // Carga de datos previos si existen en el Intent
+        String prefillEmail = getIntent().getStringExtra("PREFILL_EMAIL");
+        boolean showVerificationHint = getIntent().getBooleanExtra("SHOW_VERIFICATION_HINT", false);
+        
+        if (!TextUtils.isEmpty(prefillEmail)) {
+            if (editEmail != null) editEmail.setText(prefillEmail);
+            pendingVerificationEmail = prefillEmail;
+        }
+        
+        if (showVerificationHint) {
+            AlertHelper.showActionAlert(btnLogin, getString(R.string.register_success_check_email), AlertType.SUCCESS);
+        }
+
+        if (btnLogin != null) btnLogin.setOnClickListener(v -> login());
+        if (btnGoogleLogin != null) btnGoogleLogin.setOnClickListener(v -> loginConGoogle());
+        if (textResendVerification != null) textResendVerification.setOnClickListener(v -> reenviarVerificacion());
+        if (btnVerificarCorreoLogin != null) btnVerificarCorreoLogin.setOnClickListener(v -> mostrarDialogoVerificarCorreo());
+        
+        if (textGoToRegister != null) {
+            textGoToRegister.setOnClickListener(v ->
+                    startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
+        }
+    }
+
+    /**
+     * Limpia los estados de error de forma reactiva mientras el usuario escribe.
+     */
+    private void configurarValidacionDinamica() {
+        TextWatcher watcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (editEmail != null && editEmail.getError() != null) editEmail.setError(null);
+                if (editPassword != null && editPassword.getError() != null) editPassword.setError(null);
+            }
+        };
+        
+        if (editEmail != null) editEmail.addTextChangedListener(watcher);
+        if (editPassword != null) editPassword.addTextChangedListener(watcher);
+        
+        if (btnLogin != null) {
+            btnLogin.setEnabled(true);
+            btnLogin.setAlpha(1.0f);
+        }
+    }
+
+    /**
+     * Habilita o deshabilita el acceso por Google según la configuración del cliente.
+     */
     private void configurarEstadoGoogle() {
         String webClientId = getString(R.string.google_web_client_id);
         boolean googleDisponible = !TextUtils.isEmpty(webClientId);
-        btnGoogleLogin.setEnabled(googleDisponible);
-        if (!googleDisponible) {
-            btnGoogleLogin.setAlpha(0.6f);
-            btnGoogleLogin.setText(getString(R.string.google_not_configured));
+        
+        if (btnGoogleLogin != null) {
+            btnGoogleLogin.setEnabled(googleDisponible);
+            if (!googleDisponible) {
+                btnGoogleLogin.setAlpha(0.6f);
+                btnGoogleLogin.setText(getString(R.string.google_not_configured));
+            }
         }
     }
 
+    /**
+     * Ejecuta el flujo de autenticación estándar por correo y contraseña.
+     */
     private void login() {
         String email = editEmail.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+            AlertHelper.showActionAlert(btnLogin, "Por favor, rellene todos los campos para continuar", AlertType.WARNING);
+            if (email.isEmpty()) editEmail.setError("Campo obligatorio");
+            if (password.isEmpty()) editPassword.setError("Campo obligatorio");
             return;
         }
 
         pendingVerificationEmail = email;
-        textResendVerification.setVisibility(View.GONE);
+        if (textResendVerification != null) textResendVerification.setVisibility(View.GONE);
 
         api.loginUsuario(email, password).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -130,7 +187,7 @@ public class LoginActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(LoginActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                AlertHelper.showActionAlert(btnLogin, "Fallo de conexión. Compruebe su red.", AlertType.ERROR);
             }
         });
     }
@@ -321,13 +378,13 @@ public class LoginActivity extends BaseActivity {
                         Toast.makeText(LoginActivity.this, "No se encontró ese correo o no se pudo enviar", Toast.LENGTH_SHORT).show();
                     }
                 } catch (Exception e) {
-                    Toast.makeText(LoginActivity.this, "Error al procesar la respuesta", Toast.LENGTH_SHORT).show();
+                    AlertHelper.showActionAlert(btnLogin, "Hubo un problema al procesar los datos", AlertType.ERROR);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(LoginActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+                AlertHelper.showActionAlert(btnLogin, "Sin conexión. Revisa tu red.", AlertType.ERROR);
             }
         });
     }
