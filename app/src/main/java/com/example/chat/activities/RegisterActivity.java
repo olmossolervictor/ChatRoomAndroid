@@ -82,6 +82,7 @@ public class RegisterActivity extends BaseActivity {
     // Variables de estado de la actividad
     private String encodedImage = "";
     private boolean isEditMode = false;
+    private boolean isGoogleProfileSetup = false;
     private int currentUserId;
     private String fechaSeleccionada = "";
     private String emailOriginal = "";
@@ -156,6 +157,7 @@ public class RegisterActivity extends BaseActivity {
         }
 
         isEditMode = getIntent().getBooleanExtra("MODO_EDICION", false);
+        isGoogleProfileSetup = getIntent().getBooleanExtra("MODO_GOOGLE_COMPLETAR_PERFIL", false);
 
         if (isEditMode) {
             prepararPantallaParaEdicion();
@@ -330,10 +332,17 @@ public class RegisterActivity extends BaseActivity {
         editTelefono.setEnabled(false);
         editEmail.setEnabled(false);
 
+        if (isGoogleProfileSetup) {
+            editNombre.setEnabled(true);
+            editApellidos.setEnabled(true);
+            editFechaNac.setEnabled(true);
+            editFechaNac.setClickable(true);
+            editTelefono.setEnabled(true);
+        }
+
         // CAMPOS EDITABLES
         if (editNombreUsuario != null) editNombreUsuario.setEnabled(true);
         editPassword.setEnabled(true);
-        editPassword.setHint("Nueva contraseña (en blanco para mantenerla)");
 
         // RECUPERAMOS TU ID DE USUARIO (Súper importante)
         currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
@@ -470,20 +479,20 @@ public class RegisterActivity extends BaseActivity {
                     try {
                         JSONObject json = new JSONObject(response.body().string());
 
-                        editNombre.setText(json.optString("nombre", ""));
-                        editApellidos.setText(json.optString("apellidos", ""));
+                        editNombre.setText(limpiarValor(json.optString("nombre", "")));
+                        editApellidos.setText(limpiarValor(json.optString("apellidos", "")));
 
-                        fechaSeleccionada = json.optString("fechaNacimiento", "");
+                        fechaSeleccionada = limpiarValor(json.optString("fechaNacimiento", ""));
                         editFechaNac.setText(fechaSeleccionada);
 
-                        emailOriginal = json.optString("email", "");
+                        emailOriginal = limpiarValor(json.optString("email", ""));
                         editEmail.setText(emailOriginal);
 
-                        editTelefono.setText(json.optString("telefono", ""));
+                        editTelefono.setText(limpiarValor(json.optString("telefono", "")));
 
                         // CARGAMOS EL NOMBRE DE USUARIO (EL NUEVO CAMPO)
                         if (editNombreUsuario != null) {
-                            editNombreUsuario.setText(json.optString("nombre_usuario", ""));
+                            editNombreUsuario.setText(limpiarValor(json.optString("nombre_usuario", "")));
                         }
 
                         editPassword.setText(""); // Dejamos la contraseña en blanco por seguridad
@@ -505,6 +514,13 @@ public class RegisterActivity extends BaseActivity {
                 Toast.makeText(RegisterActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private String limpiarValor(String value) {
+        if (value == null || "null".equalsIgnoreCase(value.trim())) {
+            return "";
+        }
+        return value;
     }
 
     private boolean validarCampos(boolean passwordObligatoria) {
@@ -529,6 +545,7 @@ public class RegisterActivity extends BaseActivity {
             AlertHelper.showActionAlert(checkTerminos, "Es necesario aceptar los términos para continuar", AlertType.WARNING);
             return false;
         }
+
 
         // 2. NOMBRE DE USUARIO
         if (nombreUsuario.isEmpty()) {
@@ -603,6 +620,15 @@ public class RegisterActivity extends BaseActivity {
                 return false;
             }
         }
+
+        // VALIDACIÓN DE LOS TÉRMINOS LEGALES (Solo si es un registro nuevo)
+        if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
+            Toast.makeText(this, "Debes aceptar los términos y condiciones legales", Toast.LENGTH_LONG).show();
+            checkTerminos.requestFocus();
+            return false;
+        }
+
+
         return true;
     }
 
@@ -611,18 +637,22 @@ public class RegisterActivity extends BaseActivity {
 
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
+        String nombreUsuario = editNombreUsuario != null ? editNombreUsuario.getText().toString().trim() : "";
         String email = editEmail.getText().toString().trim();
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
         RetrofitClient.getChatApiServices().actualizarUsuario(
-                currentUserId, nombre, apellidos, fechaSeleccionada, email, telefono, password, encodedImage
+                currentUserId, nombre, apellidos, nombreUsuario, fechaSeleccionada, email, telefono, password, encodedImage
         ).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(RegisterActivity.this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
                     getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit().putString("nombre", nombre).apply();
+                    if (isGoogleProfileSetup) {
+                        startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
+                    }
                     finish();
                 } else {
                     Toast.makeText(RegisterActivity.this, "Error al actualizar", Toast.LENGTH_SHORT).show();

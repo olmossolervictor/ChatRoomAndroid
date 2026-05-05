@@ -115,65 +115,56 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            // 1. Añadimos "| WindowInsetsCompat.Type.ime()" para sumar la altura del teclado
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 
-            // 2. Le decimos a la lista de mensajes que baje al último mensaje al abrir el teclado
             if (listMessages != null && adapter != null && adapter.getCount() > 0) {
-                // Le damos un pequeño retraso de 100ms para que la animación fluya bien
                 listMessages.postDelayed(() -> listMessages.setSelection(adapter.getCount() - 1), 100);
             }
             return insets;
         });
+
         drawerLayoutMain = findViewById(R.id.drawerLayoutMain);
         android.widget.ImageButton btnMenuDrawerMain = findViewById(R.id.btnMenuDrawerMain);
         TextView drawerVolverInicio = findViewById(R.id.drawerVolverInicio);
         TextView drawerSalirSala = findViewById(R.id.drawerSalirSala);
 
-
         btnMenuDrawerMain.setOnClickListener(v -> drawerLayoutMain.openDrawer(androidx.core.view.GravityCompat.START));
 
+        drawerVolverInicio.setOnClickListener(v -> finish());
 
-        drawerVolverInicio.setOnClickListener(v -> {
-            finish(); // Cierra el chat y vuelve al Home
-        });
+        drawerSalirSala.setOnClickListener(v -> salirDeSalaManualmente());
 
-
-        drawerSalirSala.setOnClickListener(v -> {
-            salirDeSalaManualmente();
-        });
         editMessage = findViewById(R.id.editMessage);
         btnSend = findViewById(R.id.btnSend);
         listMessages = findViewById(R.id.listMessages);
         layoutInputMessage = findViewById(R.id.layoutInputMessage);
         textTiempoRestante = findViewById(R.id.textTiempoRestante);
 
+        // --- INICIALIZACIÓN DEL ADAPTER CON EL NUEVO CLIC ---
         adapter = new MensajeAdapter(this, listaMensajes);
+
+        adapter.setOnNombreClickListener(msg -> {
+            if (msg.getIdUsuario() != currentUserId) {
+                if (isAdmin) {
+                    mostrarDialogoExpulsion(msg.getIdUsuario(), msg.getNombre());
+                } else {
+                    mostrarPerfilUsuario(msg.getIdUsuario(), msg.getNombre());
+                }
+            }
+        });
+
         listMessages.setAdapter(adapter);
 
+        // --- CONFIGURACIÓN DE VISTAS SEGÚN ROL ---
         if (isAdmin) {
             layoutInputMessage.setVisibility(View.GONE);
-            listMessages.setOnItemClickListener((parent, view, position, id) -> {
-                Mensaje msg = listaMensajes.get(position);
-                if (msg.getIdUsuario() != currentUserId) {
-                    mostrarDialogoExpulsion(msg.getIdUsuario(), msg.getNombre());
-                }
-            });
         } else {
             btnSend.setOnClickListener(v -> {
                 String mensaje = editMessage.getText().toString().trim();
                 if (!mensaje.isEmpty()) {
                     obtenerUbicacionYEnviar(mensaje);
-                }
-            });
-
-            listMessages.setOnItemClickListener((parent, view, position, id) -> {
-                Mensaje msg = listaMensajes.get(position);
-                if (msg.getIdUsuario() != currentUserId) {
-                    mostrarPerfilUsuario(msg.getIdUsuario(), msg.getNombre());
                 }
             });
         }
@@ -194,36 +185,33 @@ public class MainActivity extends AppCompatActivity {
             );
         }
     }
+
     private void salirDeSalaManualmente() {
-        // Detenemos las recargas automáticas
         if (handler != null && refreshRunnable != null) {
             handler.removeCallbacks(refreshRunnable);
         }
 
         Toast.makeText(this, "Saliendo y borrando datos...", Toast.LENGTH_SHORT).show();
 
-        // Avisamos al servidor y ESPERAMOS su respuesta antes de irnos
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        // El servidor ya nos ha borrado, ahora sí volvemos al inicio
                         finish();
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        // Si falla el internet, nos vamos de todas formas
                         finish();
                     }
                 });
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                // Solo avisar si la sala tiene geovalla activa
                 if (salaLatitud != 0 || salaLongitud != 0) {
                     Toast.makeText(this,
                             "Sin permiso de ubicación no se puede verificar si estás dentro del área de la sala",
@@ -240,17 +228,11 @@ public class MainActivity extends AppCompatActivity {
                 obtenerMensajes();
                 verificarTiempoSesion();
                 verificarUbicacion();
-
-                // CAMBIO 1: Aquí controlas cuánto tarda en volver a ejecutarse (60000 = 1 minuto)
                 handler.postDelayed(this, 60000);
             }
         };
-
-        // CAMBIO 2: Aquí controlas cuánto tarda en empezar la primera vez al abrir el chat
         handler.postDelayed(refreshRunnable, 60000);
     }
-
-    // ─── Verificación de tiempo ───────────────────────────────────────────────
 
     private void verificarTiempoSesion() {
         RetrofitClient.getChatApiServices()
@@ -295,29 +277,24 @@ public class MainActivity extends AppCompatActivity {
         textTiempoRestante.setText(texto);
 
         if (minutos >= 60) {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#388E3C")); // verde
+            textTiempoRestante.setBackgroundColor(Color.parseColor("#388E3C"));
         } else if (minutos >= 30) {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#F57C00")); // naranja
+            textTiempoRestante.setBackgroundColor(Color.parseColor("#F57C00"));
         } else {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#D32F2F")); // rojo
+            textTiempoRestante.setBackgroundColor(Color.parseColor("#D32F2F"));
         }
     }
 
-    // ─── Verificación de ubicación ────────────────────────────────────────────
-
     private void verificarUbicacion() {
-        // Sin coordenadas de sala → no verificar
         if (salaLatitud == 0 && salaLongitud == 0) return;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) return;
 
-        // Si radio_metros == 0, usar 100 metros por defecto
         double radioEfectivo = salaRadioMetros > 0 ? salaRadioMetros : 100.0;
 
-        // Pedir ubicación fresca en lugar de usar la caché
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                .setMaxUpdateAgeMillis(5000) // acepta ubicación de hasta 5 segundos de antigüedad
+                .setMaxUpdateAgeMillis(5000)
                 .build();
 
         fusedLocationClient.getCurrentLocation(request, null)
@@ -341,7 +318,6 @@ public class MainActivity extends AppCompatActivity {
     private void expulsarUsuario(String motivo) {
         handler.removeCallbacks(refreshRunnable);
         Toast.makeText(this, motivo.toUpperCase(), Toast.LENGTH_LONG).show();
-        // Notificar al servidor que la sesión terminó por expulsión
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
@@ -350,10 +326,6 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    // ─── Mensajes ─────────────────────────────────────────────────────────────
-
-    // ─── Mensajes ─────────────────────────────────────────────────────────────
-
     private void obtenerMensajes() {
         RetrofitClient.getChatApiServices()
                 .getMensajesGrupal(currentSalaId)
@@ -361,29 +333,22 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
                         if (response.isSuccessful() && response.body() != null) {
-
-                            // 1. Guardamos dónde está mirando el usuario ahora mismo
                             int index = listMessages.getFirstVisiblePosition();
                             View v = listMessages.getChildAt(0);
                             int top = (v == null) ? 0 : (v.getTop() - listMessages.getPaddingTop());
 
-                            // 2. Comprobamos si el usuario estaba mirando el último mensaje
                             boolean estabaAbajoDelTodo = false;
                             if (listMessages.getLastVisiblePosition() >= adapter.getCount() - 1) {
                                 estabaAbajoDelTodo = true;
                             }
 
-                            // 3. Actualizamos la lista con los mensajes nuevos
                             listaMensajes.clear();
                             listaMensajes.addAll(response.body());
                             adapter.notifyDataSetChanged();
 
-                            // 4. Decidimos qué hacer con la pantalla
                             if (estabaAbajoDelTodo) {
-                                // Si estaba leyendo lo último, le enseñamos lo nuevo (hace scroll abajo)
                                 listMessages.setSelection(adapter.getCount() - 1);
                             } else {
-                                // Si estaba leyendo mensajes antiguos arriba, le dejamos donde estaba
                                 listMessages.setSelectionFromTop(index, top);
                             }
                         }
@@ -394,32 +359,40 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-
     private void obtenerUbicacionYEnviar(String mensaje) {
-        // NOTA: Como ya no incrustamos la ubicación en el texto,
-        // puedes decidir si sigues queriendo pedir permisos de ubicación aquí
-        // o si prefieres delegarlo solo a la función 'verificarUbicacion()'
         enviarMensajeAlServidor(mensaje);
     }
-
+    @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
+        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (v instanceof EditText) {
+                android.graphics.Rect outRect = new android.graphics.Rect();
+                v.getGlobalVisibleRect(outRect);
+                // Si el toque es FUERA de la caja de texto, ocultamos el teclado
+                if (!outRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
+                    v.clearFocus();
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    }
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
     private void enviarMensajeAlServidor(String mensajeLimpio) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
-
-        // Bloqueamos el botón temporalmente para no mandar mensajes repetidos
         btnSend.setEnabled(false);
 
         api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        btnSend.setEnabled(true); // Desbloqueamos el botón
+                        btnSend.setEnabled(true);
 
                         if (response.isSuccessful()) {
-                            // Vaciamos la caja de texto
                             editMessage.setText("");
-
-                            // Obligamos a la app a descargar la lista real de la base de datos
-                            // (Cuando Javi lo arregle, el mensaje aparecerá aquí)
                             obtenerMensajes();
                         } else {
                             Toast.makeText(MainActivity.this, "Error " + response.code() + " del servidor", Toast.LENGTH_LONG).show();
@@ -433,8 +406,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-
-    // ─── Perfil de usuario (popup) ────────────────────────────────────────────
 
     private void mostrarPerfilUsuario(int otherUserId, String otherUserName) {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_user_profile, null);
@@ -483,8 +454,6 @@ public class MainActivity extends AppCompatActivity {
 
         dialog.show();
     }
-
-    // ─── Chat privado ─────────────────────────────────────────────────────────
 
     private void abrirChatPrivado(int otherUserId, String otherUserName) {
         RetrofitClient.getChatApiServices()

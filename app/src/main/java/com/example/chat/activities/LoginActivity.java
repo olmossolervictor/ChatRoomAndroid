@@ -26,11 +26,15 @@ import androidx.credentials.exceptions.GetCredentialException;
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
 import com.example.chat.network.RetrofitClient;
+<<<<<<< HEAD
 import com.example.chat.utils.AlertHelper;
 import com.example.chat.utils.AlertHelper.AlertType;
 import android.text.Editable;
 import android.text.TextWatcher;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+=======
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
+>>>>>>> origin/javi
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
 import org.json.JSONObject;
@@ -199,10 +203,7 @@ public class LoginActivity extends BaseActivity {
             return;
         }
 
-        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(webClientId)
-                .setAutoSelectEnabled(false)
+        GetSignInWithGoogleOption googleIdOption = new GetSignInWithGoogleOption.Builder(webClientId)
                 .build();
 
         GetCredentialRequest request = new GetCredentialRequest.Builder()
@@ -312,7 +313,15 @@ public class LoginActivity extends BaseActivity {
                 .putString("auth_provider", provider)
                 .apply();
 
-        startActivity(new Intent(this, HomeActivity.class));
+        Intent intent;
+        if ("google".equalsIgnoreCase(provider)) {
+            intent = new Intent(this, RegisterActivity.class);
+            intent.putExtra("MODO_EDICION", true);
+            intent.putExtra("MODO_GOOGLE_COMPLETAR_PERFIL", true);
+        } else {
+            intent = new Intent(this, HomeActivity.class);
+        }
+        startActivity(intent);
         finish();
     }
 

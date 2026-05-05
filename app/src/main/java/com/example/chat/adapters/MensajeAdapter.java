@@ -2,6 +2,7 @@ package com.example.chat.adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.annotation.Nullable;
 
 import com.example.chat.R;
 import com.example.chat.models.Mensaje;
+import com.example.chat.utils.PrivateChatConversationPolicy;
 
 import java.util.List;
 
@@ -22,6 +24,18 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
 
     private int currentUserId;
     private int tamanoFuente;
+
+    // --- NUEVO: INTERFAZ Y SETTER PARA EL CLIC DEL NOMBRE ---
+    public interface OnNombreClickListener {
+        void onNombreClick(Mensaje mensaje);
+    }
+
+    private OnNombreClickListener listener;
+
+    public void setOnNombreClickListener(OnNombreClickListener listener) {
+        this.listener = listener;
+    }
+    // --------------------------------------------------------
 
     public MensajeAdapter(@NonNull Context context, @NonNull List<Mensaje> objects) {
         super(context, 0, objects);
@@ -48,7 +62,33 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) container.getLayoutParams();
 
         if (mensaje != null) {
+            if (PrivateChatConversationPolicy.isControlMessage(mensaje.getMensaje())) {
+                textNombre.setVisibility(View.GONE);
+                textFecha.setVisibility(View.GONE);
+                textMensaje.setText(PrivateChatConversationPolicy.getSystemText(mensaje, currentUserId));
+                textMensaje.setTextSize(13);
+                textMensaje.setTextColor(Color.parseColor("#777777"));
+                textMensaje.setGravity(Gravity.CENTER);
+                textNombre.setOnClickListener(null);
+                container.setBackgroundColor(Color.TRANSPARENT);
+                params.gravity = Gravity.CENTER_HORIZONTAL;
+                container.setLayoutParams(params);
+                return convertView;
+            }
+
             textNombre.setText(mensaje.getNombre());
+            textFecha.setVisibility(View.VISIBLE);
+            textMensaje.setGravity(Gravity.START);
+            textMensaje.setTextColor(Color.parseColor("#212121"));
+
+            // --- NUEVO: DETECTAR CLIC SOLO EN EL NOMBRE ---
+            textNombre.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onNombreClick(mensaje);
+                }
+            });
+            // ----------------------------------------------
+
             textMensaje.setText(mensaje.getMensaje());
 
             // --- MAGIA DEL FORMATO DE HORA ---

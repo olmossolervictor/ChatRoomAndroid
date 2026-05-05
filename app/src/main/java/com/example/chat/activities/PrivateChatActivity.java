@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
@@ -18,6 +19,8 @@ import com.example.chat.R;
 import com.example.chat.adapters.MensajeAdapter;
 import com.example.chat.models.Mensaje;
 import com.example.chat.network.RetrofitClient;
+import com.example.chat.utils.PrivateChatConversationPolicy;
+import com.example.chat.utils.PrivateChatHistoryStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +48,12 @@ public class PrivateChatActivity extends BaseActivity {
     // VARIABLES PARA LA ANIMACIÓN
     private long ultimoAvisoEscribiendo = 0;
     private LinearLayout layoutTyping;
+    private LinearLayout layoutSolicitudPrivada;
+    private LinearLayout layoutBotonesSolicitudPrivada;
+    private TextView textEstadoConversacionPrivada;
+    private Button btnAcceptPrivateRequest;
+    private Button btnRejectPrivateRequest;
+    private PrivateChatConversationPolicy.State conversationState = PrivateChatConversationPolicy.State.EMPTY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +63,7 @@ public class PrivateChatActivity extends BaseActivity {
         currentUserId = getIntent().getIntExtra("CURRENT_USER_ID", -1);
         otherUserId = getIntent().getIntExtra("OTHER_USER_ID", -1);
         otherUserName = getIntent().getStringExtra("OTHER_USER_NAME");
+        PrivateChatHistoryStore.touchChat(this, currentUserId, otherUserId, otherUserName);
 
         Toolbar toolbar = findViewById(R.id.toolbarPrivateChat);
         setSupportActionBar(toolbar);
@@ -68,6 +78,11 @@ public class PrivateChatActivity extends BaseActivity {
         editMessagePrivate = findViewById(R.id.editMessagePrivate);
         btnSendPrivate = findViewById(R.id.btnSendPrivate);
         layoutTyping = findViewById(R.id.layoutTyping); // Vinculamos el ID del XML
+        layoutSolicitudPrivada = findViewById(R.id.layoutSolicitudPrivada);
+        layoutBotonesSolicitudPrivada = findViewById(R.id.layoutBotonesSolicitudPrivada);
+        textEstadoConversacionPrivada = findViewById(R.id.textEstadoConversacionPrivada);
+        btnAcceptPrivateRequest = findViewById(R.id.btnAcceptPrivateRequest);
+        btnRejectPrivateRequest = findViewById(R.id.btnRejectPrivateRequest);
 
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessagesPrivate.setAdapter(adapter);
@@ -105,6 +120,8 @@ public class PrivateChatActivity extends BaseActivity {
         });
 
         btnSendPrivate.setOnClickListener(v -> enviarMensajePrivado());
+        btnAcceptPrivateRequest.setOnClickListener(v -> responderSolicitudConversacion(true));
+        btnRejectPrivateRequest.setOnClickListener(v -> responderSolicitudConversacion(false));
 
         obtenerMensajesPrivados();
         iniciarAutoRefresco();
@@ -162,6 +179,7 @@ public class PrivateChatActivity extends BaseActivity {
                             listaMensajes.clear();
                             listaMensajes.addAll(response.body());
                             adapter.notifyDataSetChanged();
+                            aplicarEstadoConversacion();
                             // listMessagesPrivate.setSelection(adapter.getCount() - 1); // Lo comentamos para que no salte todo el rato
                         }
                     }
@@ -173,6 +191,10 @@ public class PrivateChatActivity extends BaseActivity {
     private void enviarMensajePrivado() {
         String mensaje = editMessagePrivate.getText().toString().trim();
         if (mensaje.isEmpty()) return;
+        if (!PrivateChatConversationPolicy.canSendMessage(conversationState)) {
+            Toast.makeText(this, "Tienes que esperar a que se acepte la conversacion", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         RetrofitClient.getChatApiServices()
                 .enviarMensajePrivado(currentUserId, otherUserId, currentUserId, mensaje)
@@ -181,6 +203,12 @@ public class PrivateChatActivity extends BaseActivity {
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             editMessagePrivate.setText("");
+                            PrivateChatHistoryStore.touchChat(
+                                    PrivateChatActivity.this,
+                                    currentUserId,
+                                    otherUserId,
+                                    otherUserName
+                            );
                             obtenerMensajesPrivados();
                         }
                     }
@@ -189,6 +217,94 @@ public class PrivateChatActivity extends BaseActivity {
                         Toast.makeText(PrivateChatActivity.this, "Error al enviar", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void aplicarEstadoConversacion() {
+        conversationState = PrivateChatConversationPolicy.resolveState(listaMensajes, currentUserId);
+
+        switch (conversationState) {
+            case EMPTY:
+            case ACCEPTED:
+                layoutSolicitudPrivada.setVisibility(View.GONE);
+                setInputPrivadoEnabled(true, "Escribe un mensaje privado...");
+                break;
+            case PENDING_INCOMING:
+                layoutSolicitudPrivada.setVisibility(View.VISIBLE);
+                layoutBotonesSolicitudPrivada.setVisibility(View.VISIBLE);
+                textEstadoConversacionPrivada.setText(otherUserName + " quiere iniciar una conversacion privada. Acepta para poder responder o rechaza la conversacion.");
+                setInputPrivadoEnabled(false, "Acepta la conversacion para responder");
+                break;
+            case PENDING_OUTGOING:
+                layoutSolicitudPrivada.setVisibility(View.VISIBLE);
+                layoutBotonesSolicitudPrivada.setVisibility(View.GONE);
+                textEstadoConversacionPrivada.setText("Esperando a que " + otherUserName + " acepte la conversacion. Cuando acepte, podreis hablar.");
+                setInputPrivadoEnabled(false, "Esperando aceptacion");
+                break;
+            case REJECTED:
+                layoutSolicitudPrivada.setVisibility(View.VISIBLE);
+                layoutBotonesSolicitudPrivada.setVisibility(View.GONE);
+                textEstadoConversacionPrivada.setText("La conversacion ha sido rechazada. No se pueden enviar mas mensajes.");
+                setInputPrivadoEnabled(false, "Conversacion rechazada");
+                break;
+        }
+    }
+
+    private void setInputPrivadoEnabled(boolean enabled, String hint) {
+        editMessagePrivate.setEnabled(enabled);
+        btnSendPrivate.setEnabled(enabled);
+        editMessagePrivate.setHint(hint);
+    }
+
+    private void responderSolicitudConversacion(boolean aceptada) {
+        btnAcceptPrivateRequest.setEnabled(false);
+        btnRejectPrivateRequest.setEnabled(false);
+
+        String controlMessage = aceptada
+                ? PrivateChatConversationPolicy.acceptedMessage()
+                : PrivateChatConversationPolicy.rejectedMessage();
+
+        RetrofitClient.getChatApiServices()
+                .enviarMensajePrivado(currentUserId, otherUserId, currentUserId, controlMessage)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        btnAcceptPrivateRequest.setEnabled(true);
+                        btnRejectPrivateRequest.setEnabled(true);
+                        if (response.isSuccessful()) {
+                            PrivateChatHistoryStore.touchChat(
+                                    PrivateChatActivity.this,
+                                    currentUserId,
+                                    otherUserId,
+                                    otherUserName
+                            );
+                            marcarMensajesEntrantesLeidos();
+                            obtenerMensajesPrivados();
+                        } else {
+                            Toast.makeText(PrivateChatActivity.this, "No se pudo responder la solicitud", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        btnAcceptPrivateRequest.setEnabled(true);
+                        btnRejectPrivateRequest.setEnabled(true);
+                        Toast.makeText(PrivateChatActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void marcarMensajesEntrantesLeidos() {
+        for (Mensaje mensaje : listaMensajes) {
+            if (mensaje.getIdUsuario() == otherUserId
+                    && !PrivateChatConversationPolicy.isControlMessage(mensaje.getMensaje())) {
+                RetrofitClient.getChatApiServices()
+                        .marcarLeidoPrivado(mensaje.getId())
+                        .enqueue(new Callback<ResponseBody>() {
+                            @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                            @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                        });
+            }
+        }
     }
 
     @Override
