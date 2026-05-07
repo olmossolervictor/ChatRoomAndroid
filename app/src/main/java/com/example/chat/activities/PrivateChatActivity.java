@@ -145,28 +145,92 @@ public class PrivateChatActivity extends BaseActivity {
                 .notificarEscribiendo(currentUserId, otherUserId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (!response.isSuccessful()) {
+                            notificarEscribiendoAlServidorPorQuery();
+                        }
+                    }
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        notificarEscribiendoAlServidorPorQuery();
+                    }
+                });
+    }
+
+    private void notificarEscribiendoAlServidorPorQuery() {
+        RetrofitClient.getChatApiServices()
+                .notificarEscribiendoQuery(currentUserId, otherUserId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                    @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
     }
 
     // --- NUEVO MÉTODO: PREGUNTAR SI EL OTRO ESTÁ ESCRIBIENDO ---
     private void comprobarSiElOtroEscribe() {
         RetrofitClient.getChatApiServices()
-                .getEstadoEscribiendo(currentUserId, otherUserId)
-                .enqueue(new Callback<Boolean>() {
+                .getEstadoEscribiendoPath(currentUserId, otherUserId)
+                .enqueue(new Callback<ResponseBody>() {
                     @Override
-                    public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            boolean estaEscribiendo = response.body();
-                            // Muestra u oculta el layoutTyping que pusimos en el XML
-                            layoutTyping.setVisibility(estaEscribiendo ? View.VISIBLE : View.GONE);
+                            actualizarIndicadorEscritura(parsearEstadoEscribiendo(response.body()));
+                        } else {
+                            comprobarSiElOtroEscribePorQuery();
                         }
                     }
                     @Override
-                    public void onFailure(Call<Boolean> call, Throwable t) {}
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        comprobarSiElOtroEscribePorQuery();
+                    }
                 });
+    }
+
+    private void comprobarSiElOtroEscribePorQuery() {
+        RetrofitClient.getChatApiServices()
+                .getEstadoEscribiendoQuery(currentUserId, otherUserId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            actualizarIndicadorEscritura(parsearEstadoEscribiendo(response.body()));
+                        } else {
+                            actualizarIndicadorEscritura(false);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        actualizarIndicadorEscritura(false);
+                    }
+                });
+    }
+
+    private void actualizarIndicadorEscritura(boolean estaEscribiendo) {
+        layoutTyping.setVisibility(estaEscribiendo ? View.VISIBLE : View.GONE);
+    }
+
+    private boolean parsearEstadoEscribiendo(ResponseBody body) {
+        if (body == null) return false;
+        try {
+            String raw = body.string();
+            if (raw == null) return false;
+            String value = raw.trim();
+            if (value.isEmpty()) return false;
+
+            if ("true".equalsIgnoreCase(value) || "1".equals(value)) return true;
+            if ("false".equalsIgnoreCase(value) || "0".equals(value)) return false;
+
+            org.json.JSONObject json = new org.json.JSONObject(value);
+            if (json.has("escribiendo")) return json.optBoolean("escribiendo", false);
+            if (json.has("typing")) return json.optBoolean("typing", false);
+            if (json.has("estado")) {
+                String estado = json.optString("estado", "");
+                return "escribiendo".equalsIgnoreCase(estado) || "typing".equalsIgnoreCase(estado);
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
     }
 
     private void obtenerMensajesPrivados() {

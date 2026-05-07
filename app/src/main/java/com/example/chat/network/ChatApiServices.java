@@ -75,6 +75,11 @@ public interface ChatApiServices {
             @Path("id_sala") String idSala
     );
 
+    @GET("salas/{id_sala}")
+    Call<ResponseBody> getSalaInfoRaw(
+            @Path("id_sala") String idSala
+    );
+
     // --- CHAT GRUPAL (SALA) ---
 
     @FormUrlEncoded
@@ -171,13 +176,32 @@ public interface ChatApiServices {
             @Field("mensaje") String mensaje
     );
     // Aviso de que YO estoy escribiendo
+    @FormUrlEncoded
     @POST("chat/escribiendo")
-    Call<ResponseBody> notificarEscribiendo(@Query("idRemitente") int idRemitente, @Query("idDestinatario") int idDestinatario);
+    Call<ResponseBody> notificarEscribiendo(
+            @Field("idRemitente") int idRemitente,
+            @Field("idDestinatario") int idDestinatario
+    );
+
+    @POST("chat/escribiendo")
+    Call<ResponseBody> notificarEscribiendoQuery(
+            @Query("idRemitente") int idRemitente,
+            @Query("idDestinatario") int idDestinatario
+    );
 
     // Pregunto si EL OTRO está escribiendo
     // Pregunto si EL OTRO está escribiendo
     @GET("chat/estado/{miId}/{suId}")
-    Call<Boolean> getEstadoEscribiendo(@Path("miId") int miId, @Path("suId") int suId);
+    Call<ResponseBody> getEstadoEscribiendoPath(
+            @Path("miId") int miId,
+            @Path("suId") int suId
+    );
+
+    @GET("chat/estado")
+    Call<ResponseBody> getEstadoEscribiendoQuery(
+            @Query("miId") int miId,
+            @Query("suId") int suId
+    );
 
     // --- EMAIL VERIFICATION ---
 

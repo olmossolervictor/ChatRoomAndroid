@@ -295,7 +295,6 @@ public class HomeActivity extends BaseActivity {
         }
 
         textHistorialPrivadoVacio.setVisibility(View.GONE);
-        long now = System.currentTimeMillis();
 
         for (PrivateChatHistoryItem item : historial) {
             View row = LayoutInflater.from(this).inflate(R.layout.item_historial_privado, layoutHistorialPrivadoItems, false);
@@ -304,23 +303,11 @@ public class HomeActivity extends BaseActivity {
             TextView textTiempo = row.findViewById(R.id.textTiempoHistorialPrivado);
 
             textNombre.setText(item.getOtherUserName());
-            long restante = PrivateChatHistoryStore.TTL_MS - (now - item.getLastInteractionMs());
-            textTiempo.setText(formatearTiempoRestante(Math.max(restante, 0L)));
+            textTiempo.setVisibility(View.GONE);
 
             row.setOnClickListener(v -> abrirChatPrivadoDesdeHistorial(item));
             layoutHistorialPrivadoItems.addView(row);
         }
-    }
-
-    private String formatearTiempoRestante(long restanteMs) {
-        long totalMinutos = restanteMs / 60_000L;
-        long horas = totalMinutos / 60L;
-        long minutos = totalMinutos % 60L;
-
-        if (horas > 0) {
-            return String.format(Locale.getDefault(), "Desaparece en %dh %02dmin", horas, minutos);
-        }
-        return String.format(Locale.getDefault(), "Desaparece en %dmin", minutos);
     }
 
     private void abrirChatPrivadoDesdeHistorial(PrivateChatHistoryItem item) {

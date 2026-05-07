@@ -14,8 +14,6 @@ import java.util.List;
 
 public final class PrivateChatHistoryStore {
 
-    public static final long TTL_MS = 2L * 60L * 60L * 1000L;
-
     private static final String PREF_NAME = "PrivateChatHistoryPrefs";
     private static final String KEY_PREFIX = "history_user_";
 
@@ -79,10 +77,6 @@ public final class PrivateChatHistoryStore {
                 long lastInteractionMs = obj.optLong("lastInteractionMs", 0L);
 
                 if (otherUserId <= 0 || lastInteractionMs <= 0) {
-                    continue;
-                }
-
-                if (now - lastInteractionMs >= TTL_MS) {
                     continue;
                 }
 

@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isAdmin = false;
     private TextView textTiempoRestante;
+    private TextView textSalaTitulo;
+    private TextView textSalaUsuarios;
 
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
@@ -79,6 +81,9 @@ public class MainActivity extends AppCompatActivity {
     private double salaLatitud = 0;
     private double salaLongitud = 0;
     private double salaRadioMetros = 0;
+    private String salaNombreMostrado;
+    private int usuariosEnSala = 0;
+    private boolean salaFinalizadaPorTiempo = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +146,10 @@ public class MainActivity extends AppCompatActivity {
         listMessages = findViewById(R.id.listMessages);
         layoutInputMessage = findViewById(R.id.layoutInputMessage);
         textTiempoRestante = findViewById(R.id.textTiempoRestante);
+        textSalaTitulo = findViewById(R.id.textSalaTitulo);
+        textSalaUsuarios = findViewById(R.id.textSalaUsuarios);
+        salaNombreMostrado = currentSalaId;
+        actualizarCabeceraSala();
 
         // --- INICIALIZACIÓN DEL ADAPTER CON EL NUEVO CLIC ---
         adapter = new MensajeAdapter(this, listaMensajes);
@@ -170,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         unirseASalaEnServidor(currentSalaId);
+        cargarInfoCabeceraSala();
         obtenerMensajes();
         iniciarAutoRefresco();
         solicitarPermisoUbicacionSiNecesario();
@@ -225,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
         refreshRunnable = new Runnable() {
             @Override
             public void run() {
+                if (salaFinalizadaPorTiempo) return;
                 obtenerMensajes();
                 verificarTiempoSesion();
                 verificarUbicacion();
@@ -243,6 +254,20 @@ public class MainActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null) {
                             try {
                                 JSONObject json = new JSONObject(response.body().string());
+                                aplicarInfoSalaDesdeJson(json);
+
+                                long minutos = json.optLong("minutos_restantes", -1);
+                                String estadoSala = json.optString("estado_sala", json.optString("estado", ""));
+                                boolean chatEliminado = json.optBoolean("chat_eliminado", false);
+                                boolean estadoFinalizado = "finalizada".equalsIgnoreCase(estadoSala)
+                                        || "expirada".equalsIgnoreCase(estadoSala)
+                                        || "cerrada".equalsIgnoreCase(estadoSala);
+
+                                if (chatEliminado || estadoFinalizado || minutos == 0) {
+                                    finalizarSalaPorTiempo("El chat general ha terminado tras 2 horas.");
+                                    return;
+                                }
+
                                 if (json.has("expirado") && json.getBoolean("expirado")) {
                                     String motivo = json.optString("motivo", "");
                                     String msg = motivo.isEmpty()
@@ -251,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
                                     expulsarUsuario(msg);
                                     return;
                                 }
-                                long minutos = json.optLong("minutos_restantes", -1);
                                 actualizarTimerSesion(minutos);
                             } catch (Exception e) { e.printStackTrace(); }
                         }
@@ -265,6 +289,10 @@ public class MainActivity extends AppCompatActivity {
     private void actualizarTimerSesion(long minutos) {
         if (minutos < 0) {
             textTiempoRestante.setVisibility(View.GONE);
+            return;
+        }
+        if (minutos == 0) {
+            finalizarSalaPorTiempo("El chat general ha terminado tras 2 horas.");
             return;
         }
         textTiempoRestante.setVisibility(View.VISIBLE);
@@ -316,6 +344,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void expulsarUsuario(String motivo) {
+        if (salaFinalizadaPorTiempo) return;
         handler.removeCallbacks(refreshRunnable);
         Toast.makeText(this, motivo.toUpperCase(), Toast.LENGTH_LONG).show();
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
@@ -327,6 +356,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void obtenerMensajes() {
+        if (salaFinalizadaPorTiempo) return;
         RetrofitClient.getChatApiServices()
                 .getMensajesGrupal(currentSalaId)
                 .enqueue(new Callback<List<Mensaje>>() {
@@ -505,6 +535,121 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
+    }
+
+    private void cargarInfoCabeceraSala() {
+        RetrofitClient.getChatApiServices()
+                .getSalaInfoRaw(currentSalaId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (!response.isSuccessful() || response.body() == null) return;
+                        try {
+                            JSONObject json = new JSONObject(response.body().string());
+                            aplicarInfoSalaDesdeJson(json);
+                        } catch (Exception ignored) {
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
+    }
+
+    private void aplicarInfoSalaDesdeJson(JSONObject json) {
+        if (json == null) return;
+
+        String nombre = extraerPrimerString(json,
+                "nombre_sala", "nombre", "sala_nombre", "id_sala", "sala");
+        if (!nombre.isEmpty()) {
+            salaNombreMostrado = nombre;
+        }
+
+        int usuarios = extraerPrimerEntero(json,
+                "activos_en_sala",
+                "usuarios_activos",
+                "usuarios_activos_sala",
+                "activos",
+                "usuarios_en_sala",
+                "personas_en_sala",
+                "total_usuarios",
+                "miembros",
+                "integrantes");
+        if (usuarios >= 0) {
+            usuariosEnSala = usuarios;
+        }
+
+        actualizarCabeceraSala();
+    }
+
+    private void actualizarCabeceraSala() {
+        if (textSalaTitulo != null) {
+            String titulo = (salaNombreMostrado == null || salaNombreMostrado.trim().isEmpty())
+                    ? currentSalaId
+                    : salaNombreMostrado;
+            textSalaTitulo.setText(titulo);
+        }
+
+        if (textSalaUsuarios != null) {
+            textSalaUsuarios.setText("(" + Math.max(usuariosEnSala, 0) + ") activos en esta sala");
+            textSalaUsuarios.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private int extraerPrimerEntero(JSONObject json, String... keys) {
+        for (String key : keys) {
+            if (!json.has(key)) continue;
+            try {
+                return json.getInt(key);
+            } catch (Exception ignored) {
+            }
+            try {
+                String value = json.getString(key);
+                if (value != null && !value.trim().isEmpty()) {
+                    return Integer.parseInt(value.trim());
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return -1;
+    }
+
+    private String extraerPrimerString(JSONObject json, String... keys) {
+        for (String key : keys) {
+            String value = json.optString(key, "").trim();
+            if (!value.isEmpty() && !"null".equalsIgnoreCase(value)) {
+                return value;
+            }
+        }
+        return "";
+    }
+
+    private void finalizarSalaPorTiempo(String mensaje) {
+        if (salaFinalizadaPorTiempo) return;
+        salaFinalizadaPorTiempo = true;
+
+        if (handler != null && refreshRunnable != null) {
+            handler.removeCallbacks(refreshRunnable);
+        }
+
+        listaMensajes.clear();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+        textTiempoRestante.setVisibility(View.GONE);
+        if (textSalaUsuarios != null) {
+            textSalaUsuarios.setText("(0) activos en esta sala");
+            textSalaUsuarios.setVisibility(View.VISIBLE);
+        }
+
+        RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                    @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
+
+        Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
+        finish();
     }
 
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {

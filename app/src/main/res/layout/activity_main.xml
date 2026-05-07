@@ -14,10 +14,10 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="68dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="#1565C0"
+            android:background="#EFEFEF"
             android:paddingStart="4dp"
             android:paddingEnd="16dp">
 
@@ -28,17 +28,44 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Menú"
                 android:src="@android:drawable/ic_menu_sort_by_size"
-                app:tint="@android:color/white" />
+                app:tint="#333333" />
 
-            <TextView
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/imgSalaHeader"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="10dp"
+                android:src="@mipmap/ic_launcher_round"
+                app:civ_border_width="1dp"
+                app:civ_border_color="#CFCFCF" />
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="CHAT GENERAL"
-                android:textColor="@android:color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:paddingStart="8dp"/>
+                android:orientation="vertical"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/textSalaTitulo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="GS DAM"
+                    android:textColor="#1F1F1F"
+                    android:textSize="19sp"
+                    android:textStyle="normal" />
+
+                <TextView
+                    android:id="@+id/textSalaUsuarios"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#666666"
+                    android:textSize="13sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:text="(0) activos en esta sala" />
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
