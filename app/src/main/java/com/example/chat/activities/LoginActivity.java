@@ -81,7 +81,6 @@ public class LoginActivity extends BaseActivity {
         inicializarVistas();
         configurarListeners();
         configurarValidacionDinamica();
-        configurarEstadoGoogle();
     }
 
     /**
@@ -148,30 +147,7 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    /**
-     * Habilita o deshabilita el acceso por Google según la configuración del cliente.
-     */
-    private void configurarEstadoGoogle() {
-        String webClientId = getString(R.string.google_web_client_id);
-        boolean googleDisponible = !TextUtils.isEmpty(webClientId);
 
-        if (btnGoogleLogin != null) {
-            btnGoogleLogin.setEnabled(googleDisponible);
-            if (!googleDisponible) {
-                btnGoogleLogin.setAlpha(0.6f);
-                btnGoogleLogin.setText(getString(R.string.google_not_configured));
-            }
-        boolean googleDisponible = !TextUtils.isEmpty(webClientId); // Si está vacío, es false
-        btnGoogleLogin.setEnabled(googleDisponible);
-        if (!googleDisponible) {
-            btnGoogleLogin.setAlpha(0.6f);
-            btnGoogleLogin.setText(getString(R.string.google_not_configured)); // Aquí se pone el "Próximamente"
-        }
-    }
-
-    /**
-     * Ejecuta el flujo de autenticación estándar por correo y contraseña.
-     */
     private void login() {
         String email = editEmail.getText().toString().trim();
         String password = editPassword.getText().toString().trim();

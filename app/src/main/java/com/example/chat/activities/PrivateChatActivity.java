@@ -160,8 +160,9 @@ public class PrivateChatActivity extends BaseActivity {
                     public void onResponse(Call<Boolean> call, Response<Boolean> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             boolean estaEscribiendo = response.body();
-                            // Muestra u oculta el layoutTyping que pusimos en el XML
-                            layoutTyping.setVisibility(estaEscribiendo ? View.VISIBLE : View.GONE);
+
+                            // CAMBIO AQUÍ: Llamamos a nuestra nueva función con animación
+                            gestionarAnimacionEscribiendo(estaEscribiendo);
                         }
                     }
                     @Override
@@ -380,5 +381,34 @@ public class PrivateChatActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(refreshRunnable);
+    }
+    private void gestionarAnimacionEscribiendo(boolean mostrar) {
+        if (layoutTyping == null) return;
+
+        if (!mostrar) {
+            layoutTyping.setVisibility(View.GONE);
+            return;
+        }
+
+        layoutTyping.setVisibility(View.VISIBLE);
+
+        // Buscamos los puntos dentro del layout que ya tenemos
+        View[] dots = { findViewById(R.id.dot1), findViewById(R.id.dot2), findViewById(R.id.dot3) };
+
+        for (int i = 0; i < dots.length; i++) {
+            if (dots[i] == null) continue;
+
+            // Limpiamos animaciones viejas
+            dots[i].clearAnimation();
+
+            // Animación: subir y bajar 15 píxeles
+            android.view.animation.TranslateAnimation anim = new android.view.animation.TranslateAnimation(0, 0, 0, -15);
+            anim.setDuration(400);
+            anim.setStartOffset(i * 150); // El truco para que vayan en cascada
+            anim.setRepeatMode(android.view.animation.Animation.REVERSE);
+            anim.setRepeatCount(android.view.animation.Animation.INFINITE);
+
+            dots[i].startAnimation(anim);
+        }
     }
 }
