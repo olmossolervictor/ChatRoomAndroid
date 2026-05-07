@@ -102,11 +102,11 @@ public class LoginActivity extends BaseActivity {
 
     private void configurarEstadoGoogle() {
         String webClientId = getString(R.string.google_web_client_id);
-        boolean googleDisponible = !TextUtils.isEmpty(webClientId);
+        boolean googleDisponible = !TextUtils.isEmpty(webClientId); // Si está vacío, es false
         btnGoogleLogin.setEnabled(googleDisponible);
         if (!googleDisponible) {
             btnGoogleLogin.setAlpha(0.6f);
-            btnGoogleLogin.setText(getString(R.string.google_not_configured));
+            btnGoogleLogin.setText(getString(R.string.google_not_configured)); // Aquí se pone el "Próximamente"
         }
     }
 
