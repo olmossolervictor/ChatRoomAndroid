@@ -1,50 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_main">#090B16</color>
-    <color name="bg_top_glow">#1A1D3A</color>
-    <color name="bg_bottom_glow">#180A24</color>
+    <!-- ☀️ PLAY STORE READY PALETTE (Material 3) -->
+    <color name="primary">#7C4DFF</color>          <!-- Deep Purple -->
+    <color name="primary_variant">#651FFF</color>
+    <color name="secondary">#00E5FF</color>        <!-- Bright Cyan (Accent) -->
+    <color name="accent_blue">#2979FF</color>
 
-    <color name="card_bg">#14182E</color>
-    <color name="card_stroke">#2B315C</color>
+    <!-- ALERTAS (Diseño suave y profesional) -->
+    <color name="error_main">#FF5252</color>       <!-- Rojo Material -->
+    <color name="error_bg">#FFEBEE</color>         <!-- Rojo muy suave para fondo -->
+    <color name="warning_main">#FFAB00</color>     <!-- Ámbar -->
+    <color name="warning_bg">#FFF8E1</color>
+    <color name="success_main">#00C853</color>     <!-- Verde esmeralda -->
+    <color name="success_bg">#E8F5E9</color>
+    <color name="info_main">#00B0FF</color>        <!-- Azul cielo -->
+    <color name="info_bg">#E1F5FE</color>
 
-    <color name="primary_start">#7B61FF</color>
-    <color name="primary_end">#FF4FBF</color>
-    <color name="accent_blue">#4CC9F0</color>
+    <color name="bg_main">#FFFFFF</color>          <!-- Blanco Puro -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="bg_secondary">#F8FAFC</color>     <!-- Gris slate muy claro -->
+    <color name="surface_card">#FFFFFF</color>
+    <color name="surface_input">#F1F5F9</color>
+    <color name="surface_highlight">#EEF2FF</color>
 
-    <color name="text_main">#FFFFFF</color>
-    <color name="text_secondary">#AEB3D1</color>
-    <color name="hint_soft">#8C93B8</color>
+    <color name="text_high">#0F172A</color>        <!-- Slate 900 (Contraste máximo) -->
+    <color name="text_medium">#475569</color>      <!-- Slate 600 -->
+    <color name="text_low">#94A3B8</color>         <!-- Slate 400 -->
 
-    <color name="input_bg">#1C2140</color>
-    <color name="input_border">#343B70</color>
+    <color name="border_subtle">#E2E8F0</color>    <!-- Slate 200 -->
+    <color name="border_active">#CBD5E1</color>    <!-- Slate 300 -->
+    <color name="border_focus">#6366F1</color>
 
-    <color name="error_soft">#FF7B9C</color>
+    <color name="error">#EF4444</color>
+    <color name="error_soft">#FEE2E2</color>
+    <color name="success">#10B981</color>
 
-    <color name="primary">#FF4FBF</color>
-    <color name="text_primary">#FFFFFF</color>
-    <color name="login_input_fill">#1C2140</color>
-    <color name="login_input_stroke">#343B70</color>
-    <color name="accent_neon">#9F7BFF</color>
-    <color name="register_error">#FF7B9C</color>
-    <!-- 🌙 FONDOS -->
-      <!-- fondo principal -->
-    <color name="bg_secondary">#0F132C</color>      <!-- variación fondo -->
+    <color name="gradient_start">#6366F1</color>
+    <color name="gradient_end">#EC4899</color>
 
-    <!-- 💎 CARD -->
-         <!-- card principal -->
-    <color name="card_bg_soft">#232A55</color>      <!-- card secundaria -->
-
-
-    <color name="input_focus">#7B61FF</color>
-
-    <!-- 🔥 ACENTOS (LO IMPORTANTE) -->
-    <color name="accent_primary">#7B61FF</color>    <!-- morado -->
-
-
-
-    <color name="text_hint">#7E88C7</color>
-
-    <!-- OTROS -->
-    <color name="error">#FF4C4C</color>
-
+    <!-- ALIAS DE COMPATIBILIDAD -->
+    <color name="card_bg">@color/surface_card</color>
+    <color name="card_bg_soft">@color/surface_highlight</color>
+    <color name="card_stroke">@color/border_subtle</color>
+    <color name="text_main">@color/text_high</color>
+    <color name="text_secondary">@color/text_medium</color>
+    <color name="text_hint">@color/text_low</color>
+    <color name="hint_soft">@color/text_low</color>
+    <color name="input_bg">@color/surface_input</color>
+    <color name="input_border">@color/border_active</color>
+    <color name="input_focus">@color/border_focus</color>
+    <color name="primary_start">@color/gradient_start</color>
+    <color name="primary_end">@color/gradient_end</color>
+    <color name="accent_primary">@color/primary</color>
+    <color name="accent_neon">@color/primary_variant</color>
 </resources>

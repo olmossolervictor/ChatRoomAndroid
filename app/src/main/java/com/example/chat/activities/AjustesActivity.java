@@ -18,13 +18,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.chat.R;
+import com.example.chat.utils.AlertHelper;
+import com.example.chat.utils.AlertHelper.AlertType;
 
 public class AjustesActivity extends BaseActivity {
 
     static final String PREFS = "AjustesPrefs";
 
-    private Switch switchGps, switchModoOscuro, switchMantenerPantalla, switchNotificaciones, switchCamara;
-    private RadioGroup radioTamanoFuente;
+    private Switch switchGps, switchMantenerPantalla, switchNotificaciones, switchCamara;
+    private RadioGroup radioTamanoFuente, radioTema;
     private SharedPreferences prefs;
 
     @Override
@@ -36,8 +38,8 @@ public class AjustesActivity extends BaseActivity {
 
         ImageButton btnBackAjustes = findViewById(R.id.btnBackAjustes);
         switchGps = findViewById(R.id.switchGps);
-        switchCamara = findViewById(R.id.switchCamara); // NUEVO
-        switchModoOscuro = findViewById(R.id.switchModoOscuro);
+        switchCamara = findViewById(R.id.switchCamara);
+        radioTema = findViewById(R.id.radioTema);
         switchMantenerPantalla = findViewById(R.id.switchMantenerPantalla);
         switchNotificaciones = findViewById(R.id.switchNotificaciones);
         radioTamanoFuente = findViewById(R.id.radioTamanoFuente);
@@ -45,7 +47,11 @@ public class AjustesActivity extends BaseActivity {
         btnBackAjustes.setOnClickListener(v -> finish());
 
         // --- Cargar valores guardados (Diseño) ---
-        switchModoOscuro.setChecked(prefs.getBoolean("modo_oscuro", false));
+        int modoNoche = prefs.getInt("modo_noche", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        if (modoNoche == AppCompatDelegate.MODE_NIGHT_YES) radioTema.check(R.id.radioTemaOscuro);
+        else if (modoNoche == AppCompatDelegate.MODE_NIGHT_NO) radioTema.check(R.id.radioTemaClaro);
+        else radioTema.check(R.id.radioTemaSistema);
+
         switchMantenerPantalla.setChecked(prefs.getBoolean("mantener_pantalla", false));
         switchNotificaciones.setChecked(prefs.getBoolean("notificaciones", true));
 
@@ -55,10 +61,14 @@ public class AjustesActivity extends BaseActivity {
         else radioTamanoFuente.check(R.id.radioFuenteNormal);
 
         // --- Listeners de Diseño ---
-        switchModoOscuro.setOnCheckedChangeListener((b, isChecked) -> {
-            prefs.edit().putBoolean("modo_oscuro", isChecked).apply();
-            AppCompatDelegate.setDefaultNightMode(isChecked
-                    ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+        radioTema.setOnCheckedChangeListener((group, checkedId) -> {
+            int mode;
+            if (checkedId == R.id.radioTemaOscuro) mode = AppCompatDelegate.MODE_NIGHT_YES;
+            else if (checkedId == R.id.radioTemaClaro) mode = AppCompatDelegate.MODE_NIGHT_NO;
+            else mode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+
+            prefs.edit().putInt("modo_noche", mode).apply();
+            AppCompatDelegate.setDefaultNightMode(mode);
         });
 
         switchMantenerPantalla.setOnCheckedChangeListener((b, isChecked) ->
@@ -105,7 +115,7 @@ public class AjustesActivity extends BaseActivity {
             ActivityCompat.requestPermissions(this, new String[]{permiso}, 100);
         } else {
             // Si lo desactiva, le mandamos a la pantalla de la app en Android para que lo quite de verdad
-            Toast.makeText(this, "Desactívalo manualmente desde los ajustes de la aplicación", Toast.LENGTH_LONG).show();
+            AlertHelper.showActionAlert(switchGps, "Para mayor seguridad, desactívalo desde los ajustes del sistema", AlertType.INFO);
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             intent.setData(Uri.parse("package:" + getPackageName()));
             startActivity(intent);

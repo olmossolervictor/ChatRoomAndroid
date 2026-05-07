@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient
-        android:startColor="@color/primary_start"
-        android:endColor="@color/primary_end"
-        android:angle="0" />
-    <corners android:radius="30dp" />
-</shape>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#40FFFFFF">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="@color/primary"
+                android:endColor="@color/secondary"
+                android:angle="0" />
+            <corners android:radius="24dp" />
+            <padding android:bottom="14dp" android:top="14dp" />
+        </shape>
+    </item>
+</ripple>

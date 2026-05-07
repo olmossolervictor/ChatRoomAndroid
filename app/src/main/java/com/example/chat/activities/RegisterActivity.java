@@ -22,6 +22,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import java.util.Locale;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +38,13 @@ import com.google.android.material.snackbar.Snackbar;
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
 import com.example.chat.network.RetrofitClient;
+import com.example.chat.utils.AlertHelper;
+import com.example.chat.utils.AlertHelper.AlertType;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.DateValidatorPointBackward;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import java.util.TimeZone;
 
 import org.json.JSONObject;
 
@@ -51,23 +59,27 @@ import retrofit2.Response;
 
 public class RegisterActivity extends BaseActivity {
 
+    // Componentes de la interfaz de usuario
     private EditText editNombre, editApellidos, editFechaNac, editEmail, editTelefono, editPassword, editNombreUsuario;
     private TextView textEmailError, textNombreUsuarioError;
     private ImageView imgUser;
-    private Button btnSelectPhoto, btnRegister;
+    private Button btnRegister;
+    private View btnSelectPhoto;
     private TextView textBackToLogin, textTitle;
     private LinearLayout layoutSugerencias, layoutBotonesSugerencias;
 
-    // AÑADIMOS EL CHECKBOX Y SU CONTENEDOR
+    // Gestión de términos y condiciones
     private CheckBox checkTerminos;
     private LinearLayout layoutTerminos;
     private TextView textVerTerminos;
 
-    // Constantes para permisos e intenciones
+    // Identificadores de solicitud para resultados de actividad y permisos
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final int CAMERA_REQUEST = 2;
     private static final int PERMISSION_GALLERY_CODE = 100;
     private static final int PERMISSION_CAMERA_CODE = 101;
+    
+    // Variables de estado de la actividad
     private String encodedImage = "";
     private boolean isEditMode = false;
     private boolean isGoogleProfileSetup = false;
@@ -75,6 +87,7 @@ public class RegisterActivity extends BaseActivity {
     private String fechaSeleccionada = "";
     private String emailOriginal = "";
 
+    // Control de validación asíncrona y temporizadores
     private final Handler debounceHandler = new Handler();
     private Runnable emailCheckRunnable;
     private boolean emailYaExiste = false;
@@ -84,6 +97,7 @@ public class RegisterActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        // Inicialización de componentes y configuración de la interfaz
         textTitle = findViewById(R.id.textTitle);
         editNombre = findViewById(R.id.editRegNombre);
         editApellidos = findViewById(R.id.editRegApellidos);
@@ -97,23 +111,24 @@ public class RegisterActivity extends BaseActivity {
         btnRegister = findViewById(R.id.btnRegister);
         textBackToLogin = findViewById(R.id.textBackToLogin);
 
-
         checkTerminos = findViewById(R.id.checkTerminos);
         layoutTerminos = findViewById(R.id.layoutTerminos);
         textVerTerminos = findViewById(R.id.textVerTerminos);
 
-        checkTerminos.setClickable(false);
+        // Configuración de listeners y comportamiento inicial
+        if (checkTerminos != null) {
+            checkTerminos.setClickable(false);
+        }
+        
         if (textVerTerminos != null) {
             textVerTerminos.setOnClickListener(v -> mostrarAlertaTerminos());
         }
 
-        // Vinculamos nombre de usuario y sus elementos
         editNombreUsuario = findViewById(R.id.editRegNombreUsuario);
         textNombreUsuarioError = findViewById(R.id.textNombreUsuarioError);
         layoutSugerencias = findViewById(R.id.layoutSugerencias);
         layoutBotonesSugerencias = findViewById(R.id.layoutBotonesSugerencias);
 
-        // Agregar listener para validar nombre de usuario
         if (editNombreUsuario != null) {
             editNombreUsuario.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -121,8 +136,8 @@ public class RegisterActivity extends BaseActivity {
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    textNombreUsuarioError.setVisibility(View.GONE);
-                    layoutSugerencias.setVisibility(View.GONE);
+                    if (textNombreUsuarioError != null) textNombreUsuarioError.setVisibility(View.GONE);
+                    if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
                 }
 
                 @Override
@@ -135,9 +150,11 @@ public class RegisterActivity extends BaseActivity {
             });
         }
 
-        editFechaNac.setFocusable(false);
-        editFechaNac.setClickable(true);
-        editFechaNac.setOnClickListener(v -> mostrarCalendario());
+        if (editFechaNac != null) {
+            editFechaNac.setFocusable(false);
+            editFechaNac.setClickable(true);
+            editFechaNac.setOnClickListener(v -> mostrarCalendario());
+        }
 
         isEditMode = getIntent().getBooleanExtra("MODO_EDICION", false);
         isGoogleProfileSetup = getIntent().getBooleanExtra("MODO_GOOGLE_COMPLETAR_PERFIL", false);
@@ -150,12 +167,49 @@ public class RegisterActivity extends BaseActivity {
 
         configurarTextWatcherEmail();
 
-        btnSelectPhoto.setOnClickListener(v -> mostrarOpcionesFoto());
+        if (btnSelectPhoto != null) {
+            btnSelectPhoto.setOnClickListener(v -> mostrarOpcionesFoto());
+        }
 
-        btnRegister.setOnClickListener(v -> { if (isEditMode) actualizar(); else registrar(); });
-        textBackToLogin.setOnClickListener(v -> finish());
+        if (btnRegister != null) {
+            btnRegister.setOnClickListener(v -> { if (isEditMode) actualizar(); else registrar(); });
+        }
+        
+        if (textBackToLogin != null) {
+            textBackToLogin.setOnClickListener(v -> finish());
+        }
+
+        configurarValidacionDinamica();
     }
 
+    /**
+     * Establece listeners para limpiar los estados de error visual de forma dinámica.
+     */
+    private void configurarValidacionDinamica() {
+        TextWatcher watcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (editNombre != null && editNombre.getError() != null) editNombre.setError(null);
+                if (editEmail != null && editEmail.getError() != null) editEmail.setError(null);
+                if (editPassword != null && editPassword.getError() != null) editPassword.setError(null);
+            }
+        };
+
+        if (editNombre != null) editNombre.addTextChangedListener(watcher);
+        if (editEmail != null) editEmail.addTextChangedListener(watcher);
+        if (editPassword != null) editPassword.addTextChangedListener(watcher);
+        
+        if (btnRegister != null) {
+            btnRegister.setEnabled(true);
+            btnRegister.setAlpha(1.0f);
+        }
+    }
+
+    /**
+     * Muestra el diálogo de lectura de términos y condiciones con validación de scroll.
+     */
     private void mostrarAlertaTerminos() {
         ScrollView scrollView = new ScrollView(this);
         TextView textView = new TextView(this);
@@ -169,7 +223,6 @@ public class RegisterActivity extends BaseActivity {
 
         textView.setPadding(50, 40, 50, 40);
         textView.setTextSize(14);
-        textView.setTextColor(ContextCompat.getColor(this, android.R.color.black));
         scrollView.addView(textView);
 
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -211,28 +264,31 @@ public class RegisterActivity extends BaseActivity {
 
     // 📷 LÓGICA DE FOTO Y PERMISOS
     private void mostrarOpcionesFoto() {
-        // ¿Mostramos la opción de eliminar? Solo si está editando el perfil o si ya había elegido una foto
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.layout_photo_options, null);
+
+        // Controlamos si mostramos la opción de eliminar
         boolean mostrarEliminar = isEditMode || !encodedImage.isEmpty();
+        View btnDelete = view.findViewById(R.id.btnDeletePhoto);
+        btnDelete.setVisibility(mostrarEliminar ? View.VISIBLE : View.GONE);
 
-        String[] opciones;
-        if (mostrarEliminar) {
-            opciones = new String[]{"Hacer foto con la Cámara", "Elegir de la Galería", "Eliminar foto"};
-        } else {
-            opciones = new String[]{"Hacer foto con la Cámara", "Elegir de la Galería"};
-        }
+        view.findViewById(R.id.btnCamera).setOnClickListener(v -> {
+            dialog.dismiss();
+            checkPermissionAndOpenCamera();
+        });
 
-        new AlertDialog.Builder(this)
-                .setTitle("Elige una foto de perfil")
-                .setItems(opciones, (dialog, which) -> {
-                    if (which == 0) {
-                        checkPermissionAndOpenCamera();
-                    } else if (which == 1) {
-                        checkPermissionAndOpenGallery();
-                    } else if (which == 2 && mostrarEliminar) {
-                        eliminarFoto();
-                    }
-                })
-                .show();
+        view.findViewById(R.id.btnGallery).setOnClickListener(v -> {
+            dialog.dismiss();
+            checkPermissionAndOpenGallery();
+        });
+
+        btnDelete.setOnClickListener(v -> {
+            dialog.dismiss();
+            eliminarFoto();
+        });
+
+        dialog.setContentView(view);
+        dialog.show();
     }
 
     private void checkPermissionAndOpenCamera() {
@@ -330,22 +386,44 @@ public class RegisterActivity extends BaseActivity {
     // =========================================================
 
     private void mostrarCalendario() {
-        Calendar c = Calendar.getInstance();
-        // Máximo: hace 18 años
-        Calendar maxCal = Calendar.getInstance();
-        maxCal.add(Calendar.YEAR, -18);
+        // Configuramos la restricción: máximo hoy hace 18 años
+        Calendar constraintsCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        constraintsCal.add(Calendar.YEAR, -18);
+        long maxDate = constraintsCal.getTimeInMillis();
 
-        DatePickerDialog dialog = new DatePickerDialog(this, (view, year, month, day) -> {
-            String mesF = (month + 1) < 10 ? "0" + (month + 1) : String.valueOf(month + 1);
-            String diaF = day < 10 ? "0" + day : String.valueOf(day);
+        CalendarConstraints constraints = new CalendarConstraints.Builder()
+                .setValidator(DateValidatorPointBackward.before(maxDate))
+                .setEnd(maxDate)
+                .build();
+
+        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Selecciona tu fecha de nacimiento")
+                .setSelection(maxDate)
+                .setCalendarConstraints(constraints)
+                .setTheme(R.style.ThemeOverlay_App_MaterialCalendar)
+                .build();
+
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            calendar.setTimeInMillis(selection);
+            
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+            String diaF = String.format(Locale.getDefault(), "%02d", day);
+            String mesF = String.format(Locale.getDefault(), "%02d", month + 1);
+            
             fechaSeleccionada = year + "-" + mesF + "-" + diaF;
-            editFechaNac.setText(fechaSeleccionada);
-        }, maxCal.get(Calendar.YEAR), maxCal.get(Calendar.MONTH), maxCal.get(Calendar.DAY_OF_MONTH));
+            String fechaMostrar = diaF + "/" + mesF + "/" + year;
+            editFechaNac.setText(fechaMostrar);
+            editFechaNac.setError(null);
+        });
 
-        dialog.getDatePicker().setMaxDate(maxCal.getTimeInMillis());
-        dialog.show();
+        datePicker.show(getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
     }
 
+    // Método que ya no usaremos pero mantenemos la estructura limpia
     private void configurarTextWatcherEmail() {
         editEmail.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -448,15 +526,28 @@ public class RegisterActivity extends BaseActivity {
     private boolean validarCampos(boolean passwordObligatoria) {
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
-        // 1. Recogemos el texto del nuevo campo (Añadido)
         String nombreUsuario = editNombreUsuario != null ? editNombreUsuario.getText().toString().trim() : "";
         String email = editEmail.getText().toString().trim();
         String telefono = editTelefono.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
+        // VALIDACIÓN GENERAL: Si falta algún campo obligatorio, mostramos el aviso inferior
+        boolean faltanCampos = nombre.isEmpty() || apellidos.isEmpty() || nombreUsuario.isEmpty() ||
+                             email.isEmpty() || telefono.isEmpty() || (passwordObligatoria && password.isEmpty()) ||
+                             fechaSeleccionada.isEmpty();
+
+        if (faltanCampos) {
+            AlertHelper.showActionAlert(btnRegister, "Por favor, rellene todos los campos para continuar", AlertType.WARNING);
+        }
+
+        // 1. TÉRMINOS LEGALES
+        if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
+            AlertHelper.showActionAlert(checkTerminos, "Es necesario aceptar los términos para continuar", AlertType.WARNING);
+            return false;
+        }
 
 
-        // VALIDACIÓN: NOMBRE DE USUARIO (Nuevo)
+        // 2. NOMBRE DE USUARIO
         if (nombreUsuario.isEmpty()) {
             if (editNombreUsuario != null) {
                 editNombreUsuario.setError("El nombre de usuario es obligatorio");
@@ -466,48 +557,39 @@ public class RegisterActivity extends BaseActivity {
         }
         if (nombreUsuario.length() < 4) {
             if (editNombreUsuario != null) {
-                editNombreUsuario.setError("Mínimo 4 caracteres");
+                editNombreUsuario.setError("Usa al menos 4 caracteres para tu usuario");
                 editNombreUsuario.requestFocus();
             }
             return false;
         }
 
-        // VALIDACIÓN: NOMBRE Y APELLIDOS
+        // 3. NOMBRE Y APELLIDOS
         if (nombre.isEmpty()) {
-            editNombre.setError("El nombre es obligatorio");
+            editNombre.setError("Tu nombre es obligatorio");
             editNombre.requestFocus();
             return false;
         }
         if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙñÑüÜ\\s]+")) {
-            editNombre.setError("Solo se permiten letras");
-            editNombre.requestFocus();
-            return false;
-        }
-        if (nombre.length() > 20) {
-            editNombre.setError("Máximo 20 caracteres");
+            editNombre.setError("Por favor, usa solo letras");
             editNombre.requestFocus();
             return false;
         }
 
         if (apellidos.isEmpty()) {
-            editApellidos.setError("Los apellidos son obligatorios");
-            editApellidos.requestFocus();
-            return false;
-        }
-        if (!apellidos.matches("[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙñÑüÜ\\s]+")) {
-            editApellidos.setError("Solo se permiten letras");
+            editApellidos.setError("Tus apellidos son obligatorios");
             editApellidos.requestFocus();
             return false;
         }
 
-        // VALIDACIÓN: FECHA DE NACIMIENTO
+        // 4. FECHA DE NACIMIENTO
         if (fechaSeleccionada.isEmpty()) {
             editFechaNac.setError("Selecciona tu fecha de nacimiento");
+            AlertHelper.showActionAlert(editFechaNac, "Indica tu fecha de nacimiento", AlertType.INFO);
             return false;
         }
 
-        // VALIDACIÓN: EMAIL
-        if (email.isEmpty() || !email.contains("@")) {
+        // 5. EMAIL
+        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             editEmail.setError("Introduce un correo electrónico válido");
             editEmail.requestFocus();
             return false;
@@ -518,38 +600,34 @@ public class RegisterActivity extends BaseActivity {
             return false;
         }
 
-        // VALIDACIÓN: TELÉFONO (Actualizado)
-        // El Regex "^[0-9]{9}$" asegura que sean EXACTAMENTE 9 números, ni más ni menos.
+        // 6. TELÉFONO
         if (!telefono.matches("^[0-9]{9}$")) {
-            editTelefono.setError("El teléfono debe tener exactamente 9 números");
+            editTelefono.setError("El teléfono debe tener 9 dígitos numéricos");
             editTelefono.requestFocus();
             return false;
         }
 
-        // VALIDACIÓN: CONTRASEÑA FUERTE (Actualizado)
+        // 7. CONTRASEÑA
         if (passwordObligatoria || (!passwordObligatoria && !password.isEmpty())) {
             if (password.isEmpty()) {
-                editPassword.setError("La contraseña es obligatoria");
+                editPassword.setError("Crea una contraseña para proteger tu cuenta");
                 editPassword.requestFocus();
                 return false;
             }
-
-            // Regex:
-            // (?=.*[A-Z])   -> Al menos una mayúscula
-            // (?=.*[!@#\\$%\\^&\\*\\_\\-\\+\\=]) -> Al menos un símbolo especial
-            // .{8,}         -> Longitud mínima de 8
-            if (!password.matches("^(?=.*[A-Z])(?=.*[!@#\\$%\\^&\\*\\_\\-\\+\\=]).{8,}$")) {
-                editPassword.setError("Debe tener 8 caracteres, 1 mayúscula y 1 símbolo (!@#_*-...)");
+            if (password.length() < 6) {
+                editPassword.setError("Usa al menos 6 caracteres");
                 editPassword.requestFocus();
                 return false;
             }
         }
+
         // VALIDACIÓN DE LOS TÉRMINOS LEGALES (Solo si es un registro nuevo)
         if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
             Toast.makeText(this, "Debes aceptar los términos y condiciones legales", Toast.LENGTH_LONG).show();
             checkTerminos.requestFocus();
             return false;
         }
+
 
         return true;
     }

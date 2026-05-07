@@ -1,23 +1,165 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Base.Theme.Chat" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 🎨 COLORES PRINCIPALES -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/text_high</item>
+        <item name="colorPrimaryContainer">@color/surface_highlight</item>
+        <item name="colorOnPrimaryContainer">@color/primary</item>
 
-        <!-- Fondo general -->
-        <item name="android:windowBackground">#0D0D0D</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
 
-        <!-- Barra superior (STATUS BAR) -->
-        <item name="android:statusBarColor">#0D0D0D</item>
+        <!-- 🌓 FONDOS Y BARRAS -->
+        <item name="android:windowBackground">@drawable/bg_app</item>
+        <item name="android:statusBarColor">@color/bg_main</item>
+        <item name="android:navigationBarColor">@color/bg_secondary</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
 
-        <!-- Quitamos el morado feo -->
-        <item name="colorPrimary">#0D0D0D</item>
-        <item name="colorSecondary">#7C4DFF</item>
+        <!-- 🃏 SUPERFICIES -->
+        <item name="colorSurface">@color/bg_main</item>
+        <item name="colorOnSurface">@color/text_high</item>
+        <item name="colorSurfaceVariant">@color/bg_secondary</item>
+        <item name="colorOnSurfaceVariant">@color/text_medium</item>
 
-        <!-- Texto -->
-        <item name="android:textColorPrimary">#FFFFFF</item>
+        <!-- 🖋️ TEXTO -->
+        <item name="android:textColorPrimary">@color/text_high</item>
+        <item name="android:textColorSecondary">@color/text_medium</item>
 
+        <!-- ⚠️ ERRORES -->
+        <item name="colorError">@color/error</item>
+
+        <!-- 🔘 ESTILO DE COMPONENTES POR DEFECTO -->
+        <item name="materialCardViewStyle">@style/Widget.App.CardView</item>
+        <item name="textInputStyle">@style/Widget.App.TextInputLayout</item>
     </style>
 
-    <style name="Theme.Chat" parent="Base.Theme.Chat" />
+    <style name="Theme.Chat" parent="Base.Theme.Chat">
+        <item name="android:datePickerDialogTheme">@style/Theme.App.DatePicker</item>
+    </style>
+
+    <style name="Theme.App.DatePicker" parent="Theme.Material3.DayNight.Dialog">
+        <!-- Modo Calendario (Grid) Moderno -->
+        <item name="android:datePickerMode">calendar</item>
+
+        <!-- Colores Principales (Indigo/Morado) -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorAccent">@color/primary</item>
+
+        <!-- Cabecera del calendario -->
+        <item name="android:headerBackground">@color/primary</item>
+        <item name="android:headerMonthTextAppearance">@style/TextAppearance.App.CalendarHeader.Month</item>
+        <item name="android:headerYearTextAppearance">@style/TextAppearance.App.CalendarHeader.Year</item>
+
+        <!-- Cuerpo del calendario -->
+        <item name="android:calendarTextColor">@color/text_high</item>
+        <item name="android:dayOfWeekBackground">@color/bg_secondary</item>
+        <item name="android:dayOfWeekTextAppearance">@style/TextAppearance.App.CalendarDayOfWeek</item>
+
+        <!-- Selección de día -->
+        <item name="android:numbersSelectorColor">@color/primary</item>
+        <item name="android:numbersTextColor">@color/primary</item>
+
+        <!-- Diálogo general -->
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:textColorPrimary">@color/text_high</item>
+    </style>
+
+    <!-- Estilos de texto auxiliares para el calendario -->
+    <style name="TextAppearance.App.CalendarHeader.Month" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.CalendarHeader.Year" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">#CCFFFFFF</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="TextAppearance.App.CalendarDayOfWeek" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textColor">@color/text_medium</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Estilo personalizado para MaterialDatePicker (MODERNO MATERIAL 3) -->
+    <style name="ThemeOverlay.App.MaterialCalendar" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/text_high</item>
+        <item name="colorOnSurfaceVariant">@color/text_medium</item>
+
+        <!-- Botones integrados -->
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Button.TextButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Button.TextButton</item>
+
+        <item name="materialCalendarStyle">@style/Widget.App.MaterialCalendar</item>
+        <item name="materialCalendarHeaderSelection">@style/Widget.App.MaterialCalendar.HeaderSelection</item>
+        <item name="materialCalendarHeaderToggleButton">@style/Widget.App.MaterialCalendar.HeaderToggleButton</item>
+    </style>
+
+    <style name="Widget.App.MaterialCalendar" parent="Widget.Material3.MaterialCalendar">
+        <item name="android:windowBackground">@color/white</item>
+    </style>
+
+    <style name="Widget.App.MaterialCalendar.HeaderSelection" parent="Widget.Material3.MaterialCalendar.HeaderSelection">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.App.MaterialCalendar.HeaderToggleButton" parent="Widget.Material3.MaterialCalendar.HeaderToggleButton">
+        <item name="android:tint">@color/white</item>
+    </style>
+
+    <style name="Widget.App.Button.TextButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+    </style>
+
+    <!-- 💎 ESTILO PARA TARJETAS MODERNAS -->
+    <style name="Widget.App.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/card_bg</item>
+        <item name="cardCornerRadius">24dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/border_subtle</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- ⌨️ ESTILO PARA INPUTS MODERNOS -->
+    <style name="Widget.App.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/input_focus</item>
+        <item name="boxBackgroundColor">@color/input_bg</item>
+        <item name="boxCornerRadiusTopStart">20dp</item>
+        <item name="boxCornerRadiusTopEnd">20dp</item>
+        <item name="boxCornerRadiusBottomStart">20dp</item>
+        <item name="boxCornerRadiusBottomEnd">20dp</item>
+        <item name="hintTextColor">@color/primary</item>
+        <item name="hintTextAppearance">@style/TextAppearance.App.Hint</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+
+        <!-- Error styling -->
+        <item name="errorTextColor">@color/error_main</item>
+        <item name="errorIconTint">@color/error_main</item>
+        <item name="errorEnabled">true</item>
+        <item name="errorTextAppearance">@style/TextAppearance.App.Error</item>
+        <item name="boxStrokeErrorColor">@color/error_main</item>
+    </style>
+
+    <style name="TextAppearance.App.Error" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">@color/error_main</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="TextAppearance.App.Hint" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">@color/text_low</item>
+    </style>
 
     <style name="DigitFieldStyle" parent="">
         <item name="android:background">@drawable/digit_field_border</item>
