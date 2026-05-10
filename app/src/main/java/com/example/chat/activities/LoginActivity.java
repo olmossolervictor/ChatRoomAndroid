@@ -55,7 +55,7 @@ public class LoginActivity extends BaseActivity {
     private ChatApiServices api;
     private CredentialManager credentialManager;
     private Executor mainExecutor;
-    
+
     // Variables de estado temporal
     private String pendingVerificationEmail = "";
 
@@ -81,7 +81,6 @@ public class LoginActivity extends BaseActivity {
         inicializarVistas();
         configurarListeners();
         configurarValidacionDinamica();
-        configurarEstadoGoogle();
     }
 
     /**
@@ -104,12 +103,12 @@ public class LoginActivity extends BaseActivity {
         // Carga de datos previos si existen en el Intent
         String prefillEmail = getIntent().getStringExtra("PREFILL_EMAIL");
         boolean showVerificationHint = getIntent().getBooleanExtra("SHOW_VERIFICATION_HINT", false);
-        
+
         if (!TextUtils.isEmpty(prefillEmail)) {
             if (editEmail != null) editEmail.setText(prefillEmail);
             pendingVerificationEmail = prefillEmail;
         }
-        
+
         if (showVerificationHint) {
             AlertHelper.showActionAlert(btnLogin, getString(R.string.register_success_check_email), AlertType.SUCCESS);
         }
@@ -118,7 +117,7 @@ public class LoginActivity extends BaseActivity {
         if (btnGoogleLogin != null) btnGoogleLogin.setOnClickListener(v -> loginConGoogle());
         if (textResendVerification != null) textResendVerification.setOnClickListener(v -> reenviarVerificacion());
         if (btnVerificarCorreoLogin != null) btnVerificarCorreoLogin.setOnClickListener(v -> mostrarDialogoVerificarCorreo());
-        
+
         if (textGoToRegister != null) {
             textGoToRegister.setOnClickListener(v ->
                     startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
@@ -138,35 +137,17 @@ public class LoginActivity extends BaseActivity {
                 if (editPassword != null && editPassword.getError() != null) editPassword.setError(null);
             }
         };
-        
+
         if (editEmail != null) editEmail.addTextChangedListener(watcher);
         if (editPassword != null) editPassword.addTextChangedListener(watcher);
-        
+
         if (btnLogin != null) {
             btnLogin.setEnabled(true);
             btnLogin.setAlpha(1.0f);
         }
     }
 
-    /**
-     * Habilita o deshabilita el acceso por Google según la configuración del cliente.
-     */
-    private void configurarEstadoGoogle() {
-        String webClientId = getString(R.string.google_web_client_id);
-        boolean googleDisponible = !TextUtils.isEmpty(webClientId);
-        
-        if (btnGoogleLogin != null) {
-            btnGoogleLogin.setEnabled(googleDisponible);
-            if (!googleDisponible) {
-                btnGoogleLogin.setAlpha(0.6f);
-                btnGoogleLogin.setText(getString(R.string.google_not_configured));
-            }
-        }
-    }
 
-    /**
-     * Ejecuta el flujo de autenticación estándar por correo y contraseña.
-     */
     private void login() {
         String email = editEmail.getText().toString().trim();
         String password = editPassword.getText().toString().trim();

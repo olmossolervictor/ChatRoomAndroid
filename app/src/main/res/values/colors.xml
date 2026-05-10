@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <color name="card_bg">#1B1B2B</color>
+    <color name="input_bg">#232337</color>
+    <color name="input_focus">#00E5FF</color>
+    <color name="accent_neon">#00E5FF</color>
     <!-- 🌑 BRAND CORE: Modern Indigo & Cyan -->
     <color name="primary">#6366F1</color>
     <color name="primary_dark">#4338CA</color>
