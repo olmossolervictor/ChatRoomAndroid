@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.example.chat.R;
 import com.example.chat.models.Sala;
@@ -45,15 +46,16 @@ public class SalaAdapter extends ArrayAdapter<Sala> {
                     tiempoTexto = minutos + " min restantes";
                 }
                 textTiempoSala.setText(tiempoTexto);
-                int color;
+                
+                int colorRes;
                 if (minutos >= 60) {
-                    color = android.graphics.Color.parseColor("#388E3C");
+                    colorRes = R.color.success_main;
                 } else if (minutos >= 30) {
-                    color = android.graphics.Color.parseColor("#F57C00");
+                    colorRes = R.color.warning_main;
                 } else {
-                    color = android.graphics.Color.parseColor("#D32F2F");
+                    colorRes = R.color.error_main;
                 }
-                textTiempoSala.setTextColor(color);
+                textTiempoSala.setTextColor(ContextCompat.getColor(getContext(), colorRes));
                 textTiempoSala.setVisibility(View.VISIBLE);
             } else {
                 textTiempoSala.setVisibility(View.GONE);

@@ -5,16 +5,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_main"
     android:fitsSystemWindows="true">
 
-    <!-- ELEMENTO DECORATIVO SUPERIOR (GLOW) -->
+    <!-- Subtle Background Glow -->
     <View
-        android:layout_width="320dp"
-        android:layout_height="320dp"
-        android:layout_marginTop="-160dp"
-        android:layout_marginEnd="-160dp"
-        android:background="@drawable/bg_icon_chat"
-        android:alpha="0.2"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:layout_marginTop="-200dp"
+        android:layout_marginEnd="-150dp"
+        android:background="@drawable/bg_circle_icon"
+        android:backgroundTint="@color/accent_soft"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -33,21 +34,21 @@
             android:paddingBottom="48dp"
             android:gravity="center_horizontal">
 
-            <!-- LOGO MODERNO EN TARJETA -->
+            <!-- App Logo/Icon -->
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
                 android:layout_marginTop="80dp"
                 app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="30dp"
-                app:strokeWidth="2dp"
-                app:strokeColor="@color/border_subtle"
-                app:cardElevation="12dp">
+                app:cardCornerRadius="28dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_subtle">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="26dp"
+                    android:padding="24dp"
                     android:src="@android:drawable/ic_dialog_email"
                     app:tint="@color/primary" />
             </com.google.android.material.card.MaterialCardView>
@@ -58,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:fontFamily="@font/poppins_bold"
-                android:text="Chatroom"
+                android:text="ChatHub"
                 android:textColor="@color/text_high"
                 android:textSize="36sp"
                 android:letterSpacing="-0.04" />
@@ -71,53 +72,54 @@
                 android:text="@string/login_subtitle"
                 android:textColor="@color/text_medium"
                 android:textSize="15sp"
-                android:letterSpacing="0.02" />
+                android:letterSpacing="0.01" />
 
-            <!-- CONTENEDOR DE FORMULARIO (Tarjeta sutil) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="48dp"
                 android:orientation="vertical">
 
-                <!-- EMAIL -->
+                <!-- Email Input -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilEmail"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/login_email_hint"
-                    app:startIconDrawable="@android:drawable/ic_dialog_email">
+                    app:startIconDrawable="@android:drawable/ic_dialog_email"
+                    app:startIconTint="@color/text_low">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingVertical="18dp"
                         android:inputType="textEmailAddress"
                         android:textColor="@color/text_high"
-                        android:textSize="15sp" />
+                        android:textSize="15sp"
+                        android:fontFamily="@font/poppins_medium" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- PASSWORD -->
+                <!-- Password Input -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilPassword"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginTop="20dp"
                     android:hint="@string/login_password_hint"
                     app:endIconMode="password_toggle"
-                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock">
+                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+                    app:startIconTint="@color/text_low">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingVertical="18dp"
                         android:inputType="textPassword"
                         android:textColor="@color/text_high"
-                        android:textSize="15sp" />
+                        android:textSize="15sp"
+                        android:fontFamily="@font/poppins_medium" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
@@ -132,7 +134,7 @@
                     android:fontFamily="@font/poppins_bold"
                     android:visibility="gone" />
 
-                <!-- BOTÓN PRINCIPAL -->
+                <!-- Login Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
@@ -140,35 +142,47 @@
                     android:layout_marginTop="36dp"
                     android:background="@drawable/bg_button"
                     android:text="@string/login_button_text"
-                    android:textColor="@android:color/white"
-                    android:textSize="17sp"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
                     android:fontFamily="@font/poppins_bold"
-                    android:letterSpacing="0.04"
+                    android:letterSpacing="0.02"
                     app:backgroundTint="@null"
-                    app:cornerRadius="24dp"
-                    app:elevation="8dp" />
+                    app:cornerRadius="16dp"
+                    android:elevation="4dp"
+                    android:stateListAnimator="@null" />
 
-                <!-- BOTÓN GOOGLE -->
+                <!-- Google Login -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGoogleLogin"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="16dp"
                     android:text="@string/login_google_button"
                     android:textSize="15sp"
                     android:textColor="@color/text_high"
-                    app:strokeColor="@color/border_active"
+                    app:strokeColor="@color/border_subtle"
                     app:strokeWidth="1.5dp"
-                    app:cornerRadius="24dp" />
+                    app:cornerRadius="16dp"
+                    android:fontFamily="@font/poppins_bold" />
 
-                <!-- FOOTER -->
+                <!-- Footer Links -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="48dp"
+                    android:layout_marginTop="40dp"
                     android:gravity="center"
                     android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textGoToRegister"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="8dp"
+                        android:text="@string/login_goto_register"
+                        android:textColor="@color/text_medium"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/poppins_medium" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnVerificarCorreoLogin"
@@ -178,18 +192,8 @@
                         android:text="@string/login_verify_email_text"
                         android:textColor="@color/primary"
                         android:fontFamily="@font/poppins_bold"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/textGoToRegister"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:padding="12dp"
-                        android:text="@string/login_goto_register"
-                        android:textColor="@color/text_high"
-                        android:textSize="15sp"
-                        android:fontFamily="@font/poppins_bold" />
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp"/>
                 </LinearLayout>
 
             </LinearLayout>

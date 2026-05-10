@@ -1,57 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ☀️ PLAY STORE READY PALETTE (Material 3) -->
-    <color name="primary">#7C4DFF</color>          <!-- Deep Purple -->
-    <color name="primary_variant">#651FFF</color>
-    <color name="secondary">#00E5FF</color>        <!-- Bright Cyan (Accent) -->
-    <color name="accent_blue">#2979FF</color>
+    <!-- 🌑 BRAND CORE: Modern Indigo & Cyan -->
+    <color name="primary">#6366F1</color>
+    <color name="primary_dark">#4338CA</color>
+    <color name="primary_light">#818CF8</color>
+    <color name="secondary">#06B6D4</color>
+    <color name="secondary_dark">#0891B2</color>
 
-    <!-- ALERTAS (Diseño suave y profesional) -->
-    <color name="error_main">#FF5252</color>       <!-- Rojo Material -->
-    <color name="error_bg">#FFEBEE</color>         <!-- Rojo muy suave para fondo -->
-    <color name="warning_main">#FFAB00</color>     <!-- Ámbar -->
-    <color name="warning_bg">#FFF8E1</color>
-    <color name="success_main">#00C853</color>     <!-- Verde esmeralda -->
-    <color name="success_bg">#E8F5E9</color>
-    <color name="info_main">#00B0FF</color>        <!-- Azul cielo -->
-    <color name="info_bg">#E1F5FE</color>
+    <!-- ☁️ PROFESSIONAL NEUTRALS -->
+    <color name="bg_main">#F8FAFC</color>
+    <color name="bg_secondary">#F1F5F9</color>
+    <color name="surface_card">#FFFFFF</color>
+    <color name="surface_input">#FFFFFF</color>
+    <color name="border_subtle">#E2E8F0</color>
 
-    <color name="bg_main">#FFFFFF</color>          <!-- Blanco Puro -->
+    <!-- 🖋️ TYPOGRAPHY (High Contrast) -->
+    <color name="text_high">#0F172A</color>
+    <color name="text_medium">#334155</color>
+    <color name="text_low">#64748B</color>
+    <color name="text_title">#0F172A</color>
+
+    <!-- 💬 CHAT UI COLORS (Harmonized) -->
+    <color name="chat_bubble_sent">#6366F1</color>
+    <color name="chat_text_sent">#FFFFFF</color>
+    <color name="chat_bubble_received">#FFFFFF</color>
+    <color name="chat_text_received">#1E293B</color>
+    <color name="chat_time_sent">#E0E7FF</color>
+    <color name="chat_time_received">#94A3B8</color>
+    <color name="chat_system_text">#64748B</color>
+
+    <!-- 🎨 FUNCTIONAL COLORS -->
+    <color name="error_main">#EF4444</color>
+    <color name="error_bg">#FEF2F2</color>
+    <color name="success_main">#10B981</color>
+    <color name="success_bg">#ECFDF5</color>
+    <color name="warning_main">#F59E0B</color>
+    <color name="warning_bg">#FFFBEB</color>
+    <color name="info_main">#3B82F6</color>
+    <color name="info_bg">#EFF6FF</color>
+
+    <!-- ✨ ACCENTS -->
+    <color name="accent_soft">#F0F4FF</color>
+    <color name="grad_start">#6366F1</color>
+    <color name="grad_end">#06B6D4</color>
+
+    <!-- LEGACY ALIASES (Fixed build errors) -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="bg_secondary">#F8FAFC</color>     <!-- Gris slate muy claro -->
-    <color name="surface_card">#FFFFFF</color>
-    <color name="surface_input">#F1F5F9</color>
-    <color name="surface_highlight">#EEF2FF</color>
-
-    <color name="text_high">#0F172A</color>        <!-- Slate 900 (Contraste máximo) -->
-    <color name="text_medium">#475569</color>      <!-- Slate 600 -->
-    <color name="text_low">#94A3B8</color>         <!-- Slate 400 -->
-
-    <color name="border_subtle">#E2E8F0</color>    <!-- Slate 200 -->
-    <color name="border_active">#CBD5E1</color>    <!-- Slate 300 -->
-    <color name="border_focus">#6366F1</color>
-
-    <color name="error">#EF4444</color>
-    <color name="error_soft">#FEE2E2</color>
-    <color name="success">#10B981</color>
-
-    <color name="gradient_start">#6366F1</color>
-    <color name="gradient_end">#EC4899</color>
-
-    <!-- ALIAS DE COMPATIBILIDAD -->
-    <color name="card_bg">@color/surface_card</color>
-    <color name="card_bg_soft">@color/surface_highlight</color>
-    <color name="card_stroke">@color/border_subtle</color>
-    <color name="text_main">@color/text_high</color>
-    <color name="text_secondary">@color/text_medium</color>
-    <color name="text_hint">@color/text_low</color>
-    <color name="hint_soft">@color/text_low</color>
-    <color name="input_bg">@color/surface_input</color>
-    <color name="input_border">@color/border_active</color>
-    <color name="input_focus">@color/border_focus</color>
-    <color name="primary_start">@color/gradient_start</color>
-    <color name="primary_end">@color/gradient_end</color>
-    <color name="accent_primary">@color/primary</color>
-    <color name="accent_neon">@color/primary_variant</color>
+    <color name="surface_highlight">@color/bg_secondary</color>
+    <color name="primary_start">@color/grad_start</color>
+    <color name="primary_end">@color/grad_end</color>
+    <color name="primary_variant">@color/primary_dark</color>
+    <color name="error">@color/error_main</color>
 </resources>
