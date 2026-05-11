@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#AA000000">
+    android:background="@android:color/black">
 
     <!-- CAMERA PREVIEW -->
 
@@ -14,6 +14,8 @@
         android:id="@+id/previewView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="@android:color/black"
         app:scaleType="fillCenter" />
 
     <!-- 🌑 DIMMED OVERLAYS (Creating the "Hole" effect) -->

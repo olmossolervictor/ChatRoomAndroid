@@ -34,12 +34,15 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import com.google.android.material.card.MaterialCardView;
+
 
 public class PrivateChatActivity extends BaseActivity {
 
     private ListView listMessagesPrivate;
     private EditText editMessagePrivate;
     private Button btnSendPrivate;
+    private View inputContainer;
 
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
@@ -48,9 +51,9 @@ public class PrivateChatActivity extends BaseActivity {
 
     private int currentUserId;
     private int otherUserId;
-    private String otherUserName; // Esta variable ahora guardará el nombre de usuario tras la carga
+    private String otherUserName;
 
-    private LinearLayout layoutSolicitudPrivada;
+    private MaterialCardView layoutSolicitudPrivada;
     private LinearLayout layoutBotonesSolicitudPrivada;
     private TextView textEstadoConversacionPrivada;
     private Button btnAcceptPrivateRequest;
@@ -65,9 +68,10 @@ public class PrivateChatActivity extends BaseActivity {
         currentUserId = getIntent().getIntExtra("CURRENT_USER_ID", -1);
         otherUserId = getIntent().getIntExtra("OTHER_USER_ID", -1);
         otherUserName = getIntent().getStringExtra("OTHER_USER_NAME");
+
         PrivateChatHistoryStore.touchChat(this, currentUserId, otherUserId, otherUserName);
 
-        // --- CONFIGURACIÓN DE LA TOOLBAR PERSONALIZADA ---
+        // --- CONFIGURACIÓN DE LA TOOLBAR ---
         Toolbar toolbar = findViewById(R.id.toolbarPrivateChat);
         setSupportActionBar(toolbar);
 
@@ -75,39 +79,34 @@ public class PrivateChatActivity extends BaseActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-            View customToolbar = getLayoutInflater().inflate(R.layout.toolbar_perfil, null);
-            getSupportActionBar().setCustomView(customToolbar);
-            getSupportActionBar().setDisplayShowCustomEnabled(true);
+            // Vinculamos los elementos de la Toolbar (ya integrados en el XML)
+            ImageView imgFoto = findViewById(R.id.imgToolbarFoto);
+            TextView txtNombre = findViewById(R.id.textToolbarPrivateTitle);
 
-            ImageView imgFoto = customToolbar.findViewById(R.id.imgToolbarFoto);
-            TextView txtNombre = customToolbar.findViewById(R.id.textToolbarNombreUser);
+            if (txtNombre != null) txtNombre.setText(otherUserName);
 
-            // Mostrar inicialmente lo que viene del intent
-            txtNombre.setText(otherUserName);
-
-            // Cargar datos reales para mostrar el NOMBRE DE USUARIO
+            // Cargar datos reales del usuario
             RetrofitClient.getChatApiServices().getUsuario(otherUserId).enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         try {
                             JSONObject json = new JSONObject(response.body().string());
-
-                            // BUSCAMOS EL NOMBRE DE USUARIO
                             String username = json.optString("nombre_usuario", "");
-
-                            // Si el nombre de usuario existe, lo ponemos arriba y actualizamos la variable global
                             if (!username.isEmpty()) {
-                                txtNombre.setText(username);
-                                otherUserName = username; // Actualizamos para que los textos de solicitud cambien también
+                                if (txtNombre != null) txtNombre.setText(username);
+                                otherUserName = username;
                             }
 
-                            // Carga de foto (se mantiene igual)
                             String fotoB64 = json.optString("foto", "");
-                            if (!fotoB64.isEmpty()) {
-                                byte[] decodedBytes = Base64.decode(fotoB64, Base64.DEFAULT);
-                                Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-                                imgFoto.setImageBitmap(bitmap);
+                            if (imgFoto != null) {
+                                if (!fotoB64.isEmpty()) {
+                                    byte[] decodedBytes = Base64.decode(fotoB64, Base64.DEFAULT);
+                                    Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                                    imgFoto.setImageBitmap(bitmap);
+                                } else {
+                                    imgFoto.setImageResource(R.drawable.defecto);
+                                }
                             }
                         } catch (Exception e) { e.printStackTrace(); }
                     }
@@ -118,9 +117,12 @@ public class PrivateChatActivity extends BaseActivity {
 
         toolbar.setOnClickListener(v -> mostrarDialogoDenuncias(otherUserId));
 
+        // Vinculación de componentes
         listMessagesPrivate = findViewById(R.id.listMessagesPrivate);
         editMessagePrivate = findViewById(R.id.editMessagePrivate);
         btnSendPrivate = findViewById(R.id.btnSendPrivate);
+        inputContainer = findViewById(R.id.inputContainer);
+
         layoutSolicitudPrivada = findViewById(R.id.layoutSolicitudPrivada);
         layoutBotonesSolicitudPrivada = findViewById(R.id.layoutBotonesSolicitudPrivada);
         textEstadoConversacionPrivada = findViewById(R.id.textEstadoConversacionPrivada);
@@ -133,6 +135,10 @@ public class PrivateChatActivity extends BaseActivity {
         btnSendPrivate.setOnClickListener(v -> enviarMensajePrivado());
         btnAcceptPrivateRequest.setOnClickListener(v -> responderSolicitudConversacion(true));
         btnRejectPrivateRequest.setOnClickListener(v -> responderSolicitudConversacion(false));
+
+        // Inicializar UI por defecto antes de recibir la respuesta del servidor
+        setInputPrivadoEnabled(true, "Escribe un mensaje privado...");
+        layoutSolicitudPrivada.setVisibility(View.GONE);
 
         obtenerMensajesPrivados();
         iniciarAutoRefresco();
@@ -162,15 +168,21 @@ public class PrivateChatActivity extends BaseActivity {
                             aplicarEstadoConversacion();
                         }
                     }
-                    @Override public void onFailure(Call<List<Mensaje>> call, Throwable t) {}
+                    @Override public void onFailure(Call<List<Mensaje>> call, Throwable t) {
+                        // Si falla la red, al menos permitimos intentar enviar si la lista está vacía
+                        if (listaMensajes.isEmpty()) {
+                            aplicarEstadoConversacion();
+                        }
+                    }
                 });
     }
 
     private void enviarMensajePrivado() {
         String mensaje = editMessagePrivate.getText().toString().trim();
         if (mensaje.isEmpty()) return;
+
         if (!PrivateChatConversationPolicy.canSendMessage(conversationState)) {
-            Toast.makeText(this, "Tienes que esperar a que se acepte la conversacion", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Debes esperar a que se acepte la conversación", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -199,25 +211,29 @@ public class PrivateChatActivity extends BaseActivity {
             case PENDING_INCOMING:
                 layoutSolicitudPrivada.setVisibility(View.VISIBLE);
                 layoutBotonesSolicitudPrivada.setVisibility(View.VISIBLE);
-                textEstadoConversacionPrivada.setText(otherUserName + " quiere iniciar una conversacion.");
-                setInputPrivadoEnabled(false, "Acepta para responder");
+                textEstadoConversacionPrivada.setText(otherUserName + " quiere iniciar una conversación.");
+                setInputPrivadoEnabled(false, "Responde a la solicitud para escribir");
                 break;
             case PENDING_OUTGOING:
                 layoutSolicitudPrivada.setVisibility(View.VISIBLE);
                 layoutBotonesSolicitudPrivada.setVisibility(View.GONE);
                 textEstadoConversacionPrivada.setText("Esperando a que " + otherUserName + " acepte.");
-                setInputPrivadoEnabled(false, "Esperando aceptacion");
+                setInputPrivadoEnabled(false, "Esperando aceptación...");
                 break;
             case REJECTED:
                 layoutSolicitudPrivada.setVisibility(View.VISIBLE);
                 layoutBotonesSolicitudPrivada.setVisibility(View.GONE);
-                textEstadoConversacionPrivada.setText("Conversacion rechazada.");
-                setInputPrivadoEnabled(false, "Conversacion rechazada");
+                textEstadoConversacionPrivada.setText("La conversación ha sido rechazada.");
+                setInputPrivadoEnabled(false, "Conversación rechazada");
                 break;
         }
     }
 
     private void setInputPrivadoEnabled(boolean enabled, String hint) {
+        if (inputContainer != null) {
+            // En vez de ocultarlo (lo que puede confundir), lo deshabilitamos visualmente
+            inputContainer.setAlpha(enabled ? 1.0f : 0.6f);
+        }
         editMessagePrivate.setEnabled(enabled);
         btnSendPrivate.setEnabled(enabled);
         editMessagePrivate.setHint(hint);
@@ -254,7 +270,7 @@ public class PrivateChatActivity extends BaseActivity {
 
         android.widget.LinearLayout layoutDenuncia = new android.widget.LinearLayout(this);
         layoutDenuncia.setOrientation(android.widget.LinearLayout.VERTICAL);
-        layoutDenuncia.setPadding(16, 16, 16, 16);
+        layoutDenuncia.setPadding(48, 16, 48, 16);
 
         android.widget.Spinner spinnerTipo = new android.widget.Spinner(this);
         android.widget.ArrayAdapter<String> adapterSpinner = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tiposDenuncia);
@@ -267,7 +283,7 @@ public class PrivateChatActivity extends BaseActivity {
                 if (position == 2) {
                     if (editRazon[0] == null) {
                         editRazon[0] = new EditText(PrivateChatActivity.this);
-                        editRazon[0].setHint("Explica la razón de tu denuncia");
+                        editRazon[0].setHint("Explica la razón");
                         layoutDenuncia.addView(editRazon[0]);
                     }
                     editRazon[0].setVisibility(View.VISIBLE);
@@ -296,7 +312,7 @@ public class PrivateChatActivity extends BaseActivity {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
-                            Toast.makeText(PrivateChatActivity.this, "Denuncia registrada correctamente", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(PrivateChatActivity.this, "Denuncia enviada", Toast.LENGTH_SHORT).show();
                         }
                     }
                     @Override

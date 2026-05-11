@@ -1,60 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 🌑 BRAND CORE: Premium Purple (Play Store Style) -->
+    <color name="primary">#7C4DFF</color>
+    <color name="primary_dark">#6200EA</color>
+    <color name="primary_light">#B47CFF</color>
+    <color name="secondary">#9E9E9E</color>
+    <color name="secondary_dark">#757575</color>
 
-    <color name="card_bg">#1B1B2B</color>
-    <color name="input_bg">#232337</color>
-    <color name="input_focus">#00E5FF</color>
-    <color name="accent_neon">#00E5FF</color>
-    <!-- 🌑 BRAND CORE: Modern Indigo & Cyan -->
-    <color name="primary">#6366F1</color>
-    <color name="primary_dark">#4338CA</color>
-    <color name="primary_light">#818CF8</color>
-    <color name="secondary">#06B6D4</color>
-    <color name="secondary_dark">#0891B2</color>
-
-    <!-- ☁️ PROFESSIONAL NEUTRALS -->
-    <color name="bg_main">#F8FAFC</color>
-    <color name="bg_secondary">#F1F5F9</color>
+    <!-- ☁️ PREMIUM NEUTRALS (Light Mode) -->
+    <color name="bg_main">#F2F2F7</color>
+    <color name="bg_secondary">#FFFFFF</color>
     <color name="surface_card">#FFFFFF</color>
     <color name="surface_input">#FFFFFF</color>
-    <color name="border_subtle">#E2E8F0</color>
+    <color name="border_subtle">#E0E0E0</color>
 
-    <!-- 🖋️ TYPOGRAPHY (High Contrast) -->
-    <color name="text_high">#0F172A</color>
-    <color name="text_medium">#334155</color>
-    <color name="text_low">#64748B</color>
-    <color name="text_title">#0F172A</color>
+    <!-- 🖋️ TYPOGRAPHY -->
+    <color name="text_high">#121212</color>
+    <color name="text_medium">#424242</color>
+    <color name="text_low">#757575</color>
+    <color name="text_title">#121212</color>
 
-    <!-- 💬 CHAT UI COLORS (Harmonized) -->
-    <color name="chat_bubble_sent">#6366F1</color>
+    <!-- 💬 CHAT UI COLORS -->
+    <color name="chat_bubble_sent">#7C4DFF</color>
     <color name="chat_text_sent">#FFFFFF</color>
     <color name="chat_bubble_received">#FFFFFF</color>
-    <color name="chat_text_received">#1E293B</color>
+    <color name="chat_text_received">#121212</color>
     <color name="chat_time_sent">#E0E7FF</color>
     <color name="chat_time_received">#94A3B8</color>
-    <color name="chat_system_text">#64748B</color>
+    <color name="chat_system_text">#757575</color>
 
     <!-- 🎨 FUNCTIONAL COLORS -->
-    <color name="error_main">#EF4444</color>
-    <color name="error_bg">#FEF2F2</color>
-    <color name="success_main">#10B981</color>
-    <color name="success_bg">#ECFDF5</color>
-    <color name="warning_main">#F59E0B</color>
-    <color name="warning_bg">#FFFBEB</color>
-    <color name="info_main">#3B82F6</color>
-    <color name="info_bg">#EFF6FF</color>
+    <color name="error_main">#FF5252</color>
+    <color name="error_bg">#FFEBEE</color>
+    <color name="success_main">#00E676</color>
+    <color name="success_bg">#E8F5E9</color>
+    <color name="warning_main">#FFAB40</color>
+    <color name="warning_bg">#FFF3E0</color>
+    <color name="info_main">#448AFF</color>
+    <color name="info_bg">#E3F2FD</color>
 
-    <!-- ✨ ACCENTS -->
-    <color name="accent_soft">#F0F4FF</color>
-    <color name="grad_start">#6366F1</color>
-    <color name="grad_end">#06B6D4</color>
-
-    <!-- LEGACY ALIASES (Fixed build errors) -->
+    <!-- ✨ ACCENTS & COMPATIBILITY -->
+    <color name="accent_soft">#F3E5F5</color>
+    <color name="accent_neon">#7C4DFF</color>
+    <color name="grad_start">#7C4DFF</color>
+    <color name="grad_end">#B47CFF</color>
+    <color name="primary_start">#7C4DFF</color>
+    <color name="primary_end">#B47CFF</color>
+    <color name="primary_variant">#6200EA</color>
+    <color name="surface_highlight">#F1F5F9</color>
+    <color name="error">#FF5252</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="input_focus">#7C4DFF</color>
+    <color name="input_bg">#FFFFFF</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="surface_highlight">@color/bg_secondary</color>
-    <color name="primary_start">@color/grad_start</color>
-    <color name="primary_end">@color/grad_end</color>
-    <color name="primary_variant">@color/primary_dark</color>
-    <color name="error">@color/error_main</color>
 </resources>

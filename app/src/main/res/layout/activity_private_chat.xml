@@ -13,7 +13,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- 🏛️ PROFESSIONAL HEADER -->
+        <!-- 🏛️ PREMIUM TOOLBAR -->
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,30 +24,46 @@
                 android:id="@+id/toolbarPrivateChat"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:navigationIconTint="@color/text_high"
-                app:titleTextAppearance="@style/TextAppearance.App.ToolbarTitle">
+                app:navigationIconTint="@color/text_high">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/textToolbarPrivateTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/text_high"
-                        android:textSize="17sp"
-                        android:fontFamily="@font/poppins_bold"
-                        tools:text="Nombre Usuario" />
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/imgToolbarFoto"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/defecto"
+                        app:civ_border_width="1dp"
+                        app:civ_border_color="@color/border_subtle" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Chat Privado Seguro"
-                        android:textColor="@color/secondary"
-                        android:textSize="11sp"
-                        android:fontFamily="@font/poppins_regular" />
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/textToolbarPrivateTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_high"
+                            android:textSize="17sp"
+                            android:fontFamily="@font/poppins_bold"
+                            tools:text="Nombre Usuario" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chat Privado Seguro"
+                            android:textColor="@color/primary"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/poppins_regular" />
+                    </LinearLayout>
                 </LinearLayout>
             </androidx.appcompat.widget.Toolbar>
 
@@ -69,7 +85,7 @@
                 android:layout_height="match_parent"
                 android:paddingHorizontal="8dp"
                 android:paddingTop="8dp"
-                android:paddingBottom="80dp"
+                android:paddingBottom="8dp"
                 android:divider="@null"
                 android:dividerHeight="0dp"
                 android:stackFromBottom="true"
@@ -78,149 +94,121 @@
                 android:scrollbarStyle="outsideOverlay"
                 android:overScrollMode="never" />
 
-            <!-- ⌨️ INPUT PANEL AREA -->
-            <LinearLayout
+        </RelativeLayout>
+
+        <!-- ⌨️ BOTTOM PANEL (Input + Request) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_main"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <!-- Private Request Card (Premium Style) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/layoutSolicitudPrivada"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:background="@color/bg_main"
-                android:orientation="vertical"
-                android:padding="8dp">
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/bg_secondary"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_subtle"
+                android:visibility="gone"
+                tools:visibility="visible">
 
-                <!-- Typing Indicator -->
                 <LinearLayout
-                    android:id="@+id/layoutTyping"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:visibility="gone"
-                    tools:visibility="visible">
-
-                    <ProgressBar
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:indeterminateTint="@color/secondary"
-                        style="?android:attr/progressBarStyleSmall" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Escribiendo..."
-                        android:textSize="11sp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:layout_marginStart="6dp"
-                        android:textColor="@color/text_medium"/>
-                </LinearLayout>
-
-                <!-- Private Request Card (Cuando está pendiente) -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/layoutSolicitudPrivada"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    app:cardCornerRadius="16dp"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/textEstadoConversacionPrivada"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Solicitud de chat pendiente"
+                        android:textColor="@color/text_high"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:fontFamily="@font/poppins_medium" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutBotonesSolicitudPrivada"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnRejectPrivateRequest"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="RECHAZAR"
+                            android:textColor="@color/error_main" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAcceptPrivateRequest"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="ACEPTAR"
+                            android:backgroundTint="@color/primary"
+                            android:textColor="@color/white"
+                            app:cornerRadius="12dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Clean Input Capsule -->
+            <LinearLayout
+                android:id="@+id/inputContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="24dp"
                     app:cardElevation="0dp"
                     app:cardBackgroundColor="@color/bg_secondary"
                     app:strokeWidth="1dp"
-                    app:strokeColor="@color/border_subtle"
-                    android:visibility="gone"
-                    tools:visibility="visible">
+                    app:strokeColor="@color/border_subtle">
 
-                    <LinearLayout
+                    <EditText
+                        android:id="@+id/editMessagePrivate"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:id="@+id/textEstadoConversacionPrivada"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Solicitud de chat pendiente"
-                            android:textColor="@color/text_high"
-                            android:textSize="13sp"
-                            android:gravity="center"
-                            android:fontFamily="@font/poppins_medium" />
-
-                        <LinearLayout
-                            android:id="@+id/layoutBotonesSolicitudPrivada"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginTop="12dp">
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnRejectPrivateRequest"
-                                style="@style/Widget.Material3.Button.TextButton"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="RECHAZAR"
-                                android:textColor="@color/error_main" />
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnAcceptPrivateRequest"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="ACEPTAR"
-                                android:backgroundTint="@color/primary"
-                                android:textColor="@color/white"
-                                app:cornerRadius="12dp" />
-                        </LinearLayout>
-                    </LinearLayout>
+                        android:hint="Escribe un mensaje privado..."
+                        android:background="@android:color/transparent"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="12dp"
+                        android:inputType="textShortMessage|textCapSentences"
+                        android:textColor="@color/text_high"
+                        android:textColorHint="@color/text_low"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/poppins_regular"
+                        android:maxLines="4"/>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Clean Input Capsule -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/inputContainer"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="24dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/bg_secondary"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="@color/border_subtle">
-
-                        <EditText
-                            android:id="@+id/editMessagePrivate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Escribe un mensaje privado..."
-                            android:background="@android:color/transparent"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="10dp"
-                            android:inputType="textShortMessage|textCapSentences"
-                            android:textColor="@color/text_high"
-                            android:textColorHint="@color/text_low"
-                            android:textSize="15sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:maxLines="4"/>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSendPrivate"
-                        style="@style/Widget.Material3.Button.IconButton.Filled"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="8dp"
-                        app:icon="@android:drawable/ic_menu_send"
-                        app:iconTint="@color/white"
-                        app:backgroundTint="@color/primary"
-                        app:cornerRadius="24dp" />
-                </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSendPrivate"
+                    style="@style/Widget.Material3.Button.IconButton.Filled"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    app:icon="@android:drawable/ic_menu_send"
+                    app:iconTint="@color/white"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="24dp" />
             </LinearLayout>
-        </RelativeLayout>
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

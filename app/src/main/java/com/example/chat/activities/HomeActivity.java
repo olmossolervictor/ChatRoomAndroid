@@ -231,7 +231,7 @@ public class HomeActivity extends BaseActivity {
                                     byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
                                     imgDrawerFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
                                 } else {
-                                    imgDrawerFoto.setImageResource(android.R.drawable.ic_menu_camera);
+                                    imgDrawerFoto.setImageResource(R.drawable.defecto);
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -302,7 +302,15 @@ public class HomeActivity extends BaseActivity {
 
             TextView textNombre = row.findViewById(R.id.textNombreHistorialPrivado);
             TextView textTiempo = row.findViewById(R.id.textTiempoHistorialPrivado);
+            TextView textInicial = row.findViewById(R.id.textInicialHistorialPrivado);
 
+            String nombreUsuario = item.getOtherUserName();
+
+
+
+            if (nombreUsuario != null && !nombreUsuario.isEmpty()) {
+                textInicial.setText(nombreUsuario.substring(0, 1).toUpperCase());
+            }
             textNombre.setText(item.getOtherUserName());
             long restante = PrivateChatHistoryStore.TTL_MS - (now - item.getLastInteractionMs());
             textTiempo.setText(formatearTiempoRestante(Math.max(restante, 0L)));

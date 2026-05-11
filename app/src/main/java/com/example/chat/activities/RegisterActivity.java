@@ -312,7 +312,7 @@ public class RegisterActivity extends BaseActivity {
         }
     }
     public void eliminarFoto(){
-        imgUser.setImageResource(android.R.drawable.ic_menu_camera); // Ponemos el icono por defecto
+        imgUser.setImageResource(R.drawable.defecto); // Ponemos el icono por defecto
         encodedImage = ""; // Vaciamos el texto para que al servidor le llegue en blanco
         Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show();
     }
@@ -357,6 +357,9 @@ public class RegisterActivity extends BaseActivity {
         layoutTerminos.setVisibility(View.VISIBLE);
         textBackToLogin.setVisibility(View.VISIBLE);
         editPassword.setHint("Contraseña");
+        
+        // Ponemos la imagen por defecto al iniciar el registro
+        imgUser.setImageResource(R.drawable.defecto);
     }
 
     private void openCamera() {
