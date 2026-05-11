@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorSurface">
+    android:background="@color/bg_main">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="AJUSTES"
-            android:textColor="@android:color/white"
+                android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold"
             android:paddingStart="8dp"/>
@@ -70,6 +70,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tema de la aplicación"
+                    android:textColor="@color/text_high"
                     android:textSize="15sp"
                     android:layout_marginBottom="8dp"/>
 
@@ -85,6 +86,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Sistema"
+                        android:textColor="@color/text_high"
                         android:checked="true"/>
 
                     <RadioButton
@@ -92,14 +94,16 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Claro"/>
+                        android:text="Claro"
+                        android:textColor="@color/text_high"/>
 
                     <RadioButton
                         android:id="@+id/radioTemaOscuro"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Oscuro"/>
+                        android:text="Oscuro"
+                        android:textColor="@color/text_high"/>
                 </RadioGroup>
             </LinearLayout>
 
@@ -136,6 +140,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Mantener pantalla activa en el chat"
+                    android:textColor="@color/text_high"
                     android:textSize="15sp"/>
 
                 <Switch
@@ -163,6 +168,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tamaño de letra del chat"
+                    android:textColor="@color/text_high"
                     android:textSize="15sp"
                     android:layout_marginBottom="8dp"/>
 
@@ -177,7 +183,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Pequeña"/>
+                        android:text="Pequeña"
+                        android:textColor="@color/text_high"/>
 
                     <RadioButton
                         android:id="@+id/radioFuenteNormal"
@@ -185,6 +192,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Normal"
+                        android:textColor="@color/text_high"
                         android:checked="true"/>
 
                     <RadioButton
@@ -192,7 +200,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Grande"/>
+                        android:text="Grande"
+                        android:textColor="@color/text_high"/>
                 </RadioGroup>
             </LinearLayout>
 
@@ -229,6 +238,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Notificaciones en la app"
+                    android:textColor="@color/text_high"
                     android:textSize="15sp"/>
 
                 <Switch
@@ -270,6 +280,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Localización"
+                    android:textColor="@color/text_high"
                     android:textSize="15sp"/>
 
                 <Switch
@@ -309,6 +320,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Permiso de Cámara"
+                    android:textColor="@color/text_high"
                     android:textSize="15sp"/>
 
                 <Switch

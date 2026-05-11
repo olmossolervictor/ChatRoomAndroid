@@ -33,6 +33,7 @@ import com.example.chat.models.PrivateChatHistoryItem;
 import com.example.chat.models.Sala;
 import com.example.chat.network.RetrofitClient;
 import com.example.chat.utils.PrivateChatConversationPolicy;
+import com.example.chat.utils.PrivateChatGeofenceStore;
 import com.example.chat.utils.PrivateChatHistoryStore;
 
 import org.json.JSONArray;
@@ -250,7 +251,11 @@ public class HomeActivity extends BaseActivity {
                     public void onResponse(Call<List<Sala>> call, Response<List<Sala>> response) {
                         listaMisSalas.clear();
                         if (response.isSuccessful() && response.body() != null) {
-                            listaMisSalas.addAll(response.body());
+                            for (Sala sala : response.body()) {
+                                if (debeMostrarSala(sala)) {
+                                    listaMisSalas.add(sala);
+                                }
+                            }
                         }
                         salaAdapter.notifyDataSetChanged();
                         actualizarVistasSalas();
@@ -260,6 +265,21 @@ public class HomeActivity extends BaseActivity {
                         actualizarVistasSalas();
                     }
                 });
+    }
+
+    private boolean debeMostrarSala(Sala sala) {
+        if (sala == null) return false;
+
+        String estado = sala.getEstado();
+        if ("finalizada".equalsIgnoreCase(estado)
+                || "expirada".equalsIgnoreCase(estado)
+                || "cerrada".equalsIgnoreCase(estado)
+                || "inactiva".equalsIgnoreCase(estado)) {
+            return false;
+        }
+
+        long minutosRestantes = sala.getMinutosRestantes();
+        return minutosRestantes == -1 || minutosRestantes > 0;
     }
 
     private void configurarFooterHistorialPrivado() {
@@ -275,6 +295,7 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void run() {
                 refrescarHistorialPrivado();
+                cargarMisSalas();
                 historialHandler.postDelayed(this, 30_000L);
             }
         };
@@ -330,6 +351,12 @@ public class HomeActivity extends BaseActivity {
                         intent.putExtra("CURRENT_USER_ID", currentUserId);
                         intent.putExtra("OTHER_USER_ID", item.getOtherUserId());
                         intent.putExtra("OTHER_USER_NAME", item.getOtherUserName());
+                        PrivateChatGeofenceStore.attachExtrasIfAvailable(
+                                HomeActivity.this,
+                                intent,
+                                currentUserId,
+                                item.getOtherUserId()
+                        );
                         startActivity(intent);
                     }
 
@@ -548,10 +575,16 @@ public class HomeActivity extends BaseActivity {
                                                     @Override
                                                     public void onResponse(Call<ResponseBody> c, Response<ResponseBody> r) {
                                                         Intent intent = new Intent(HomeActivity.this, PrivateChatActivity.class);
-                                                        intent.putExtra("CURRENT_USER_ID", currentUserId);
-                                                        intent.putExtra("OTHER_USER_ID", idRemitente);
-                                                        intent.putExtra("OTHER_USER_NAME", nombreRemitente);
-                                                        startActivity(intent);
+                                                       intent.putExtra("CURRENT_USER_ID", currentUserId);
+                                                       intent.putExtra("OTHER_USER_ID", idRemitente);
+                                                       intent.putExtra("OTHER_USER_NAME", nombreRemitente);
+                                                        PrivateChatGeofenceStore.attachExtrasIfAvailable(
+                                                                HomeActivity.this,
+                                                                intent,
+                                                                currentUserId,
+                                                                idRemitente
+                                                        );
+                                                       startActivity(intent);
                                                     }
                                                     @Override public void onFailure(Call<ResponseBody> c, Throwable t) {
                                                         Toast.makeText(HomeActivity.this, "Error al abrir chat", Toast.LENGTH_SHORT).show();
@@ -778,6 +811,12 @@ public class HomeActivity extends BaseActivity {
                         intent.putExtra("CURRENT_USER_ID", currentUserId);
                         intent.putExtra("OTHER_USER_ID", idRemitente);
                         intent.putExtra("OTHER_USER_NAME", nombreRemitente);
+                        PrivateChatGeofenceStore.attachExtrasIfAvailable(
+                                HomeActivity.this,
+                                intent,
+                                currentUserId,
+                                idRemitente
+                        );
                         startActivity(intent);
                     }
 

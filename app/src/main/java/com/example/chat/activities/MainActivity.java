@@ -37,6 +37,8 @@ import com.example.chat.adapters.MensajeAdapter;
 import com.example.chat.models.Mensaje;
 import com.example.chat.network.ChatApiServices;
 import com.example.chat.network.RetrofitClient;
+import com.example.chat.utils.PrivateChatGeofenceStore;
+import com.example.chat.utils.PrivateChatHistoryStore;
 import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -52,7 +54,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
     private androidx.drawerlayout.widget.DrawerLayout drawerLayoutMain;
@@ -239,10 +241,10 @@ public class MainActivity extends AppCompatActivity {
                 obtenerMensajes();
                 verificarTiempoSesion();
                 verificarUbicacion();
-                handler.postDelayed(this, 60000);
+                handler.postDelayed(this, 3000);
             }
         };
-        handler.postDelayed(refreshRunnable, 60000);
+        handler.post(refreshRunnable);
     }
 
     private void verificarTiempoSesion() {
@@ -347,12 +349,29 @@ public class MainActivity extends AppCompatActivity {
         if (salaFinalizadaPorTiempo) return;
         handler.removeCallbacks(refreshRunnable);
         Toast.makeText(this, motivo.toUpperCase(), Toast.LENGTH_LONG).show();
+        limpiarChatsPrivadosDeSalaActual(motivo);
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
                     @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
         finish();
+    }
+
+    private void limpiarChatsPrivadosDeSalaActual(String motivo) {
+        List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(this, currentUserId, currentSalaId);
+        for (Integer otherUserId : otrosUsuarios) {
+            if (otherUserId == null || otherUserId <= 0) continue;
+            PrivateChatHistoryStore.removeChat(this, currentUserId, otherUserId);
+            PrivateChatGeofenceStore.remove(this, currentUserId, otherUserId);
+        }
+
+        RetrofitClient.getChatApiServices()
+                .eliminarChatsPrivadosDeSala(currentUserId, currentSalaId, motivo)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                    @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
     }
 
     private void obtenerMensajes() {
@@ -488,8 +507,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void abrirChatPrivado(int otherUserId, String otherUserName) {
+        if (!tieneCoordenadasSala()) {
+            cargarUbicacionSalaYAbrirPrivado(otherUserId, otherUserName);
+            return;
+        }
+
+        crearYAbrirChatPrivado(otherUserId, otherUserName);
+    }
+
+    private void cargarUbicacionSalaYAbrirPrivado(int otherUserId, String otherUserName) {
         RetrofitClient.getChatApiServices()
-                .crearChatPrivado(currentUserId, otherUserId)
+                .getSalaInfoRaw(currentSalaId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            try {
+                                aplicarInfoSalaDesdeJson(new JSONObject(response.body().string()));
+                            } catch (Exception ignored) {
+                            }
+                        }
+                        crearYAbrirChatPrivado(otherUserId, otherUserName);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        crearYAbrirChatPrivado(otherUserId, otherUserName);
+                    }
+                });
+    }
+
+    private void crearYAbrirChatPrivado(int otherUserId, String otherUserName) {
+        RetrofitClient.getChatApiServices()
+                .crearChatPrivadoDesdeSala(currentUserId, otherUserId, currentSalaId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -502,11 +552,24 @@ public class MainActivity extends AppCompatActivity {
                                     return;
                                 }
                                 int idChatPrivado = json.getInt("id_chat_privado");
+                                PrivateChatGeofenceStore.save(
+                                        MainActivity.this,
+                                        currentUserId,
+                                        otherUserId,
+                                        currentSalaId,
+                                        salaLatitud,
+                                        salaLongitud,
+                                        salaRadioMetros
+                                );
                                 Intent intent = new Intent(MainActivity.this, PrivateChatActivity.class);
                                 intent.putExtra("ID_CHAT_PRIVADO", idChatPrivado);
                                 intent.putExtra("CURRENT_USER_ID", currentUserId);
                                 intent.putExtra("OTHER_USER_ID", otherUserId);
                                 intent.putExtra("OTHER_USER_NAME", otherUserName);
+                                intent.putExtra(PrivateChatGeofenceStore.EXTRA_ID_SALA_ORIGEN, currentSalaId);
+                                intent.putExtra(PrivateChatGeofenceStore.EXTRA_SALA_LATITUD, salaLatitud);
+                                intent.putExtra(PrivateChatGeofenceStore.EXTRA_SALA_LONGITUD, salaLongitud);
+                                intent.putExtra(PrivateChatGeofenceStore.EXTRA_SALA_RADIO, salaRadioMetros);
                                 startActivity(intent);
                             } catch (Exception e) {
                                 Toast.makeText(MainActivity.this, "Error al parsear respuesta: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -526,6 +589,10 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
+    }
+
+    private boolean tieneCoordenadasSala() {
+        return salaLatitud != 0 || salaLongitud != 0;
     }
 
     private void unirseASalaEnServidor(String idSala) {
@@ -581,6 +648,24 @@ public class MainActivity extends AppCompatActivity {
             usuariosEnSala = usuarios;
         }
 
+        double latitud = extraerPrimerDouble(json,
+                "latitud", "latitude", "sala_latitud", "lat");
+        if (!Double.isNaN(latitud)) {
+            salaLatitud = latitud;
+        }
+
+        double longitud = extraerPrimerDouble(json,
+                "longitud", "longitude", "sala_longitud", "lon", "lng");
+        if (!Double.isNaN(longitud)) {
+            salaLongitud = longitud;
+        }
+
+        double radio = extraerPrimerDouble(json,
+                "radio_metros", "radio", "radioMetros", "sala_radio", "sala_radio_metros");
+        if (!Double.isNaN(radio) && radio >= 0) {
+            salaRadioMetros = radio;
+        }
+
         actualizarCabeceraSala();
     }
 
@@ -624,6 +709,24 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return "";
+    }
+
+    private double extraerPrimerDouble(JSONObject json, String... keys) {
+        for (String key : keys) {
+            if (!json.has(key)) continue;
+            try {
+                return json.getDouble(key);
+            } catch (Exception ignored) {
+            }
+            try {
+                String value = json.getString(key);
+                if (value != null && !value.trim().isEmpty()) {
+                    return Double.parseDouble(value.trim().replace(",", "."));
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return Double.NaN;
     }
 
     private void finalizarSalaPorTiempo(String mensaje) {

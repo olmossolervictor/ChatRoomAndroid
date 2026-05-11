@@ -161,8 +161,39 @@ public interface ChatApiServices {
             @Field("id_usuario_2") int idUsuario2
     );
 
+    @FormUrlEncoded
+    @POST("chat/privado/crear")
+    Call<ResponseBody> crearChatPrivadoDesdeSala(
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2,
+            @Field("id_sala_origen") String idSalaOrigen
+    );
+
+    @FormUrlEncoded
+    @POST("chat/privado/eliminar")
+    Call<ResponseBody> eliminarChatPrivado(
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2,
+            @Field("id_sala_origen") String idSalaOrigen,
+            @Field("motivo") String motivo
+    );
+
+    @FormUrlEncoded
+    @POST("chat/privado/eliminar-por-sala")
+    Call<ResponseBody> eliminarChatsPrivadosDeSala(
+            @Field("id_usuario") int idUsuario,
+            @Field("id_sala_origen") String idSalaOrigen,
+            @Field("motivo") String motivo
+    );
+
     @GET("chat/privado/mensajes")
     Call<List<Mensaje>> getMensajesPrivados(
+            @Query("id_usuario_1") int idUsuario1,
+            @Query("id_usuario_2") int idUsuario2
+    );
+
+    @GET("chat/privado/info")
+    Call<ResponseBody> getInfoChatPrivado(
             @Query("id_usuario_1") int idUsuario1,
             @Query("id_usuario_2") int idUsuario2
     );
@@ -174,6 +205,16 @@ public interface ChatApiServices {
             @Field("id_usuario_2") int idUsuario2,
             @Field("id_usuario_emisor") int idUsuarioEmisor,
             @Field("mensaje") String mensaje
+    );
+
+    @FormUrlEncoded
+    @POST("chat/privado/enviar")
+    Call<ResponseBody> enviarMensajePrivadoDesdeSala(
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2,
+            @Field("id_usuario_emisor") int idUsuarioEmisor,
+            @Field("mensaje") String mensaje,
+            @Field("id_sala_origen") String idSalaOrigen
     );
     // Aviso de que YO estoy escribiendo
     @FormUrlEncoded

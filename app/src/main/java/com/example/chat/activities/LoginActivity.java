@@ -282,7 +282,7 @@ public class LoginActivity extends BaseActivity {
 
     private void guardarSesionYEntrar(JSONObject json, String provider) throws Exception {
         int idUsuario = json.getInt("id_usuario");
-        String nombre = json.getString("nombre");
+        String nombre = json.optString("nombre", json.optString("nombre_usuario", "Usuario"));
         String rol = json.optString("rol", "usuario").toLowerCase();
 
         getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit()
@@ -292,15 +292,95 @@ public class LoginActivity extends BaseActivity {
                 .putString("auth_provider", provider)
                 .apply();
 
-        Intent intent;
         if ("google".equalsIgnoreCase(provider)) {
-            intent = new Intent(this, RegisterActivity.class);
+            if (jsonTieneInfoPerfil(json)) {
+                abrirDestinoGoogle(debeCompletarPerfilGoogle(json));
+            } else {
+                consultarPerfilGoogleYEntrar(idUsuario);
+            }
+        } else {
+            abrirHome();
+        }
+    }
+
+    private void consultarPerfilGoogleYEntrar(int idUsuario) {
+        api.getUsuario(idUsuario).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        JSONObject perfil = new JSONObject(response.body().string());
+                        abrirDestinoGoogle(debeCompletarPerfilGoogle(perfil));
+                        return;
+                    } catch (Exception ignored) {
+                    }
+                }
+                abrirHome();
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                abrirHome();
+            }
+        });
+    }
+
+    private boolean jsonTieneInfoPerfil(JSONObject json) {
+        return json.has("perfil_completo")
+                || json.has("perfil_completado")
+                || json.has("requiere_completar_perfil")
+                || json.has("needs_profile_completion")
+                || json.has("completar_perfil")
+                || json.has("nuevo_usuario")
+                || json.has("is_new_user")
+                || json.has("created")
+                || json.has("nombre_usuario")
+                || json.has("apellidos")
+                || json.has("telefono")
+                || json.has("fechaNacimiento")
+                || json.has("fecha_nacimiento");
+    }
+
+    private boolean debeCompletarPerfilGoogle(JSONObject json) {
+        if (json.optBoolean("requiere_completar_perfil", false)
+                || json.optBoolean("needs_profile_completion", false)
+                || json.optBoolean("completar_perfil", false)
+                || json.optBoolean("nuevo_usuario", false)
+                || json.optBoolean("is_new_user", false)
+                || json.optBoolean("created", false)) {
+            return true;
+        }
+
+        if ((json.has("perfil_completo") && !json.optBoolean("perfil_completo", true))
+                || (json.has("perfil_completado") && !json.optBoolean("perfil_completado", true))) {
+            return true;
+        }
+
+        return estaVacio(json.optString("nombre", ""))
+                || estaVacio(json.optString("apellidos", ""))
+                || estaVacio(json.optString("nombre_usuario", ""))
+                || estaVacio(json.optString("telefono", ""))
+                || estaVacio(json.optString("fechaNacimiento", json.optString("fecha_nacimiento", "")));
+    }
+
+    private boolean estaVacio(String value) {
+        return value == null || value.trim().isEmpty() || "null".equalsIgnoreCase(value.trim());
+    }
+
+    private void abrirDestinoGoogle(boolean completarPerfil) {
+        if (completarPerfil) {
+            Intent intent = new Intent(this, RegisterActivity.class);
             intent.putExtra("MODO_EDICION", true);
             intent.putExtra("MODO_GOOGLE_COMPLETAR_PERFIL", true);
+            startActivity(intent);
         } else {
-            intent = new Intent(this, HomeActivity.class);
+            startActivity(new Intent(this, HomeActivity.class));
         }
-        startActivity(intent);
+        finish();
+    }
+
+    private void abrirHome() {
+        startActivity(new Intent(this, HomeActivity.class));
         finish();
     }
 

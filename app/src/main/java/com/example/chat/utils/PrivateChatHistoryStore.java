@@ -60,6 +60,24 @@ public final class PrivateChatHistoryStore {
         return activeItems;
     }
 
+    public static synchronized void removeChat(Context context, int currentUserId, int otherUserId) {
+        if (context == null || currentUserId <= 0 || otherUserId <= 0) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        List<PrivateChatHistoryItem> items = getItemsWithoutPersist(context, currentUserId, now);
+        List<PrivateChatHistoryItem> filtered = new ArrayList<>();
+
+        for (PrivateChatHistoryItem item : items) {
+            if (item.getOtherUserId() != otherUserId) {
+                filtered.add(item);
+            }
+        }
+
+        saveItems(context, currentUserId, filtered);
+    }
+
     private static List<PrivateChatHistoryItem> getItemsWithoutPersist(Context context, int currentUserId, long now) {
         SharedPreferences pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String raw = pref.getString(getKey(currentUserId), "[]");

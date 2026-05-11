@@ -8,7 +8,7 @@
     android:background="@color/bg_main"
     android:fitsSystemWindows="true">
 
-    <!-- Subtle Background Elements for Depth -->
+    <!-- Subtle Background Glow -->
     <View
         android:layout_width="400dp"
         android:layout_height="400dp"
@@ -16,7 +16,6 @@
         android:layout_marginEnd="-150dp"
         android:background="@drawable/bg_circle_icon"
         android:backgroundTint="@color/accent_soft"
-        android:alpha="0.4"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -35,22 +34,22 @@
             android:paddingBottom="48dp"
             android:gravity="center_horizontal">
 
-            <!-- App Logo Section -->
+            <!-- App Logo/Icon -->
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_marginTop="64dp"
-                app:cardBackgroundColor="@android:color/transparent"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="2dp"
-                app:strokeColor="@color/primary">
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_marginTop="80dp"
+                app:cardBackgroundColor="@color/surface_card"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_subtle">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="20dp"
-                    android:src="@drawable/bg_icon_chat"
+                    android:padding="24dp"
+                    android:src="@android:drawable/ic_dialog_email"
                     app:tint="@color/primary" />
             </com.google.android.material.card.MaterialCardView>
 
@@ -58,22 +57,22 @@
                 android:id="@+id/tvChatroom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="32dp"
                 android:fontFamily="@font/poppins_bold"
-                android:text="@string/login_title"
+                android:text="ChatHub"
                 android:textColor="@color/text_high"
-                android:textSize="28sp"
-                android:letterSpacing="0.05" />
+                android:textSize="36sp"
+                android:letterSpacing="-0.04" />
 
             <TextView
                 android:id="@+id/tvLoginSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/login_subtitle"
-                android:textColor="@color/text_low"
-                android:textSize="14sp"
-                android:letterSpacing="0.02" />
+                android:textColor="@color/text_medium"
+                android:textSize="15sp"
+                android:letterSpacing="0.01" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -88,7 +87,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/login_email_hint"
-                    app:startIconDrawable="@android:drawable/ic_dialog_email">
+                    app:startIconDrawable="@android:drawable/ic_dialog_email"
+                    app:startIconTint="@color/text_low">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editEmail"
@@ -106,10 +106,11 @@
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="20dp"
                     android:hint="@string/login_password_hint"
                     app:endIconMode="password_toggle"
-                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock">
+                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+                    app:startIconTint="@color/text_low">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editPassword"
@@ -121,154 +122,79 @@
                         android:fontFamily="@font/poppins_medium" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Options Row (Optimized for Responsiveness) -->
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
-
-                    <CheckBox
-                        android:id="@+id/checkRememberMe"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/login_remember_me"
-                        android:textSize="13sp"
-                        android:textColor="@color/text_medium"
-                        android:fontFamily="@font/poppins_medium"
-                        android:buttonTint="@color/primary"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/textForgotPassword"
-                        app:layout_constraintHorizontal_bias="0" />
-
-                    <TextView
-                        android:id="@+id/textForgotPassword"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/login_forgot_password"
-                        android:textSize="13sp"
-                        android:textColor="@color/primary"
-                        android:fontFamily="@font/poppins_bold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <!-- Login Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnLogin"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="24dp"
-                    android:text="@string/login_button_text"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/poppins_bold"
-                    app:cornerRadius="28dp"
-                    android:elevation="4dp"
-                    android:stateListAnimator="@null" />
-
-                <!-- Separator -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="1"
-                        android:background="@color/border_subtle" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="16dp"
-                        android:text="@string/login_or_continue"
-                        android:textColor="@color/text_low"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/poppins_medium" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="1"
-                        android:background="@color/border_subtle" />
-                </LinearLayout>
-
-                <!-- Google Login Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnGoogleLogin"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="20dp"
-                    android:text="@string/login_google_button"
-                    android:textSize="15sp"
-                    android:textColor="@color/text_high"
-                    app:strokeColor="@color/border_subtle"
-                    app:strokeWidth="1dp"
-                    app:cornerRadius="28dp"
-                    android:fontFamily="@font/poppins_bold"
-                    app:icon="@android:drawable/ic_menu_search"
-                    app:iconTint="@null"
-                    app:iconGravity="textStart" />
-
-                <!-- Resend Verification -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/textResendVerification"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="16dp"
+                    android:layout_gravity="end"
                     android:text="@string/login_resend_prompt"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textColor="@color/primary"
                     android:fontFamily="@font/poppins_bold"
-                    android:visibility="visible" />
+                    android:visibility="gone" />
 
-                <!-- Footer Link -->
+                <!-- Login Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="62dp"
+                    android:layout_marginTop="36dp"
+                    android:background="@drawable/bg_button"
+                    android:text="@string/login_button_text"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/poppins_bold"
+                    android:letterSpacing="0.02"
+                    app:backgroundTint="@null"
+                    app:cornerRadius="16dp"
+                    android:elevation="4dp"
+                    android:stateListAnimator="@null" />
+
+                <!-- Google Login -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnGoogleLogin"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/login_google_button"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_high"
+                    app:strokeColor="@color/border_subtle"
+                    app:strokeWidth="1.5dp"
+                    app:cornerRadius="16dp"
+                    android:fontFamily="@font/poppins_bold" />
+
+                <!-- Footer Links -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
+                    android:layout_marginTop="40dp"
                     android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/login_dont_have_account"
-                        android:textColor="@color/text_medium"
-                        android:textSize="14sp"
-                        android:fontFamily="@font/poppins_medium" />
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/textGoToRegister"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/login_register_here"
-                        android:textColor="@color/primary"
+                        android:padding="8dp"
+                        android:text="@string/login_goto_register"
+                        android:textColor="@color/text_medium"
                         android:textSize="14sp"
-                        android:fontFamily="@font/poppins_bold" />
-                </LinearLayout>
+                        android:fontFamily="@font/poppins_medium" />
 
-                <!-- Legacy button for compatibility (Hidden or styled as small text) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnVerificarCorreoLogin"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/login_verify_email_text"
-                    android:textColor="@color/primary"
-                    android:fontFamily="@font/poppins_bold"
-                    android:textSize="12sp"
-                    android:visibility="gone"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnVerificarCorreoLogin"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/login_verify_email_text"
+                        android:textColor="@color/primary"
+                        android:fontFamily="@font/poppins_bold"
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
 
             </LinearLayout>
         </LinearLayout>
