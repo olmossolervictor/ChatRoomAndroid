@@ -37,6 +37,7 @@
     <string name="register_success_check_email">Registro completado. Revisa tu correo para verificar tu cuenta.</string>
     <string name="email_not_verified">Tu correo aún no está verificado</string>
     <string name="resend_verification">Reenviar verificación</string>
+    <string name="google_web_client_id">TU_ID_DE_CLIENTE_WEB_AQUÍ.apps.googleusercontent.com</string>
     <string name="google_not_configured">Próximamente disponible</string>
 
     <!-- CHAT -->

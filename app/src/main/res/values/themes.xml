@@ -165,5 +165,9 @@
         <item name="android:background">@drawable/digit_field_border</item>
         <item name="android:padding">8dp</item>
     </style>
+    <style name="CircleImage">
+        <item name="cornerSize">50%</item>
+        <item name="cornerFamily">rounded</item>
+    </style>
 
 </resources>
