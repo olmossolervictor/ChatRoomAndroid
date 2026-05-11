@@ -5,12 +5,17 @@
     <string name="app_name">ChatRoom</string>
 
     <!-- LOGIN -->
-    <string name="login_title">ChatRoom</string>
-    <string name="login_subtitle">Conecta. Habla. Disfruta.</string>
+    <string name="login_title">CHATROOM QR</string>
+    <string name="login_subtitle">Conecta. Comparte. Comunícate.</string>
+    <string name="login_remember_me">Recordarme</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_dont_have_account">¿No tienes cuenta? </string>
+    <string name="login_register_here">Regístrate aquí</string>
     <string name="login_email_hint">Correo electrónico</string>
     <string name="login_password_hint">Contraseña</string>
     <string name="login_button_text">Iniciar sesión</string>
     <string name="login_google_button">Continuar con Google</string>
+    <string name="login_or_continue">o continúa con</string>
     <string name="login_verify_email_text">Verificar correo</string>
     <string name="login_resend_prompt">¿No recibiste el código? Reenviar</string>
     <string name="login_goto_register">¿No tienes cuenta? Regístrate</string>

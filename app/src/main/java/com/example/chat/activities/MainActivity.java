@@ -464,6 +464,8 @@ public class MainActivity extends AppCompatActivity {
                                 if (!foto.isEmpty()) {
                                     byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
                                     imgFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
+                                } else {
+                                    imgFoto.setImageResource(R.drawable.defecto);
                                 }
                             } catch (Exception e) { e.printStackTrace(); }
                         }

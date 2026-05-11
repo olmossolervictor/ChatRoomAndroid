@@ -23,17 +23,20 @@
             android:layout_height="44dp"
             app:cardCornerRadius="22dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/white"
+            app:cardBackgroundColor="@color/primary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_gravity="center"
-                android:src="@android:drawable/ic_menu_myplaces"
-                app:tint="@color/primary" />
+            <TextView
+                android:id="@+id/textInicialHistorialPrivado"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="J"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:fontFamily="@font/poppins_bold" />
         </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
