@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <stroke
-        android:width="4dp"
-        android:color="#00FF00" />
-    <corners android:radius="8dp" />
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Efecto de resplandor exterior suave -->
+    <item>
+        <shape android:shape="rectangle">
+            <stroke android:width="2dp" android:color="#3300E5FF" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+    <!-- El marco principal con esquinas acentuadas -->
+    <item android:left="2dp" android:right="2dp" android:top="2dp" android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <stroke android:width="3dp" android:color="@color/secondary" />
+            <corners android:radius="22dp" />
+        </shape>
+    </item>
+</layer-list>

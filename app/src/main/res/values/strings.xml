@@ -58,6 +58,12 @@
     <string name="show_password">Mostrar contraseña</string>
     <string name="hide_password">Ocultar contraseña</string>
 
+    <!-- DRAWER -->
+    <string name="drawer_notificaciones">Notificaciones</string>
+    <string name="drawer_terminos">Términos y Condiciones</string>
+    <string name="drawer_denuncias">Denunciar</string>
+    <string name="drawer_notif_default">0</string>
+
     <!-- TÉRMINOS -->
     <string name="terminos_legales"><![CDATA[
     <h3>NORMATIVA LEGAL APLICABLE A UNA APLICACIÓN DE CHAT (ACTUALIZADA A 2026)</h3>

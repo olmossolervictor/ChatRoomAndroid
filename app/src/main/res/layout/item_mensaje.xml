@@ -1,42 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp">
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="4dp">
 
     <LinearLayout
         android:id="@+id/containerMensaje"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingLeft="14dp"
-        android:paddingRight="14dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:background="@drawable/bubble_others">
+        android:minWidth="80dp"
+        android:maxWidth="280dp"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp"
+        android:background="@drawable/bubble_others"
+        android:elevation="1dp">
 
-        <!-- Nombre del Remitente (Solo visible en mensajes ajenos) -->
         <TextView
             android:id="@+id/textNombre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/accent_blue" />
+            android:textSize="11sp"
+            android:fontFamily="@font/poppins_bold"
+            android:textColor="@color/secondary_dark"
+            android:letterSpacing="0.05"
+            android:textAllCaps="true"
+            android:layout_marginBottom="2dp"
+            tools:text="ALEX VIP" />
 
-        <!-- Cuerpo del Mensaje -->
         <TextView
             android:id="@+id/textMensaje"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text_high"
-            android:textSize="16sp" />
+            android:textSize="15sp"
+            android:lineSpacingMultiplier="1.2"
+            android:fontFamily="@font/poppins_regular"
+            tools:text="¿A qué hora empieza el set de mañana?" />
 
-        <!-- Hora -->
         <TextView
             android:id="@+id/textFecha"
             android:layout_width="wrap_content"
@@ -44,7 +49,10 @@
             android:textSize="10sp"
             android:layout_gravity="end"
             android:layout_marginTop="4dp"
-            android:textColor="@color/text_medium" />
+            android:alpha="0.7"
+            android:fontFamily="@font/poppins_medium"
+            android:textColor="@color/text_low"
+            tools:text="22:45" />
 
     </LinearLayout>
 
