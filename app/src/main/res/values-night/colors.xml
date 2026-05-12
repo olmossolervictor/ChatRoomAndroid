@@ -1,58 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 🌑 DARK BRAND CORE -->
-    <color name="primary">#818CF8</color>
-    <color name="primary_dark">#6366F1</color>
-    <color name="primary_light">#A5B4FC</color>
-    <color name="secondary">#22D3EE</color>
-    <color name="secondary_dark">#0891B2</color>
+    <!-- 🌑 BRAND CORE: Premium Purple (Night) -->
+    <color name="primary">#7C4DFF</color>
+    <color name="primary_dark">#6200EA</color>
+    <color name="primary_light">#B47CFF</color>
+    <color name="secondary">#9E9E9E</color>
+    <color name="secondary_dark">#757575</color>
 
-    <!-- 🌚 DARK SURFACES (Slate Palette) -->
-    <color name="bg_main">#0F172A</color>
-    <color name="bg_secondary">#1E293B</color>
-    <color name="surface_card">#1E293B</color>
-    <color name="surface_input">#0F172A</color>
-    <color name="border_subtle">#334155</color>
+    <!-- 🌚 PREMIUM NEUTRALS (Night Mode) -->
+    <color name="bg_main">#121212</color>
+    <color name="bg_secondary">#1E1E1E</color>
+    <color name="surface_card">#1E1E1E</color>
+    <color name="surface_input">#2C2C2C</color>
+    <color name="border_subtle">#333333</color>
 
-    <!-- 🖋️ DARK TYPOGRAPHY -->
-    <color name="text_high">#F8FAFC</color>
-    <color name="text_medium">#CBD5E1</color>
-    <color name="text_low">#64748B</color>
-    <color name="text_title">#F8FAFC</color>
+    <!-- 🖋️ TYPOGRAPHY (Night) -->
+    <color name="text_high">#F5F5F5</color>
+    <color name="text_medium">#BDBDBD</color>
+    <color name="text_low">#757575</color>
+    <color name="text_title">#FFFFFF</color>
 
-    <!-- 💬 DARK CHAT BUBBLES -->
-    <color name="chat_bubble_sent">#6366F1</color>
+    <!-- 💬 CHAT UI COLORS (Night) -->
+    <color name="chat_bubble_sent">#7C4DFF</color>
     <color name="chat_text_sent">#FFFFFF</color>
-    <color name="chat_bubble_received">#1E293B</color>
-    <color name="chat_text_received">#F1F5F9</color>
-    <color name="chat_time_sent">#E0E7FF</color>
-    <color name="chat_time_received">#94A3B8</color>
-    <color name="chat_system_text">#64748B</color>
-    <color name="chat_general_bubble">#6D4CFF</color>
+    <color name="chat_bubble_received">#2C2C2C</color>
+    <color name="chat_text_received">#F5F5F5</color>
+    <color name="chat_time_sent">#B47CFF</color>
+    <color name="chat_time_received">#757575</color>
+    <color name="chat_system_text">#757575</color>
+    <color name="chat_general_bubble">#7C4DFF</color>
     <color name="chat_private_bubble">#1E88E5</color>
     <color name="chat_private_bubble_soft">#0B2440</color>
 
-    <!-- 🎨 FUNCTIONAL -->
-    <color name="error_main">#F87171</color>
-    <color name="error_bg">#450A0A</color>
-    <color name="success_main">#34D399</color>
-    <color name="success_bg">#064E3B</color>
-    <color name="warning_main">#FBAD37</color>
-    <color name="warning_bg">#422006</color>
-    <color name="info_main">#60A5FA</color>
-    <color name="info_bg">#1E3A8A</color>
+    <!-- 🎨 FUNCTIONAL COLORS (Night) -->
+    <color name="error_main">#FF5252</color>
+    <color name="error_bg">#2C1717</color>
+    <color name="success_main">#00E676</color>
+    <color name="success_bg">#1B2E1B</color>
+    <color name="warning_main">#FFAB40</color>
+    <color name="warning_bg">#2E231B</color>
+    <color name="info_main">#448AFF</color>
+    <color name="info_bg">#1B222E</color>
 
-    <!-- ✨ ACCENTS -->
-    <color name="accent_soft">#1E293B</color>
-    <color name="grad_start">#818CF8</color>
-    <color name="grad_end">#22D3EE</color>
-
-    <!-- LEGACY ALIASES -->
+    <!-- ✨ ACCENTS & COMPATIBILITY (Night) -->
+    <color name="accent_soft">#311B92</color>
+    <color name="accent_neon">#7C4DFF</color>
+    <color name="grad_start">#7C4DFF</color>
+    <color name="grad_end">#B47CFF</color>
+    <color name="primary_start">#7C4DFF</color>
+    <color name="primary_end">#B47CFF</color>
+    <color name="primary_variant">#6200EA</color>
+    <color name="surface_highlight">#1E1E1E</color>
+    <color name="error">#FF5252</color>
+    <color name="card_bg">#1E1E1E</color>
+    <color name="input_focus">#7C4DFF</color>
+    <color name="input_bg">#1E1E1E</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="surface_highlight">@color/bg_secondary</color>
-    <color name="primary_start">@color/grad_start</color>
-    <color name="primary_end">@color/grad_end</color>
-    <color name="primary_variant">@color/primary_dark</color>
-    <color name="error">@color/error_main</color>
 </resources>
