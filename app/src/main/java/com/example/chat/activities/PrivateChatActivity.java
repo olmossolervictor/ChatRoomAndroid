@@ -5,10 +5,10 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.Editable; // NUEVO
-import android.text.TextWatcher; // NUEVO
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
-import android.view.View; // NUEVO
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -65,7 +65,7 @@ public class PrivateChatActivity extends BaseActivity {
     private long ultimoCheckGeofence = 0L;
     private boolean chatCerradoPorGeofence = false;
 
-    // VARIABLES PARA LA ANIMACIÃ“N
+    // VARIABLES PARA LA ANIMACIÓN
     private long ultimoAvisoEscribiendo = 0;
     private LinearLayout layoutTyping;
     private View layoutSolicitudPrivada;
@@ -90,19 +90,26 @@ public class PrivateChatActivity extends BaseActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         PrivateChatHistoryStore.touchChat(this, currentUserId, otherUserId, otherUserName);
 
+        // --- CONFIGURACIÓN DE LA TOOLBAR NATIVA ---
         Toolbar toolbar = findViewById(R.id.toolbarPrivateChat);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Chat con: " + otherUserName);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enciende la flecha
+            getSupportActionBar().setDisplayShowTitleEnabled(false); // Oculta el título feo por defecto
+        }
+        toolbar.setOnClickListener(v -> mostrarDialogoDenuncias(otherUserId));
+
+        TextView textToolbarPrivateTitle = findViewById(R.id.textToolbarPrivateTitle);
+        if (textToolbarPrivateTitle != null) {
+            textToolbarPrivateTitle.setText(otherUserName);
         }
 
-        toolbar.setOnClickListener(v -> mostrarDialogoDenuncias(otherUserId));
+        // ❌ ¡LÍNEAS DE btnBackPrivate ELIMINADAS AQUÍ! ❌
 
         listMessagesPrivate = findViewById(R.id.listMessagesPrivate);
         editMessagePrivate = findViewById(R.id.editMessagePrivate);
         btnSendPrivate = findViewById(R.id.btnSendPrivate);
-        layoutTyping = findViewById(R.id.layoutTyping); // Vinculamos el ID del XML
+        layoutTyping = findViewById(R.id.layoutTyping);
         layoutSolicitudPrivada = findViewById(R.id.layoutSolicitudPrivada);
         layoutBotonesSolicitudPrivada = findViewById(R.id.layoutBotonesSolicitudPrivada);
         textEstadoConversacionPrivada = findViewById(R.id.textEstadoConversacionPrivada);
@@ -112,7 +119,7 @@ public class PrivateChatActivity extends BaseActivity {
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessagesPrivate.setAdapter(adapter);
 
-        // Ajuste automÃ¡tico cuando sale el teclado
+        // Ajuste automático cuando sale el teclado
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() | androidx.core.view.WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -123,7 +130,7 @@ public class PrivateChatActivity extends BaseActivity {
             return insets;
         });
 
-        // --- NUEVO: ESCUCHADOR DE ESCRITURA PARA AVISAR AL OTRO ---
+        // ESCUCHADOR DE ESCRITURA PARA AVISAR AL OTRO
         editMessagePrivate.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -132,7 +139,6 @@ public class PrivateChatActivity extends BaseActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 0) {
                     long tiempoActual = System.currentTimeMillis();
-                    // Solo avisamos al servidor una vez cada 2 segundos para no saturarlo
                     if (tiempoActual - ultimoAvisoEscribiendo > 2000) {
                         ultimoAvisoEscribiendo = tiempoActual;
                         notificarEscribiendoAlServidor();
@@ -159,7 +165,7 @@ public class PrivateChatActivity extends BaseActivity {
             @Override
             public void run() {
                 obtenerMensajesPrivados();
-                comprobarSiElOtroEscribe(); // NUEVO: Pregunta si debe mostrar la animacion
+                comprobarSiElOtroEscribe();
                 verificarUbicacionPrivada(false);
                 handler.postDelayed(this, 3000);
             }
@@ -167,7 +173,6 @@ public class PrivateChatActivity extends BaseActivity {
         handler.postDelayed(refreshRunnable, 3000);
     }
 
-    // --- NUEVO MÃ‰TODO: NOTIFICAR AL SERVIDOR QUE YO ESCRIBO ---
     private void notificarEscribiendoAlServidor() {
         RetrofitClient.getChatApiServices()
                 .notificarEscribiendo(currentUserId, otherUserId)
@@ -179,7 +184,6 @@ public class PrivateChatActivity extends BaseActivity {
                 });
     }
 
-    // --- NUEVO MÃ‰TODO: PREGUNTAR SI EL OTRO ESTÃ ESCRIBIENDO ---
     private void comprobarSiElOtroEscribe() {
         RetrofitClient.getChatApiServices()
                 .getEstadoEscribiendoPath(currentUserId, otherUserId)
@@ -234,7 +238,7 @@ public class PrivateChatActivity extends BaseActivity {
                         try {
                             JSONObject json = new JSONObject(response.body().string());
                             if (json.optBoolean("eliminado", false)) {
-                                cerrarChatPrivadoPorGeofence("Este chat privado ya no esta disponible.");
+                                cerrarChatPrivadoPorGeofence("Este chat privado ya no está disponible.");
                                 return;
                             }
 
@@ -326,7 +330,7 @@ public class PrivateChatActivity extends BaseActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_PRIVATE_CHAT_REQUEST
             );
-            Toast.makeText(this, "Necesito ubicacion para mantener este chat privado activo", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Necesito ubicación para mantener este chat privado activo", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -339,7 +343,7 @@ public class PrivateChatActivity extends BaseActivity {
                 .addOnSuccessListener(this, location -> {
                     if (location == null) {
                         if (accionSiValida != null) {
-                            Toast.makeText(this, "No se pudo comprobar tu ubicacion", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "No se pudo comprobar tu ubicación", Toast.LENGTH_SHORT).show();
                         }
                         return;
                     }
@@ -354,7 +358,7 @@ public class PrivateChatActivity extends BaseActivity {
                     );
 
                     if (resultado[0] > getRadioPrivadoEfectivo()) {
-                        cerrarChatPrivadoPorGeofence("Has salido del area de la sala. Chat privado eliminado.");
+                        cerrarChatPrivadoPorGeofence("Has salido del área de la sala. Chat privado eliminado.");
                         return;
                     }
 
@@ -401,7 +405,7 @@ public class PrivateChatActivity extends BaseActivity {
         if (requestCode == LOCATION_PERMISSION_PRIVATE_CHAT_REQUEST
                 && (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED)
                 && tieneGeofencePrivada()) {
-            cerrarChatPrivadoPorGeofence("Sin ubicacion no se puede mantener este chat privado.");
+            cerrarChatPrivadoPorGeofence("Sin ubicación no se puede mantener este chat privado.");
         }
     }
 
@@ -434,7 +438,6 @@ public class PrivateChatActivity extends BaseActivity {
                             listaMensajes.addAll(response.body());
                             adapter.notifyDataSetChanged();
                             aplicarEstadoConversacion();
-                            // listMessagesPrivate.setSelection(adapter.getCount() - 1); // Lo comentamos para que no salte todo el rato
                         } else if (response.code() == 410) {
                             cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
                         }
@@ -449,7 +452,7 @@ public class PrivateChatActivity extends BaseActivity {
         if (mensaje.isEmpty()) return;
         if (chatCerradoPorGeofence) return;
         if (!PrivateChatConversationPolicy.canSendMessage(conversationState)) {
-            Toast.makeText(this, "Tienes que esperar a que se acepte la conversacion", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Tienes que esperar a que se acepte la conversación", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -459,31 +462,31 @@ public class PrivateChatActivity extends BaseActivity {
     private void enviarMensajePrivadoValidado(String mensaje) {
         Call<ResponseBody> call = tieneGeofencePrivada()
                 ? RetrofitClient.getChatApiServices()
-                        .enviarMensajePrivadoDesdeSala(currentUserId, otherUserId, currentUserId, mensaje, idSalaOrigen)
+                .enviarMensajePrivadoDesdeSala(currentUserId, otherUserId, currentUserId, mensaje, idSalaOrigen)
                 : RetrofitClient.getChatApiServices()
-                        .enviarMensajePrivado(currentUserId, otherUserId, currentUserId, mensaje);
+                .enviarMensajePrivado(currentUserId, otherUserId, currentUserId, mensaje);
 
         call.enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            editMessagePrivate.setText("");
-                            PrivateChatHistoryStore.touchChat(
-                                    PrivateChatActivity.this,
-                                    currentUserId,
-                                    otherUserId,
-                                    otherUserName
-                            );
-                            obtenerMensajesPrivados();
-                        } else if (response.code() == 410) {
-                            cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(PrivateChatActivity.this, "Error al enviar", Toast.LENGTH_SHORT).show();
-                    }
-                });
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    editMessagePrivate.setText("");
+                    PrivateChatHistoryStore.touchChat(
+                            PrivateChatActivity.this,
+                            currentUserId,
+                            otherUserId,
+                            otherUserName
+                    );
+                    obtenerMensajesPrivados();
+                } else if (response.code() == 410) {
+                    cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
+                }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(PrivateChatActivity.this, "Error al enviar", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void aplicarEstadoConversacion() {
@@ -498,20 +501,20 @@ public class PrivateChatActivity extends BaseActivity {
             case PENDING_INCOMING:
                 layoutSolicitudPrivada.setVisibility(View.VISIBLE);
                 layoutBotonesSolicitudPrivada.setVisibility(View.VISIBLE);
-                textEstadoConversacionPrivada.setText(otherUserName + " quiere iniciar una conversacion privada. Acepta para poder responder o rechaza la conversacion.");
-                setInputPrivadoEnabled(false, "Acepta la conversacion para responder");
+                textEstadoConversacionPrivada.setText(otherUserName + " quiere iniciar una conversación privada. Acepta para poder responder o rechaza la conversación.");
+                setInputPrivadoEnabled(false, "Acepta la conversación para responder");
                 break;
             case PENDING_OUTGOING:
                 layoutSolicitudPrivada.setVisibility(View.VISIBLE);
                 layoutBotonesSolicitudPrivada.setVisibility(View.GONE);
-                textEstadoConversacionPrivada.setText("Esperando a que " + otherUserName + " acepte la conversacion. Cuando acepte, podreis hablar.");
-                setInputPrivadoEnabled(false, "Esperando aceptacion");
+                textEstadoConversacionPrivada.setText("Esperando a que " + otherUserName + " acepte la conversación. Cuando acepte, podréis hablar.");
+                setInputPrivadoEnabled(false, "Esperando aceptación");
                 break;
             case REJECTED:
                 layoutSolicitudPrivada.setVisibility(View.VISIBLE);
                 layoutBotonesSolicitudPrivada.setVisibility(View.GONE);
-                textEstadoConversacionPrivada.setText("La conversacion ha sido rechazada. No se pueden enviar mas mensajes.");
-                setInputPrivadoEnabled(false, "Conversacion rechazada");
+                textEstadoConversacionPrivada.setText("La conversación ha sido rechazada. No se pueden enviar más mensajes.");
+                setInputPrivadoEnabled(false, "Conversación rechazada");
                 break;
         }
     }
@@ -532,38 +535,38 @@ public class PrivateChatActivity extends BaseActivity {
 
         Call<ResponseBody> call = tieneGeofencePrivada()
                 ? RetrofitClient.getChatApiServices()
-                        .enviarMensajePrivadoDesdeSala(currentUserId, otherUserId, currentUserId, controlMessage, idSalaOrigen)
+                .enviarMensajePrivadoDesdeSala(currentUserId, otherUserId, currentUserId, controlMessage, idSalaOrigen)
                 : RetrofitClient.getChatApiServices()
-                        .enviarMensajePrivado(currentUserId, otherUserId, currentUserId, controlMessage);
+                .enviarMensajePrivado(currentUserId, otherUserId, currentUserId, controlMessage);
 
         call.enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        btnAcceptPrivateRequest.setEnabled(true);
-                        btnRejectPrivateRequest.setEnabled(true);
-                        if (response.isSuccessful()) {
-                            PrivateChatHistoryStore.touchChat(
-                                    PrivateChatActivity.this,
-                                    currentUserId,
-                                    otherUserId,
-                                    otherUserName
-                            );
-                            marcarMensajesEntrantesLeidos();
-                            obtenerMensajesPrivados();
-                        } else if (response.code() == 410) {
-                            cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
-                        } else {
-                            Toast.makeText(PrivateChatActivity.this, "No se pudo responder la solicitud", Toast.LENGTH_SHORT).show();
-                        }
-                    }
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                btnAcceptPrivateRequest.setEnabled(true);
+                btnRejectPrivateRequest.setEnabled(true);
+                if (response.isSuccessful()) {
+                    PrivateChatHistoryStore.touchChat(
+                            PrivateChatActivity.this,
+                            currentUserId,
+                            otherUserId,
+                            otherUserName
+                    );
+                    marcarMensajesEntrantesLeidos();
+                    obtenerMensajesPrivados();
+                } else if (response.code() == 410) {
+                    cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
+                } else {
+                    Toast.makeText(PrivateChatActivity.this, "No se pudo responder la solicitud", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        btnAcceptPrivateRequest.setEnabled(true);
-                        btnRejectPrivateRequest.setEnabled(true);
-                        Toast.makeText(PrivateChatActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
-                    }
-                });
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                btnAcceptPrivateRequest.setEnabled(true);
+                btnRejectPrivateRequest.setEnabled(true);
+                Toast.makeText(PrivateChatActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void marcarMensajesEntrantesLeidos() {
@@ -580,17 +583,8 @@ public class PrivateChatActivity extends BaseActivity {
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
-        final String[] tiposDenuncia = {"InformaciÃ³n falsa", "Comentario obsceno", "Otro"};
+        final String[] tiposDenuncia = {"Información falsa", "Comentario obsceno", "Otro"};
         final String[] tipoDenunciaSeleccionado = {""};
         final EditText[] editRazon = {null};
 
@@ -612,7 +606,7 @@ public class PrivateChatActivity extends BaseActivity {
                 if (position == 2) {
                     if (editRazon[0] == null) {
                         editRazon[0] = new EditText(PrivateChatActivity.this);
-                        editRazon[0].setHint("Explica la razÃ³n de tu denuncia");
+                        editRazon[0].setHint("Explica la razón de tu denuncia");
                         layoutDenuncia.addView(editRazon[0]);
                     }
                     editRazon[0].setVisibility(View.VISIBLE);
@@ -648,11 +642,19 @@ public class PrivateChatActivity extends BaseActivity {
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(refreshRunnable);
     }
-}
 
+    // --- EL MÉTODO PARA QUE LA FLECHA NATIVA RETROCEDA ---
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+}

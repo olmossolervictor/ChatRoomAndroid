@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Base64;
 import android.view.LayoutInflater;
+import android.view.MenuItem; // <--- IMPORTANTE AÑADIDO
 import android.view.View;
 import android.graphics.Color;
 import android.widget.Button;
@@ -24,9 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar; // <--- IMPORTANTE AÑADIDO
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -57,7 +58,6 @@ import retrofit2.Response;
 public class MainActivity extends BaseActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
-    private androidx.drawerlayout.widget.DrawerLayout drawerLayoutMain;
     private EditText editMessage;
     private Button btnSend;
     private ListView listMessages;
@@ -122,7 +122,7 @@ public class MainActivity extends BaseActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 
@@ -132,16 +132,13 @@ public class MainActivity extends BaseActivity {
             return insets;
         });
 
-        drawerLayoutMain = findViewById(R.id.drawerLayoutMain);
-        android.widget.ImageButton btnMenuDrawerMain = findViewById(R.id.btnMenuDrawerMain);
-        TextView drawerVolverInicio = findViewById(R.id.drawerVolverInicio);
-        TextView drawerSalirSala = findViewById(R.id.drawerSalirSala);
-
-        btnMenuDrawerMain.setOnClickListener(v -> drawerLayoutMain.openDrawer(androidx.core.view.GravityCompat.START));
-
-        drawerVolverInicio.setOnClickListener(v -> finish());
-
-        drawerSalirSala.setOnClickListener(v -> salirDeSalaManualmente());
+        // --- AQUÍ ACTIVAMOS LA BARRA CON LA FLECHA NATIVA ---
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
         editMessage = findViewById(R.id.editMessage);
         btnSend = findViewById(R.id.btnSend);
@@ -153,7 +150,6 @@ public class MainActivity extends BaseActivity {
         salaNombreMostrado = currentSalaId;
         actualizarCabeceraSala();
 
-        // --- INICIALIZACIÓN DEL ADAPTER CON EL NUEVO CLIC ---
         adapter = new MensajeAdapter(this, listaMensajes);
 
         adapter.setOnNombreClickListener(msg -> {
@@ -168,7 +164,6 @@ public class MainActivity extends BaseActivity {
 
         listMessages.setAdapter(adapter);
 
-        // --- CONFIGURACIÓN DE VISTAS SEGÚN ROL ---
         if (isAdmin) {
             layoutInputMessage.setVisibility(View.GONE);
         } else {
@@ -411,14 +406,15 @@ public class MainActivity extends BaseActivity {
     private void obtenerUbicacionYEnviar(String mensaje) {
         enviarMensajeAlServidor(mensaje);
     }
+
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
+        // Lógica limpia para ocultar el teclado al tocar fuera
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
             if (v instanceof EditText) {
                 android.graphics.Rect outRect = new android.graphics.Rect();
                 v.getGlobalVisibleRect(outRect);
-                // Si el toque es FUERA de la caja de texto, ocultamos el teclado
                 if (!outRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
                     v.clearFocus();
                     android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
@@ -430,6 +426,7 @@ public class MainActivity extends BaseActivity {
         }
         return super.dispatchTouchEvent(ev);
     }
+
     private void enviarMensajeAlServidor(String mensajeLimpio) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
         btnSend.setEnabled(false);
@@ -904,5 +901,15 @@ public class MainActivity extends BaseActivity {
         if (handler != null && refreshRunnable != null) {
             handler.removeCallbacks(refreshRunnable);
         }
+    }
+
+    // --- AQUÍ ESTÁ EL MÉTODO DE LA FLECHA ---
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish(); // Esto SÓLO te devuelve al Home, NO cierra sesión en la sala
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

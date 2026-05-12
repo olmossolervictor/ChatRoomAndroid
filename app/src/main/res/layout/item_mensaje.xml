@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:textSize="11sp"
             android:fontFamily="@font/poppins_bold"
-            android:textColor="@color/secondary_dark"
+            android:textColor="#CCCCCC"
             android:letterSpacing="0.05"
             android:textAllCaps="true"
             android:layout_marginBottom="2dp"
@@ -36,7 +36,7 @@
             android:id="@+id/textMensaje"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_high"
+            android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:lineSpacingMultiplier="1.2"
             android:fontFamily="@font/poppins_regular"
@@ -51,7 +51,7 @@
             android:layout_marginTop="4dp"
             android:alpha="0.7"
             android:fontFamily="@font/poppins_medium"
-            android:textColor="@color/text_low"
+            android:textColor="#FFFFFF"
             tools:text="22:45" />
 
     </LinearLayout>
