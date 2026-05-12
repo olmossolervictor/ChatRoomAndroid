@@ -23,17 +23,19 @@
             android:layout_height="52dp"
             app:cardCornerRadius="18dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/accent_soft"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:strokeWidth="0dp"
+            app:strokeColor="@color/secondary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="47dp"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:src="@android:drawable/ic_menu_slideshow"
-                app:tint="@color/primary" />
+                android:scaleType="centerInside"
+                android:src="@drawable/foto_sala" />
         </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout

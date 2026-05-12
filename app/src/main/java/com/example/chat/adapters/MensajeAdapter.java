@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.example.chat.R;
 import com.example.chat.models.Mensaje;
@@ -67,7 +68,7 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
                 textFecha.setVisibility(View.GONE);
                 textMensaje.setText(PrivateChatConversationPolicy.getSystemText(mensaje, currentUserId));
                 textMensaje.setTextSize(13);
-                textMensaje.setTextColor(Color.parseColor("#777777"));
+                textMensaje.setTextColor(ContextCompat.getColor(getContext(), R.color.chat_system_text));
                 textMensaje.setGravity(Gravity.CENTER);
                 textNombre.setOnClickListener(null);
                 container.setBackgroundColor(Color.TRANSPARENT);
@@ -79,7 +80,6 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
             textNombre.setText(mensaje.getNombre());
             textFecha.setVisibility(View.VISIBLE);
             textMensaje.setGravity(Gravity.START);
-            textMensaje.setTextColor(Color.parseColor("#212121"));
 
             // --- NUEVO: DETECTAR CLIC SOLO EN EL NOMBRE ---
             textNombre.setOnClickListener(v -> {
@@ -123,10 +123,14 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
                 container.setBackgroundResource(R.drawable.bubble_me);
                 params.gravity = Gravity.END;
                 textNombre.setVisibility(View.GONE);
+                textMensaje.setTextColor(ContextCompat.getColor(getContext(), R.color.chat_text_sent));
+                textFecha.setTextColor(ContextCompat.getColor(getContext(), R.color.chat_time_sent));
             } else {
                 container.setBackgroundResource(R.drawable.bubble_others);
                 params.gravity = Gravity.START;
                 textNombre.setVisibility(View.VISIBLE);
+                textMensaje.setTextColor(ContextCompat.getColor(getContext(), R.color.chat_text_received));
+                textFecha.setTextColor(ContextCompat.getColor(getContext(), R.color.chat_time_received));
             }
             container.setLayoutParams(params);
         }

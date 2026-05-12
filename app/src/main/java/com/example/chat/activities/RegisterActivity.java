@@ -59,6 +59,8 @@ import retrofit2.Response;
 
 public class RegisterActivity extends BaseActivity {
 
+    private static final String PREF_GOOGLE_PROFILE_SETUP_DONE = "google_profile_setup_done_";
+
     // Componentes de la interfaz de usuario
     private EditText editNombre, editApellidos, editFechaNac, editEmail, editTelefono, editPassword, editNombreUsuario;
     private TextView textEmailError, textNombreUsuarioError;
@@ -485,7 +487,8 @@ public class RegisterActivity extends BaseActivity {
                         editNombre.setText(limpiarValor(json.optString("nombre", "")));
                         editApellidos.setText(limpiarValor(json.optString("apellidos", "")));
 
-                        fechaSeleccionada = limpiarValor(json.optString("fechaNacimiento", ""));
+                        fechaSeleccionada = limpiarValor(json.optString("fechaNacimiento",
+                                json.optString("fecha_nacimiento", json.optString("fecha_nac", ""))));
                         editFechaNac.setText(fechaSeleccionada);
 
                         emailOriginal = limpiarValor(json.optString("email", ""));
@@ -652,7 +655,12 @@ public class RegisterActivity extends BaseActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(RegisterActivity.this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
-                    getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit().putString("nombre", nombre).apply();
+                    SharedPreferences.Editor editor = getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit()
+                            .putString("nombre", nombre);
+                    if (isGoogleProfileSetup) {
+                        editor.putBoolean(PREF_GOOGLE_PROFILE_SETUP_DONE + currentUserId, true);
+                    }
+                    editor.apply();
                     if (isGoogleProfileSetup) {
                         startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
                     }

@@ -46,6 +46,8 @@ import retrofit2.Response;
 
 public class LoginActivity extends BaseActivity {
 
+    private static final String PREF_GOOGLE_PROFILE_SETUP_DONE = "google_profile_setup_done_";
+
     // Componentes de la interfaz de usuario
     private EditText editEmail, editPassword;
     private Button btnLogin, btnGoogleLogin, textResendVerification, btnVerificarCorreoLogin;
@@ -293,14 +295,28 @@ public class LoginActivity extends BaseActivity {
                 .apply();
 
         if ("google".equalsIgnoreCase(provider)) {
-            if (jsonTieneInfoPerfil(json)) {
-                abrirDestinoGoogle(debeCompletarPerfilGoogle(json));
-            } else {
-                consultarPerfilGoogleYEntrar(idUsuario);
-            }
+            manejarDestinoGoogle(idUsuario, json);
         } else {
             abrirHome();
         }
+    }
+
+    private void manejarDestinoGoogle(int idUsuario, JSONObject json) {
+        if (perfilGoogleYaConfigurado(idUsuario)) {
+            abrirHome();
+            return;
+        }
+
+        if (jsonTieneInfoPerfil(json)) {
+            boolean completarPerfil = debeCompletarPerfilGoogle(json);
+            if (!completarPerfil) {
+                marcarPerfilGoogleConfigurado(idUsuario);
+            }
+            abrirDestinoGoogle(completarPerfil);
+            return;
+        }
+
+        consultarPerfilGoogleYEntrar(idUsuario);
     }
 
     private void consultarPerfilGoogleYEntrar(int idUsuario) {
@@ -310,7 +326,12 @@ public class LoginActivity extends BaseActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     try {
                         JSONObject perfil = new JSONObject(response.body().string());
-                        abrirDestinoGoogle(debeCompletarPerfilGoogle(perfil));
+                        boolean completarPerfil = !perfilGoogleYaConfigurado(idUsuario)
+                                && debeCompletarPerfilGoogle(perfil);
+                        if (!completarPerfil) {
+                            marcarPerfilGoogleConfigurado(idUsuario);
+                        }
+                        abrirDestinoGoogle(completarPerfil);
                         return;
                     } catch (Exception ignored) {
                     }
@@ -338,10 +359,15 @@ public class LoginActivity extends BaseActivity {
                 || json.has("apellidos")
                 || json.has("telefono")
                 || json.has("fechaNacimiento")
-                || json.has("fecha_nacimiento");
+                || json.has("fecha_nacimiento")
+                || json.has("fecha_nac");
     }
 
     private boolean debeCompletarPerfilGoogle(JSONObject json) {
+        if (json == null) {
+            return false;
+        }
+
         if (json.optBoolean("requiere_completar_perfil", false)
                 || json.optBoolean("needs_profile_completion", false)
                 || json.optBoolean("completar_perfil", false)
@@ -356,15 +382,36 @@ public class LoginActivity extends BaseActivity {
             return true;
         }
 
-        return estaVacio(json.optString("nombre", ""))
-                || estaVacio(json.optString("apellidos", ""))
-                || estaVacio(json.optString("nombre_usuario", ""))
-                || estaVacio(json.optString("telefono", ""))
-                || estaVacio(json.optString("fechaNacimiento", json.optString("fecha_nacimiento", "")));
+        return estaVacio(valorPerfil(json, "nombre"))
+                || estaVacio(valorPerfil(json, "apellidos"))
+                || estaVacio(valorPerfil(json, "nombre_usuario", "username", "usuario"))
+                || estaVacio(valorPerfil(json, "telefono", "phone"))
+                || estaVacio(valorPerfil(json, "fechaNacimiento", "fecha_nacimiento", "fecha_nac"));
+    }
+
+    private String valorPerfil(JSONObject json, String... keys) {
+        for (String key : keys) {
+            String value = json.optString(key, "");
+            if (!estaVacio(value)) {
+                return value;
+            }
+        }
+        return "";
     }
 
     private boolean estaVacio(String value) {
         return value == null || value.trim().isEmpty() || "null".equalsIgnoreCase(value.trim());
+    }
+
+    private boolean perfilGoogleYaConfigurado(int idUsuario) {
+        return getSharedPreferences("ChatPrefs", MODE_PRIVATE)
+                .getBoolean(PREF_GOOGLE_PROFILE_SETUP_DONE + idUsuario, false);
+    }
+
+    private void marcarPerfilGoogleConfigurado(int idUsuario) {
+        getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit()
+                .putBoolean(PREF_GOOGLE_PROFILE_SETUP_DONE + idUsuario, true)
+                .apply();
     }
 
     private void abrirDestinoGoogle(boolean completarPerfil) {
