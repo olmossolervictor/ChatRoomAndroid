@@ -43,7 +43,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
                         android:fontFamily="@font/poppins_bold"
-                        android:text="CHATHUB"
+                        android:text="CHATROOM"
                         android:textColor="@color/primary"
                         android:textSize="16sp"
                         android:letterSpacing="0.2" />
@@ -332,13 +332,6 @@
                     style="@style/DrawerItemStylePremium"
                     android:text="Legal"
                     android:drawableStart="@android:drawable/ic_menu_info_details"
-                    app:drawableTint="@color/text_medium" />
-
-                <TextView
-                    android:id="@+id/drawerDenuncias"
-                    style="@style/DrawerItemStylePremium"
-                    android:text="@string/drawer_denuncias"
-                    android:drawableStart="@android:drawable/ic_menu_report_image"
                     app:drawableTint="@color/text_medium" />
 
             </LinearLayout>

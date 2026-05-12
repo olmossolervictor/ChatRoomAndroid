@@ -64,7 +64,7 @@ public class HomeActivity extends BaseActivity {
     private ImageView imgDrawerFoto;
     private TextView textDrawerNombre;
     private TextView drawerEditarPerfil, drawerAjustes, drawerGestionUsuarios;
-    private TextView drawerTerminos, drawerDenuncias, drawerCerrarSesion;
+    private TextView drawerTerminos, drawerCerrarSesion;
     private RelativeLayout drawerNotificaciones;
     private TextView drawerNotifBadge;
 
@@ -75,6 +75,7 @@ public class HomeActivity extends BaseActivity {
     private TextView textHistorialPrivadoVacio;
     private final Handler historialHandler = new Handler(Looper.getMainLooper());
     private Runnable historialRefreshRunnable;
+    private long ultimoClickTime = 0;
 
     private static class NotificacionPrivada {
         String contenido;
@@ -108,7 +109,6 @@ public class HomeActivity extends BaseActivity {
         drawerAjustes = findViewById(R.id.drawerAjustes);
         drawerGestionUsuarios = findViewById(R.id.drawerGestionUsuarios);
         drawerTerminos = findViewById(R.id.drawerTerminos);
-        drawerDenuncias = findViewById(R.id.drawerDenuncias);
         drawerCerrarSesion = findViewById(R.id.drawerCerrarSesion);
         drawerNotificaciones = findViewById(R.id.drawerNotificaciones);
         drawerNotifBadge = findViewById(R.id.drawerNotifBadge);
@@ -119,7 +119,10 @@ public class HomeActivity extends BaseActivity {
         listSalas.setAdapter(salaAdapter);
 
         // Click en lista de salas
+        // Click en lista de salas
         listSalas.setOnItemClickListener((parent, view, position, id) -> {
+            if (esClickRapido()) return; // <--- ESTO EVITA ABRIR 2 VECES LA SALA
+
             Sala sala = listaMisSalas.get(position);
             abrirSala(sala.getIdSala() != null ? sala.getIdSala() : sala.getNombre());
         });
@@ -128,16 +131,16 @@ public class HomeActivity extends BaseActivity {
         btnMenuDrawer.setOnClickListener(v -> drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
 
         View.OnClickListener scanAction = v -> {
+            if (esClickRapido()) return; // <--- ESTO EVITA ABRIR 2 VECES LA CÁMARA
+
             boolean faltaCamara = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED;
             boolean faltaUbicacion = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED;
 
             if (faltaCamara || faltaUbicacion) {
-                // Si falta alguno, le pedimos LOS DOS a la vez
                 androidx.core.app.ActivityCompat.requestPermissions(this,
                         new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.ACCESS_FINE_LOCATION},
                         3000);
             } else {
-                // Si ya tiene los dos, entra directo al escaner
                 startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE);
             }
         };
@@ -164,11 +167,6 @@ public class HomeActivity extends BaseActivity {
         drawerTerminos.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
             mostrarDialogoTerminos();
-        });
-
-        drawerDenuncias.setOnClickListener(v -> {
-            drawerLayout.closeDrawers();
-            Toast.makeText(this, "Para denunciar a un usuario, haz clic en su nombre en los chats", Toast.LENGTH_LONG).show();
         });
 
         drawerNotificaciones.setOnClickListener(v -> {
@@ -334,7 +332,10 @@ public class HomeActivity extends BaseActivity {
             textNombre.setText(item.getOtherUserName());
             textTiempo.setVisibility(View.GONE);
 
-            row.setOnClickListener(v -> abrirChatPrivadoDesdeHistorial(item));
+            row.setOnClickListener(v -> {
+                if (esClickRapido()) return; // <--- ESTO EVITA ABRIR 2 VECES EL CHAT PRIVADO
+                abrirChatPrivadoDesdeHistorial(item);
+            });
             layoutHistorialPrivadoItems.addView(row);
         }
     }
@@ -734,11 +735,16 @@ public class HomeActivity extends BaseActivity {
             } else {
                 Button btnAbrir = new Button(this);
                 btnAbrir.setText("Abrir");
-                btnAbrir.setOnClickListener(v -> abrirNotificacionPrivada(dialogRef[0], notificacion));
+                btnAbrir.setOnClickListener(v -> {
+                    if (esClickRapido()) return; // <--- BLOQUEO AQUÍ
+                    abrirNotificacionPrivada(dialogRef[0], notificacion);
+                });
                 acciones.addView(btnAbrir);
-                item.setOnClickListener(v -> abrirNotificacionPrivada(dialogRef[0], notificacion));
+                item.setOnClickListener(v -> {
+                    if (esClickRapido()) return; // <--- Y BLOQUEO AQUÍ
+                    abrirNotificacionPrivada(dialogRef[0], notificacion);
+                });
             }
-
             item.addView(acciones);
             container.addView(item);
         }
@@ -853,6 +859,14 @@ public class HomeActivity extends BaseActivity {
                 Toast.makeText(this, "Para acceder al escáner necesitas aceptar los permisos de Cámara y Ubicación", Toast.LENGTH_LONG).show();
             }
         }
+    }
+    private boolean esClickRapido() {
+        long tiempoActual = System.currentTimeMillis();
+        if (tiempoActual - ultimoClickTime < 1000) {
+            return true; // Es un clic muy rápido, lo bloqueamos
+        }
+        ultimoClickTime = tiempoActual;
+        return false; // Es un clic normal, lo dejamos pasar
     }
 
 }

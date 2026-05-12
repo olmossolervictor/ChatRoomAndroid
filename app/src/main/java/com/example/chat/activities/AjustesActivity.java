@@ -25,7 +25,7 @@ public class AjustesActivity extends BaseActivity {
 
     static final String PREFS = "AjustesPrefs";
 
-    private Switch switchGps, switchMantenerPantalla, switchNotificaciones, switchCamara;
+    private Switch switchGps, switchCamara;
     private RadioGroup radioTamanoFuente, radioTema;
     private SharedPreferences prefs;
 
@@ -40,8 +40,6 @@ public class AjustesActivity extends BaseActivity {
         switchGps = findViewById(R.id.switchGps);
         switchCamara = findViewById(R.id.switchCamara);
         radioTema = findViewById(R.id.radioTema);
-        switchMantenerPantalla = findViewById(R.id.switchMantenerPantalla);
-        switchNotificaciones = findViewById(R.id.switchNotificaciones);
         radioTamanoFuente = findViewById(R.id.radioTamanoFuente);
 
         btnBackAjustes.setOnClickListener(v -> finish());
@@ -52,8 +50,6 @@ public class AjustesActivity extends BaseActivity {
         else if (modoNoche == AppCompatDelegate.MODE_NIGHT_NO) radioTema.check(R.id.radioTemaClaro);
         else radioTema.check(R.id.radioTemaSistema);
 
-        switchMantenerPantalla.setChecked(prefs.getBoolean("mantener_pantalla", false));
-        switchNotificaciones.setChecked(prefs.getBoolean("notificaciones", true));
 
         int tamano = prefs.getInt("tamano_fuente", 15);
         if (tamano == 13) radioTamanoFuente.check(R.id.radioFuentePequena);
@@ -71,11 +67,6 @@ public class AjustesActivity extends BaseActivity {
             AppCompatDelegate.setDefaultNightMode(mode);
         });
 
-        switchMantenerPantalla.setOnCheckedChangeListener((b, isChecked) ->
-                prefs.edit().putBoolean("mantener_pantalla", isChecked).apply());
-
-        switchNotificaciones.setOnCheckedChangeListener((b, isChecked) ->
-                prefs.edit().putBoolean("notificaciones", isChecked).apply());
 
         radioTamanoFuente.setOnCheckedChangeListener((group, checkedId) -> {
             int size = 15;
