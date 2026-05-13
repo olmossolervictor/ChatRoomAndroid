@@ -72,14 +72,16 @@
 
         <ImageView
             android:id="@+id/chevron"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:src="@android:drawable/ic_media_play"
+            android:layout_width="25dp"
+            android:layout_height="29dp"
+            android:src="@drawable/icon_sala"
             app:tint="@color/text_low"
             android:alpha="0.5"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.666"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

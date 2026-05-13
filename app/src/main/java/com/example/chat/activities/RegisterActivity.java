@@ -62,11 +62,11 @@ public class RegisterActivity extends BaseActivity {
     private static final String PREF_GOOGLE_PROFILE_SETUP_DONE = "google_profile_setup_done_";
 
     // Componentes de la interfaz de usuario
-    private EditText editNombre, editApellidos, editFechaNac, editEmail, editTelefono, editPassword, editNombreUsuario;
+    private com.google.android.material.textfield.TextInputEditText editNombre, editApellidos, editRegFechaNac, editRegEmail, editRegTelefono, editRegPassword, editRegNombreUsuario;
     private TextView textEmailError, textNombreUsuarioError;
-    private ImageView imgUser;
-    private Button btnRegister;
-    private View btnSelectPhoto;
+    private de.hdodenhof.circleimageview.CircleImageView imgUser; // Si sigues usando la librería CircleImageView
+    private com.google.android.material.button.MaterialButton btnRegister;
+    private com.google.android.material.card.MaterialCardView btnSelectPhoto; // Cambiado de View a MaterialCardView
     private TextView textBackToLogin, textTitle;
     private LinearLayout layoutSugerencias, layoutBotonesSugerencias;
 
@@ -103,11 +103,11 @@ public class RegisterActivity extends BaseActivity {
         textTitle = findViewById(R.id.textTitle);
         editNombre = findViewById(R.id.editRegNombre);
         editApellidos = findViewById(R.id.editRegApellidos);
-        editFechaNac = findViewById(R.id.editRegEdad);
-        editEmail = findViewById(R.id.editRegEmail);
+        editRegFechaNac = findViewById(R.id.editRegEdad);
+        editRegEmail = findViewById(R.id.editRegEmail);
         textEmailError = findViewById(R.id.textEmailError);
-        editTelefono = findViewById(R.id.editRegTelefono);
-        editPassword = findViewById(R.id.editRegPassword);
+        editRegTelefono = findViewById(R.id.editRegTelefono);
+        editRegPassword = findViewById(R.id.editRegPassword);
         imgUser = findViewById(R.id.imgUser);
         btnSelectPhoto = findViewById(R.id.btnSelectPhoto);
         btnRegister = findViewById(R.id.btnRegister);
@@ -126,13 +126,13 @@ public class RegisterActivity extends BaseActivity {
             textVerTerminos.setOnClickListener(v -> mostrarAlertaTerminos());
         }
 
-        editNombreUsuario = findViewById(R.id.editRegNombreUsuario);
+        editRegNombreUsuario = findViewById(R.id.editRegNombreUsuario);
         textNombreUsuarioError = findViewById(R.id.textNombreUsuarioError);
         layoutSugerencias = findViewById(R.id.layoutSugerencias);
         layoutBotonesSugerencias = findViewById(R.id.layoutBotonesSugerencias);
 
-        if (editNombreUsuario != null) {
-            editNombreUsuario.addTextChangedListener(new TextWatcher() {
+        if (editRegNombreUsuario != null) {
+            editRegNombreUsuario.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -152,10 +152,10 @@ public class RegisterActivity extends BaseActivity {
             });
         }
 
-        if (editFechaNac != null) {
-            editFechaNac.setFocusable(false);
-            editFechaNac.setClickable(true);
-            editFechaNac.setOnClickListener(v -> mostrarCalendario());
+        if (editRegFechaNac != null) {
+            editRegFechaNac.setFocusable(false);
+            editRegFechaNac.setClickable(true);
+            editRegFechaNac.setOnClickListener(v -> mostrarCalendario());
         }
 
         isEditMode = getIntent().getBooleanExtra("MODO_EDICION", false);
@@ -180,7 +180,6 @@ public class RegisterActivity extends BaseActivity {
         if (textBackToLogin != null) {
             textBackToLogin.setOnClickListener(v -> finish());
         }
-
         configurarValidacionDinamica();
     }
 
@@ -194,14 +193,14 @@ public class RegisterActivity extends BaseActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if (editNombre != null && editNombre.getError() != null) editNombre.setError(null);
-                if (editEmail != null && editEmail.getError() != null) editEmail.setError(null);
-                if (editPassword != null && editPassword.getError() != null) editPassword.setError(null);
+                if (editRegEmail != null && editRegEmail.getError() != null) editRegEmail.setError(null);
+                if (editRegPassword != null && editRegPassword.getError() != null) editRegPassword.setError(null);
             }
         };
 
         if (editNombre != null) editNombre.addTextChangedListener(watcher);
-        if (editEmail != null) editEmail.addTextChangedListener(watcher);
-        if (editPassword != null) editPassword.addTextChangedListener(watcher);
+        if (editRegEmail != null) editRegEmail.addTextChangedListener(watcher);
+        if (editRegPassword != null) editRegPassword.addTextChangedListener(watcher);
         
         if (btnRegister != null) {
             btnRegister.setEnabled(true);
@@ -319,6 +318,11 @@ public class RegisterActivity extends BaseActivity {
         Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show();
     }
     private void prepararPantallaParaEdicion() {
+        com.google.android.material.button.MaterialButton btnBackEdit = findViewById(R.id.btnBackEdit);
+        if (btnBackEdit != null) {
+            btnBackEdit.setVisibility(View.VISIBLE); // La hacemos aparecer
+            btnBackEdit.setOnClickListener(v -> finish()); // Que cierre al pulsar
+        }
         if (textTitle != null) textTitle.setText("Editar Mi Perfil");
         btnRegister.setText("Guardar Cambios");
 
@@ -329,22 +333,22 @@ public class RegisterActivity extends BaseActivity {
         // BLOQUEO DE CAMPOS
         editNombre.setEnabled(false);
         editApellidos.setEnabled(false);
-        editFechaNac.setEnabled(false);
-        editFechaNac.setClickable(false);
-        editTelefono.setEnabled(false);
-        editEmail.setEnabled(false);
+        editRegFechaNac.setEnabled(false);
+        editRegFechaNac.setClickable(false);
+        editRegTelefono.setEnabled(false);
+        editRegEmail.setEnabled(false);
 
         if (isGoogleProfileSetup) {
             editNombre.setEnabled(true);
             editApellidos.setEnabled(true);
-            editFechaNac.setEnabled(true);
-            editFechaNac.setClickable(true);
-            editTelefono.setEnabled(true);
+            editRegFechaNac.setEnabled(true);
+            editRegFechaNac.setClickable(true);
+            editRegTelefono.setEnabled(true);
         }
 
         // CAMPOS EDITABLES
-        if (editNombreUsuario != null) editNombreUsuario.setEnabled(true);
-        editPassword.setEnabled(true);
+        if (editRegNombreUsuario != null) editRegNombreUsuario.setEnabled(true);
+        editRegPassword.setEnabled(true);
 
         // RECUPERAMOS TU ID DE USUARIO (Súper importante)
         currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
@@ -358,7 +362,6 @@ public class RegisterActivity extends BaseActivity {
         btnRegister.setText("Registrarse");
         layoutTerminos.setVisibility(View.VISIBLE);
         textBackToLogin.setVisibility(View.VISIBLE);
-        editPassword.setHint("Contraseña");
         
         // Ponemos la imagen por defecto al iniciar el registro
         imgUser.setImageResource(R.drawable.defecto);
@@ -421,8 +424,8 @@ public class RegisterActivity extends BaseActivity {
             
             fechaSeleccionada = year + "-" + mesF + "-" + diaF;
             String fechaMostrar = diaF + "/" + mesF + "/" + year;
-            editFechaNac.setText(fechaMostrar);
-            editFechaNac.setError(null);
+            editRegFechaNac.setText(fechaMostrar);
+            editRegFechaNac.setError(null);
         });
 
         datePicker.show(getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
@@ -430,7 +433,7 @@ public class RegisterActivity extends BaseActivity {
 
     // Método que ya no usaremos pero mantenemos la estructura limpia
     private void configurarTextWatcherEmail() {
-        editEmail.addTextChangedListener(new TextWatcher() {
+        editRegEmail.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -489,19 +492,19 @@ public class RegisterActivity extends BaseActivity {
 
                         fechaSeleccionada = limpiarValor(json.optString("fechaNacimiento",
                                 json.optString("fecha_nacimiento", json.optString("fecha_nac", ""))));
-                        editFechaNac.setText(fechaSeleccionada);
+                        editRegFechaNac.setText(fechaSeleccionada);
 
                         emailOriginal = limpiarValor(json.optString("email", ""));
-                        editEmail.setText(emailOriginal);
+                        editRegEmail.setText(emailOriginal);
 
-                        editTelefono.setText(limpiarValor(json.optString("telefono", "")));
+                        editRegTelefono.setText(limpiarValor(json.optString("telefono", "")));
 
                         // CARGAMOS EL NOMBRE DE USUARIO (EL NUEVO CAMPO)
-                        if (editNombreUsuario != null) {
-                            editNombreUsuario.setText(limpiarValor(json.optString("nombre_usuario", "")));
+                        if (editRegNombreUsuario != null) {
+                            editRegNombreUsuario.setText(limpiarValor(json.optString("nombre_usuario", "")));
                         }
 
-                        editPassword.setText(""); // Dejamos la contraseña en blanco por seguridad
+                        editRegPassword.setText(""); // Dejamos la contraseña en blanco por seguridad
 
                         String fotoBase64 = json.optString("foto", "");
                         if (!fotoBase64.isEmpty()) {
@@ -532,10 +535,10 @@ public class RegisterActivity extends BaseActivity {
     private boolean validarCampos(boolean passwordObligatoria) {
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
-        String nombreUsuario = editNombreUsuario != null ? editNombreUsuario.getText().toString().trim() : "";
-        String email = editEmail.getText().toString().trim();
-        String telefono = editTelefono.getText().toString().trim();
-        String password = editPassword.getText().toString().trim();
+        String nombreUsuario = editRegNombreUsuario != null ? editRegNombreUsuario.getText().toString().trim() : "";
+        String email = editRegEmail.getText().toString().trim();
+        String telefono = editRegTelefono.getText().toString().trim();
+        String password = editRegPassword.getText().toString().trim();
 
         // VALIDACIÓN GENERAL: Si falta algún campo obligatorio, mostramos el aviso inferior
         boolean faltanCampos = nombre.isEmpty() || apellidos.isEmpty() || nombreUsuario.isEmpty() ||
@@ -555,16 +558,16 @@ public class RegisterActivity extends BaseActivity {
 
         // 2. NOMBRE DE USUARIO
         if (nombreUsuario.isEmpty()) {
-            if (editNombreUsuario != null) {
-                editNombreUsuario.setError("El nombre de usuario es obligatorio");
-                editNombreUsuario.requestFocus();
+            if (editRegNombreUsuario != null) {
+                editRegNombreUsuario.setError("El nombre de usuario es obligatorio");
+                editRegNombreUsuario.requestFocus();
             }
             return false;
         }
         if (nombreUsuario.length() < 4) {
-            if (editNombreUsuario != null) {
-                editNombreUsuario.setError("Usa al menos 4 caracteres para tu usuario");
-                editNombreUsuario.requestFocus();
+            if (editRegNombreUsuario != null) {
+                editRegNombreUsuario.setError("Usa al menos 4 caracteres para tu usuario");
+                editRegNombreUsuario.requestFocus();
             }
             return false;
         }
@@ -589,40 +592,40 @@ public class RegisterActivity extends BaseActivity {
 
         // 4. FECHA DE NACIMIENTO
         if (fechaSeleccionada.isEmpty()) {
-            editFechaNac.setError("Selecciona tu fecha de nacimiento");
-            AlertHelper.showActionAlert(editFechaNac, "Indica tu fecha de nacimiento", AlertType.INFO);
+            editRegFechaNac.setError("Selecciona tu fecha de nacimiento");
+            AlertHelper.showActionAlert(editRegFechaNac, "Indica tu fecha de nacimiento", AlertType.INFO);
             return false;
         }
 
         // 5. EMAIL
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            editEmail.setError("Introduce un correo electrónico válido");
-            editEmail.requestFocus();
+            editRegEmail.setError("Introduce un correo electrónico válido");
+            editRegEmail.requestFocus();
             return false;
         }
         if (emailYaExiste) {
             textEmailError.setVisibility(View.VISIBLE);
-            editEmail.requestFocus();
+            editRegEmail.requestFocus();
             return false;
         }
 
         // 6. TELÉFONO
         if (!telefono.matches("^[0-9]{9}$")) {
-            editTelefono.setError("El teléfono debe tener 9 dígitos numéricos");
-            editTelefono.requestFocus();
+            editRegTelefono.setError("El teléfono debe tener 9 dígitos numéricos");
+            editRegTelefono.requestFocus();
             return false;
         }
 
         // 7. CONTRASEÑA
         if (passwordObligatoria || (!passwordObligatoria && !password.isEmpty())) {
             if (password.isEmpty()) {
-                editPassword.setError("Crea una contraseña para proteger tu cuenta");
-                editPassword.requestFocus();
+                editRegPassword.setError("Crea una contraseña para proteger tu cuenta");
+                editRegPassword.requestFocus();
                 return false;
             }
             if (password.length() < 6) {
-                editPassword.setError("Usa al menos 6 caracteres");
-                editPassword.requestFocus();
+                editRegPassword.setError("Usa al menos 6 caracteres");
+                editRegPassword.requestFocus();
                 return false;
             }
         }
@@ -643,10 +646,10 @@ public class RegisterActivity extends BaseActivity {
 
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
-        String nombreUsuario = editNombreUsuario != null ? editNombreUsuario.getText().toString().trim() : "";
-        String email = editEmail.getText().toString().trim();
-        String telefono = editTelefono.getText().toString().trim();
-        String password = editPassword.getText().toString().trim();
+        String nombreUsuario = editRegNombreUsuario != null ? editRegNombreUsuario.getText().toString().trim() : "";
+        String email = editRegEmail.getText().toString().trim();
+        String telefono = editRegTelefono.getText().toString().trim();
+        String password = editRegPassword.getText().toString().trim();
 
         RetrofitClient.getChatApiServices().actualizarUsuario(
                 currentUserId, nombre, apellidos, nombreUsuario, fechaSeleccionada, email, telefono, password, encodedImage
@@ -678,7 +681,7 @@ public class RegisterActivity extends BaseActivity {
     private void registrar() {
         if (!validarCampos(true)) return;
 
-        String email = editEmail.getText().toString().trim();
+        String email = editRegEmail.getText().toString().trim();
 
         RetrofitClient.getChatApiServices()
                 .iniciarRegistro(email)
@@ -689,12 +692,12 @@ public class RegisterActivity extends BaseActivity {
                     // Guardar datos del usuario para la verificación
                     Intent intent = new Intent(RegisterActivity.this, VerificacionEmailActivity.class);
                     intent.putExtra("VERIFICACION_EMAIL", email);
-                    intent.putExtra("VERIFICACION_NOMBRE_USUARIO", editNombreUsuario.getText().toString().trim());
+                    intent.putExtra("VERIFICACION_NOMBRE_USUARIO", editRegNombreUsuario.getText().toString().trim());
                     intent.putExtra("VERIFICACION_NOMBRE", editNombre.getText().toString().trim());
                     intent.putExtra("VERIFICACION_APELLIDOS", editApellidos.getText().toString().trim());
                     intent.putExtra("VERIFICACION_FECHA", fechaSeleccionada);
-                    intent.putExtra("VERIFICACION_TELEFONO", editTelefono.getText().toString().trim());
-                    intent.putExtra("VERIFICACION_PASSWORD", editPassword.getText().toString().trim());
+                    intent.putExtra("VERIFICACION_TELEFONO", editRegTelefono.getText().toString().trim());
+                    intent.putExtra("VERIFICACION_PASSWORD", editRegPassword.getText().toString().trim());
                     intent.putExtra("VERIFICACION_FOTO", encodedImage);
                     startActivity(intent);
                     finish();
@@ -771,7 +774,7 @@ public class RegisterActivity extends BaseActivity {
                                         params.setMargins(4, 0, 4, 0);
                                         btnSugerencia.setLayoutParams(params);
                                         btnSugerencia.setOnClickListener(v -> {
-                                            editNombreUsuario.setText(sugerencia);
+                                            editRegNombreUsuario.setText(sugerencia);
                                         });
                                         layoutBotonesSugerencias.addView(btnSugerencia);
                                     }

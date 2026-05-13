@@ -1,133 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/capaFrenteSala"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="4dp"
-    android:layout_marginVertical="8dp">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="3dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/border_subtle"
+    app:cardBackgroundColor="@color/surface_card"
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="0dp"
-        app:cardBackgroundColor="#D32F2F">
+    android:descendantFocusability="blocksDescendants"
+    android:clickable="false"
+    android:focusable="false"
+    android:duplicateParentState="true"
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:paddingStart="24dp"
-            android:orientation="horizontal">
+    android:foreground="?attr/selectableItemBackground">
 
-            <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@android:drawable/ic_menu_directions"
-                app:tint="@android:color/white" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Abandonar"
-                android:textColor="@android:color/white"
-                android:fontFamily="@font/poppins_bold"
-                android:textSize="15sp"
-                android:layout_marginStart="8dp"/>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/capaFrenteSala"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="2dp"
-        app:strokeWidth="0dp"
-        app:cardBackgroundColor="@color/surface_card">
+        android:padding="16dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/iconContainer"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/bg_secondary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                android:src="@drawable/foto_sala" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:id="@+id/textContainer"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="20dp"
-            android:background="?attr/selectableItemBackground">
+            android:orientation="vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintStart_toEndOf="@id/iconContainer"
+            app:layout_constraintEnd_toStartOf="@id/btnEnterContainer"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/iconContainer"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@android:color/transparent"
-                app:strokeWidth="0dp"
-                app:strokeColor="@color/secondary"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent">
-
-                <ImageView
-                    android:layout_width="47dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/foto_sala" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <LinearLayout
-                android:id="@+id/textContainer"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/textNombreSala"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="12dp"
-                app:layout_constraintStart_toEndOf="@id/iconContainer"
-                app:layout_constraintEnd_toStartOf="@id/btnEnterContainer"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent">
+                android:text="NOMBRE DE LA SALA"
+                android:textColor="@color/text_high"
+                android:textSize="16sp"
+                android:fontFamily="@font/poppins_bold" />
 
-                <TextView
-                    android:id="@+id/textNombreSala"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="NOMBRE DE LA SALA"
-                    android:textColor="@color/text_high"
-                    android:textSize="17sp"
-                    android:fontFamily="@font/poppins_bold"
-                    android:letterSpacing="-0.01" />
+            <TextView
+                android:id="@+id/textTiempoSala"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACCESO CONCEDIDO"
+                android:textColor="@color/secondary_dark"
+                android:textSize="11sp"
+                android:fontFamily="@font/poppins_medium"
+                android:alpha="0.8" />
+        </LinearLayout>
 
-                <TextView
-                    android:id="@+id/textTiempoSala"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ACCESO CONCEDIDO"
-                    android:textColor="@color/secondary_dark"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:alpha="0.8"
-                    android:layout_marginTop="2dp" />
-            </LinearLayout>
+        <ImageView
+            android:layout_width="38dp"
+            android:layout_height="31dp"
+            android:layout_marginStart="80dp"
+            android:src="@drawable/icon_sala"
+            app:layout_constraintBottom_toBottomOf="@id/btnEnterContainer"
+            app:layout_constraintEnd_toEndOf="@+id/btnEnterContainer"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/textContainer"
+            app:layout_constraintTop_toTopOf="@id/btnEnterContainer"
+            app:layout_constraintVertical_bias="0.666"
+            app:tint="@color/text_medium" />
 
-            <FrameLayout
-                android:id="@+id/btnEnterContainer"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/bg_circle_icon"
-                android:backgroundTint="@color/bg_secondary"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent">
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_gravity="center"
-                    android:src="@android:drawable/ic_media_play"
-                    app:tint="@color/text_medium"
-                    android:layout_marginStart="2dp"/>
-            </FrameLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-</FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

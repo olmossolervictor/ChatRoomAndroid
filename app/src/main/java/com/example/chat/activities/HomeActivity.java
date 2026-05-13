@@ -23,7 +23,6 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.chat.R;
@@ -41,7 +40,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -54,17 +52,19 @@ public class HomeActivity extends BaseActivity {
 
     private DrawerLayout drawerLayout;
     private ListView listSalas;
-    private ImageButton btnMenuDrawer;
+    private com.google.android.material.button.MaterialButton btnMenuDrawer, drawerAjustes, drawerGestionUsuarios, drawerTerminos;
 
-    // Vistas para gestionar los estados vacío/con salas
     private LinearLayout layoutConSalas, layoutSinSalas;
     private Button btnScanQRHomeAbajo, btnScanQRHomeCentro;
 
-    // Drawer views
     private ImageView imgDrawerFoto;
     private TextView textDrawerNombre;
-    private TextView drawerEditarPerfil, drawerAjustes, drawerGestionUsuarios;
-    private TextView drawerTerminos, drawerCerrarSesion;
+
+    // 👇 AQUÍ ESTÁ LA MAGIA. Agrupamos todos los MaterialButtons juntos
+    private com.google.android.material.button.MaterialButton drawerEditarPerfil;
+    private com.google.android.material.button.MaterialButton drawerCerrarSesion;
+    private com.google.android.material.button.MaterialButton btnAbandonarGlobal;
+
     private RelativeLayout drawerNotificaciones;
     private TextView drawerNotifBadge;
 
@@ -97,7 +97,6 @@ public class HomeActivity extends BaseActivity {
         listSalas = findViewById(R.id.listSalas);
         btnMenuDrawer = findViewById(R.id.btnMenuDrawer);
 
-        // Instanciamos los nuevos layouts
         layoutConSalas = findViewById(R.id.layoutConSalas);
         layoutSinSalas = findViewById(R.id.layoutSinSalas);
         btnScanQRHomeAbajo = findViewById(R.id.btnScanQRHomeAbajo);
@@ -118,21 +117,17 @@ public class HomeActivity extends BaseActivity {
         salaAdapter = new SalaAdapter(this, listaMisSalas);
         listSalas.setAdapter(salaAdapter);
 
-        // Click en lista de salas
-        // Click en lista de salas
+        // Click normal para entrar a la sala
         listSalas.setOnItemClickListener((parent, view, position, id) -> {
-            if (esClickRapido()) return; // <--- ESTO EVITA ABRIR 2 VECES LA SALA
-
+            if (esClickRapido()) return;
             Sala sala = listaMisSalas.get(position);
             abrirSala(sala.getIdSala() != null ? sala.getIdSala() : sala.getNombre());
         });
 
-        // Click en menú lateral
         btnMenuDrawer.setOnClickListener(v -> drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
 
         View.OnClickListener scanAction = v -> {
-            if (esClickRapido()) return; // <--- ESTO EVITA ABRIR 2 VECES LA CÁMARA
-
+            if (esClickRapido()) return;
             boolean faltaCamara = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED;
             boolean faltaUbicacion = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED;
 
@@ -152,6 +147,17 @@ public class HomeActivity extends BaseActivity {
             Intent intent = new Intent(this, RegisterActivity.class);
             intent.putExtra("MODO_EDICION", true);
             startActivity(intent);
+        });
+
+        btnAbandonarGlobal = findViewById(R.id.btnAbandonarGlobal);
+
+        btnAbandonarGlobal.setOnClickListener(v -> {
+            if (listaMisSalas != null && !listaMisSalas.isEmpty()) {
+                // Pillamos la sala activa (la primera)
+                Sala sala = listaMisSalas.get(0);
+                String idSala = sala.getIdSala() != null ? sala.getIdSala() : sala.getNombre();
+                confirmarAbandonoTotal(idSala);
+            }
         });
 
         drawerAjustes.setOnClickListener(v -> {
@@ -187,6 +193,7 @@ public class HomeActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        cargarPerfilDrawer();
         cargarMisSalas();
         actualizarBadgeNotificaciones();
         refrescarHistorialPrivado();
@@ -226,9 +233,13 @@ public class HomeActivity extends BaseActivity {
                                 textDrawerNombre.setText(displayName);
 
                                 String foto = json.optString("foto", "");
-                                if (!foto.isEmpty()) {
-                                    byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
-                                    imgDrawerFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
+                                if (!foto.isEmpty() && !foto.equalsIgnoreCase("null")) {
+                                    try {
+                                        byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
+                                        imgDrawerFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
+                                    } catch (Exception e) {
+                                        imgDrawerFoto.setImageResource(R.drawable.defecto);
+                                    }
                                 } else {
                                     imgDrawerFoto.setImageResource(R.drawable.defecto);
                                 }
@@ -255,27 +266,32 @@ public class HomeActivity extends BaseActivity {
                                 }
                             }
                         }
+
+                        // 🚀 CONTROL DEL ICONO DE SALIDA
+                        if (listaMisSalas.isEmpty()) {
+                            btnAbandonarGlobal.setVisibility(View.GONE);
+                        } else {
+                            btnAbandonarGlobal.setVisibility(View.VISIBLE);
+                        }
+
                         salaAdapter.notifyDataSetChanged();
                         actualizarVistasSalas();
                     }
+
                     @Override
                     public void onFailure(Call<List<Sala>> call, Throwable t) {
                         actualizarVistasSalas();
+                        btnAbandonarGlobal.setVisibility(View.GONE);
                     }
                 });
     }
 
     private boolean debeMostrarSala(Sala sala) {
         if (sala == null) return false;
-
         String estado = sala.getEstado();
-        if ("finalizada".equalsIgnoreCase(estado)
-                || "expirada".equalsIgnoreCase(estado)
-                || "cerrada".equalsIgnoreCase(estado)
-                || "inactiva".equalsIgnoreCase(estado)) {
+        if ("finalizada".equalsIgnoreCase(estado) || "expirada".equalsIgnoreCase(estado) || "cerrada".equalsIgnoreCase(estado) || "inactiva".equalsIgnoreCase(estado)) {
             return false;
         }
-
         long minutosRestantes = sala.getMinutosRestantes();
         return minutosRestantes == -1 || minutosRestantes > 0;
     }
@@ -301,39 +317,25 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void refrescarHistorialPrivado() {
-        if (layoutHistorialPrivadoItems == null || textHistorialPrivadoVacio == null) {
-            return;
-        }
-
+        if (layoutHistorialPrivadoItems == null || textHistorialPrivadoVacio == null) return;
         List<PrivateChatHistoryItem> historial = PrivateChatHistoryStore.getActiveHistory(this, currentUserId);
         layoutHistorialPrivadoItems.removeAllViews();
-
         if (historial.isEmpty()) {
             textHistorialPrivadoVacio.setVisibility(View.VISIBLE);
             return;
         }
-
         textHistorialPrivadoVacio.setVisibility(View.GONE);
-
         for (PrivateChatHistoryItem item : historial) {
             View row = LayoutInflater.from(this).inflate(R.layout.item_historial_privado, layoutHistorialPrivadoItems, false);
-
             TextView textNombre = row.findViewById(R.id.textNombreHistorialPrivado);
-            TextView textTiempo = row.findViewById(R.id.textTiempoHistorialPrivado);
             TextView textInicial = row.findViewById(R.id.textInicialHistorialPrivado);
-
             String nombreUsuario = item.getOtherUserName();
-
-
-
             if (nombreUsuario != null && !nombreUsuario.isEmpty()) {
                 textInicial.setText(nombreUsuario.substring(0, 1).toUpperCase());
             }
             textNombre.setText(item.getOtherUserName());
-            textTiempo.setVisibility(View.GONE);
-
             row.setOnClickListener(v -> {
-                if (esClickRapido()) return; // <--- ESTO EVITA ABRIR 2 VECES EL CHAT PRIVADO
+                if (esClickRapido()) return;
                 abrirChatPrivadoDesdeHistorial(item);
             });
             layoutHistorialPrivadoItems.addView(row);
@@ -342,9 +344,7 @@ public class HomeActivity extends BaseActivity {
 
     private void abrirChatPrivadoDesdeHistorial(PrivateChatHistoryItem item) {
         PrivateChatHistoryStore.touchChat(this, currentUserId, item.getOtherUserId(), item.getOtherUserName());
-
-        RetrofitClient.getChatApiServices()
-                .crearChatPrivado(currentUserId, item.getOtherUserId())
+        RetrofitClient.getChatApiServices().crearChatPrivado(currentUserId, item.getOtherUserId())
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -352,15 +352,9 @@ public class HomeActivity extends BaseActivity {
                         intent.putExtra("CURRENT_USER_ID", currentUserId);
                         intent.putExtra("OTHER_USER_ID", item.getOtherUserId());
                         intent.putExtra("OTHER_USER_NAME", item.getOtherUserName());
-                        PrivateChatGeofenceStore.attachExtrasIfAvailable(
-                                HomeActivity.this,
-                                intent,
-                                currentUserId,
-                                item.getOtherUserId()
-                        );
+                        PrivateChatGeofenceStore.attachExtrasIfAvailable(HomeActivity.this, intent, currentUserId, item.getOtherUserId());
                         startActivity(intent);
                     }
-
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         Toast.makeText(HomeActivity.this, "Error al abrir chat", Toast.LENGTH_SHORT).show();
@@ -397,29 +391,22 @@ public class HomeActivity extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SCAN_QR_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             String idSala = data.getStringExtra("ID_SALA");
-            double latitud = data.getDoubleExtra("SALA_LATITUD", 0);
-            double longitud = data.getDoubleExtra("SALA_LONGITUD", 0);
-            double radio = data.getDoubleExtra("SALA_RADIO", 0);
             if (idSala != null) {
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("ID_SALA_QR", idSala);
-                intent.putExtra("SALA_LATITUD", latitud);
-                intent.putExtra("SALA_LONGITUD", longitud);
-                intent.putExtra("SALA_RADIO", radio);
+                intent.putExtra("SALA_LATITUD", data.getDoubleExtra("SALA_LATITUD", 0));
+                intent.putExtra("SALA_LONGITUD", data.getDoubleExtra("SALA_LONGITUD", 0));
+                intent.putExtra("SALA_RADIO", data.getDoubleExtra("SALA_RADIO", 0));
                 startActivity(intent);
             }
         }
     }
 
     private void comprobarRolUsuario() {
-        // Comprobación inmediata con lo guardado en SharedPrefs
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         String rolGuardado = pref.getString("rol", "").toLowerCase();
-        if ("owner".equals(rolGuardado)) {
-            drawerGestionUsuarios.setVisibility(View.VISIBLE);
-        }
+        if ("owner".equals(rolGuardado)) drawerGestionUsuarios.setVisibility(View.VISIBLE);
 
-        // Refresco desde la API por si el rol cambió
         RetrofitClient.getChatApiServices().getRolUsuario(currentUserId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
@@ -430,11 +417,7 @@ public class HomeActivity extends BaseActivity {
                                 int idRol = json.optInt("id_rol", 3);
                                 String nombreRol = json.optString("rol", "usuario").toLowerCase();
                                 pref.edit().putString("rol", nombreRol).apply();
-                                if (idRol == 1 || "owner".equals(nombreRol)) {
-                                    drawerGestionUsuarios.setVisibility(View.VISIBLE);
-                                } else {
-                                    drawerGestionUsuarios.setVisibility(View.GONE);
-                                }
+                                drawerGestionUsuarios.setVisibility((idRol == 1 || "owner".equals(nombreRol)) ? View.VISIBLE : View.GONE);
                             } catch (Exception e) { e.printStackTrace(); }
                         }
                     }
@@ -444,22 +427,13 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void mostrarDialogoTerminos() {
-        // 1. Obtenemos el texto del strings.xml y lo convertimos a formato visual HTML
         CharSequence terminosFormateados;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             terminosFormateados = android.text.Html.fromHtml(getString(R.string.terminos_legales), android.text.Html.FROM_HTML_MODE_COMPACT);
         } else {
             terminosFormateados = android.text.Html.fromHtml(getString(R.string.terminos_legales));
         }
-
-        // 2. Construimos el diálogo igual que antes, pero pasándole la variable formateada
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
-        builder.setTitle("Términos y Condiciones");
-        builder.setMessage(terminosFormateados);
-        builder.setPositiveButton("Aceptar", (dialog, which) -> dialog.dismiss());
-
-        // Al mostrar un texto largo en .setMessage(), Android le pone scroll automáticamente
-        builder.show();
+        new AlertDialog.Builder(this).setTitle("Términos y Condiciones").setMessage(terminosFormateados).setPositiveButton("Aceptar", (dialog, which) -> dialog.dismiss()).show();
     }
 
     private void actualizarBadgeNotificaciones() {
@@ -467,233 +441,75 @@ public class HomeActivity extends BaseActivity {
             drawerNotifBadge.setVisibility(View.GONE);
             return;
         }
-        RetrofitClient.getChatApiServices()
-                .getNoLeidosPrivados(currentUserId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            try {
-                                JSONArray array = new JSONArray(response.body().string());
-                                int count = 0;
-                                for (int i = 0; i < array.length(); i++) {
-                                    JSONObject item = array.optJSONObject(i);
-                                    if (item == null) continue;
-                                    if (!PrivateChatConversationPolicy.isControlMessage(item.optString("mensaje", ""))) {
-                                        count++;
-                                    }
-                                }
-                                if (count > 0) {
-                                    drawerNotifBadge.setText(String.valueOf(count));
-                                    drawerNotifBadge.setVisibility(View.VISIBLE);
-                                } else {
-                                    drawerNotifBadge.setVisibility(View.GONE);
-                                }
-                            } catch (Exception e) {
-                                drawerNotifBadge.setVisibility(View.GONE);
-                            }
+        RetrofitClient.getChatApiServices().getNoLeidosPrivados(currentUserId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        JSONArray array = new JSONArray(response.body().string());
+                        int count = 0;
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject item = array.optJSONObject(i);
+                            if (item != null && !PrivateChatConversationPolicy.isControlMessage(item.optString("mensaje", ""))) count++;
                         }
-                    }
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                });
-    }
-
-    private void mostrarNotificaciones() {
-        RetrofitClient.getChatApiServices()
-                .getNoLeidosPrivados(currentUserId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            try {
-                                JSONArray array = new JSONArray(response.body().string());
-                                if (array.length() == 0) {
-                                    new AlertDialog.Builder(HomeActivity.this)
-                                            .setTitle("Notificaciones")
-                                            .setMessage("No tienes notificaciones")
-                                            .setPositiveButton("Cerrar", null)
-                                            .show();
-                                    return;
-                                }
-
-                                List<String> items = new ArrayList<>();
-                                List<Integer> remitenteIds = new ArrayList<>();
-                                List<String> remitenteNombres = new ArrayList<>();
-                                List<Integer> mensajeIds = new ArrayList<>();
-
-                                for (int i = 0; i < array.length(); i++) {
-                                    JSONObject n = array.getJSONObject(i);
-                                    String contenido = n.optString("mensaje", "");
-                                    String nombreUsuario = n.optString("nombre_usuario", "");
-                                    String nombre = n.optString("nombre", "Alguien");
-                                    String nombreRemitente = !nombreUsuario.isEmpty() ? nombreUsuario : nombre;
-                                    int idRemitente = n.optInt("id_usuario", -1);
-                                    int idMensaje = n.optInt("id", -1);
-
-                                    items.add("● " + nombreRemitente + ": " + contenido);
-                                    remitenteIds.add(idRemitente);
-                                    remitenteNombres.add(nombreRemitente);
-                                    mensajeIds.add(idMensaje);
-                                }
-
-                                ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                                        HomeActivity.this,
-                                        android.R.layout.simple_list_item_1,
-                                        items);
-
-                                ListView listView = new ListView(HomeActivity.this);
-                                listView.setAdapter(adapter);
-                                listView.setPadding(24, 16, 24, 0);
-
-                                AlertDialog dialog = new AlertDialog.Builder(HomeActivity.this)
-                                        .setTitle("Notificaciones")
-                                        .setView(listView)
-                                        .setPositiveButton("Cerrar", null)
-                                        .create();
-
-                                listView.setOnItemClickListener((parent, view, position, id) -> {
-                                    dialog.dismiss();
-                                    int idRemitente = remitenteIds.get(position);
-                                    String nombreRemitente = remitenteNombres.get(position);
-                                    int idMensaje = mensajeIds.get(position);
-
-                                    // Marcar mensaje como leído
-                                    if (idMensaje != -1) {
-                                        RetrofitClient.getChatApiServices()
-                                                .marcarLeidoPrivado(idMensaje)
-                                                .enqueue(new Callback<ResponseBody>() {
-                                                    @Override public void onResponse(Call<ResponseBody> c, Response<ResponseBody> r) {}
-                                                    @Override public void onFailure(Call<ResponseBody> c, Throwable t) {}
-                                                });
-                                    }
-
-                                    // Abrir chat privado con el remitente
-                                    if (idRemitente != -1) {
-                                        RetrofitClient.getChatApiServices()
-                                                .crearChatPrivado(currentUserId, idRemitente)
-                                                .enqueue(new Callback<ResponseBody>() {
-                                                    @Override
-                                                    public void onResponse(Call<ResponseBody> c, Response<ResponseBody> r) {
-                                                        Intent intent = new Intent(HomeActivity.this, PrivateChatActivity.class);
-                                                       intent.putExtra("CURRENT_USER_ID", currentUserId);
-                                                       intent.putExtra("OTHER_USER_ID", idRemitente);
-                                                       intent.putExtra("OTHER_USER_NAME", nombreRemitente);
-                                                        PrivateChatGeofenceStore.attachExtrasIfAvailable(
-                                                                HomeActivity.this,
-                                                                intent,
-                                                                currentUserId,
-                                                                idRemitente
-                                                        );
-                                                       startActivity(intent);
-                                                    }
-                                                    @Override public void onFailure(Call<ResponseBody> c, Throwable t) {
-                                                        Toast.makeText(HomeActivity.this, "Error al abrir chat", Toast.LENGTH_SHORT).show();
-                                                    }
-                                                });
-                                    }
-                                });
-
-                                dialog.show();
-                                drawerNotifBadge.setVisibility(View.GONE);
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(HomeActivity.this, "Error al cargar notificaciones", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        drawerNotifBadge.setText(String.valueOf(count));
+                        drawerNotifBadge.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
+                    } catch (Exception e) { drawerNotifBadge.setVisibility(View.GONE); }
+                }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {}
+        });
     }
 
     private void mostrarNotificacionesConSolicitud() {
-        RetrofitClient.getChatApiServices()
-                .getNoLeidosPrivados(currentUserId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (!response.isSuccessful() || response.body() == null) return;
-
-                        try {
-                            JSONArray array = new JSONArray(response.body().string());
-                            List<NotificacionPrivada> notificaciones = new ArrayList<>();
-
-                            for (int i = 0; i < array.length(); i++) {
-                                JSONObject n = array.getJSONObject(i);
-                                String contenido = n.optString("mensaje", "");
-                                if (PrivateChatConversationPolicy.isControlMessage(contenido)) {
-                                    continue;
-                                }
-
-                                String nombreUsuario = n.optString("nombre_usuario", "");
-                                String nombre = n.optString("nombre", "Alguien");
-
-                                NotificacionPrivada notificacion = new NotificacionPrivada();
-                                notificacion.contenido = contenido;
-                                notificacion.nombreRemitente = !nombreUsuario.isEmpty() ? nombreUsuario : nombre;
-                                notificacion.idRemitente = n.optInt("id_usuario", -1);
-                                notificacion.idMensaje = n.optInt("id", -1);
-
-                                if (notificacion.idRemitente != -1) {
-                                    notificaciones.add(notificacion);
-                                }
-                            }
-
-                            if (notificaciones.isEmpty()) {
-                                new AlertDialog.Builder(HomeActivity.this)
-                                        .setTitle("Notificaciones")
-                                        .setMessage("No tienes notificaciones")
-                                        .setPositiveButton("Cerrar", null)
-                                        .show();
-                                return;
-                            }
-
-                            cargarEstadosNotificaciones(notificaciones);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+        RetrofitClient.getChatApiServices().getNoLeidosPrivados(currentUserId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (!response.isSuccessful() || response.body() == null) return;
+                try {
+                    JSONArray array = new JSONArray(response.body().string());
+                    List<NotificacionPrivada> notificaciones = new ArrayList<>();
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject n = array.getJSONObject(i);
+                        if (PrivateChatConversationPolicy.isControlMessage(n.optString("mensaje", ""))) continue;
+                        NotificacionPrivada notificacion = new NotificacionPrivada();
+                        notificacion.contenido = n.optString("mensaje", "");
+                        String nombreUsuario = n.optString("nombre_usuario", "");
+                        notificacion.nombreRemitente = !nombreUsuario.isEmpty() ? nombreUsuario : n.optString("nombre", "Alguien");
+                        notificacion.idRemitente = n.optInt("id_usuario", -1);
+                        notificacion.idMensaje = n.optInt("id", -1);
+                        if (notificacion.idRemitente != -1) notificaciones.add(notificacion);
                     }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(HomeActivity.this, "Error al cargar notificaciones", Toast.LENGTH_SHORT).show();
+                    if (notificaciones.isEmpty()) {
+                        new AlertDialog.Builder(HomeActivity.this).setTitle("Notificaciones").setMessage("No tienes notificaciones").setPositiveButton("Cerrar", null).show();
+                    } else {
+                        cargarEstadosNotificaciones(notificaciones);
                     }
-                });
+                } catch (Exception e) { e.printStackTrace(); }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(HomeActivity.this, "Error al cargar notificaciones", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void cargarEstadosNotificaciones(List<NotificacionPrivada> notificaciones) {
         final int[] pendientes = {notificaciones.size()};
-
         for (NotificacionPrivada notificacion : notificaciones) {
-            RetrofitClient.getChatApiServices()
-                    .getMensajesPrivados(currentUserId, notificacion.idRemitente)
-                    .enqueue(new Callback<List<Mensaje>>() {
-                        @Override
-                        public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
-                            if (response.isSuccessful() && response.body() != null) {
-                                notificacion.estado = PrivateChatConversationPolicy.resolveState(response.body(), currentUserId);
-                            } else {
-                                notificacion.estado = PrivateChatConversationPolicy.State.PENDING_INCOMING;
-                            }
-                            mostrarDialogoCuandoTerminen(notificaciones, pendientes);
-                        }
-
-                        @Override
-                        public void onFailure(Call<List<Mensaje>> call, Throwable t) {
-                            notificacion.estado = PrivateChatConversationPolicy.State.PENDING_INCOMING;
-                            mostrarDialogoCuandoTerminen(notificaciones, pendientes);
-                        }
-                    });
-        }
-    }
-
-    private void mostrarDialogoCuandoTerminen(List<NotificacionPrivada> notificaciones, int[] pendientes) {
-        pendientes[0]--;
-        if (pendientes[0] == 0) {
-            mostrarDialogoNotificacionesPrivadas(notificaciones);
+            RetrofitClient.getChatApiServices().getMensajesPrivados(currentUserId, notificacion.idRemitente).enqueue(new Callback<List<Mensaje>>() {
+                @Override
+                public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
+                    notificacion.estado = (response.isSuccessful() && response.body() != null) ? PrivateChatConversationPolicy.resolveState(response.body(), currentUserId) : PrivateChatConversationPolicy.State.PENDING_INCOMING;
+                    if (--pendientes[0] == 0) mostrarDialogoNotificacionesPrivadas(notificaciones);
+                }
+                @Override
+                public void onFailure(Call<List<Mensaje>> call, Throwable t) {
+                    notificacion.estado = PrivateChatConversationPolicy.State.PENDING_INCOMING;
+                    if (--pendientes[0] == 0) mostrarDialogoNotificacionesPrivadas(notificaciones);
+                }
+            });
         }
     }
 
@@ -703,31 +519,24 @@ public class HomeActivity extends BaseActivity {
         container.setOrientation(LinearLayout.VERTICAL);
         container.setPadding(24, 16, 24, 8);
         scrollView.addView(container);
-
         final AlertDialog[] dialogRef = new AlertDialog[1];
-
         for (NotificacionPrivada notificacion : notificaciones) {
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.VERTICAL);
             item.setPadding(0, 12, 0, 16);
-
             TextView text = new TextView(this);
             text.setText(notificacion.nombreRemitente + ": " + notificacion.contenido);
             text.setTextSize(15);
             text.setTextColor(android.graphics.Color.parseColor("#222222"));
             item.addView(text);
-
             LinearLayout acciones = new LinearLayout(this);
             acciones.setGravity(android.view.Gravity.END);
             acciones.setOrientation(LinearLayout.HORIZONTAL);
-            acciones.setPadding(0, 10, 0, 0);
-
             if (notificacion.estado == PrivateChatConversationPolicy.State.PENDING_INCOMING) {
                 Button btnRechazar = new Button(this);
                 btnRechazar.setText("Rechazar");
                 btnRechazar.setOnClickListener(v -> responderNotificacionPrivada(dialogRef[0], notificacion, false));
                 acciones.addView(btnRechazar);
-
                 Button btnAceptar = new Button(this);
                 btnAceptar.setText("Aceptar");
                 btnAceptar.setOnClickListener(v -> responderNotificacionPrivada(dialogRef[0], notificacion, true));
@@ -735,25 +544,13 @@ public class HomeActivity extends BaseActivity {
             } else {
                 Button btnAbrir = new Button(this);
                 btnAbrir.setText("Abrir");
-                btnAbrir.setOnClickListener(v -> {
-                    if (esClickRapido()) return; // <--- BLOQUEO AQUÍ
-                    abrirNotificacionPrivada(dialogRef[0], notificacion);
-                });
+                btnAbrir.setOnClickListener(v -> abrirNotificacionPrivada(dialogRef[0], notificacion));
                 acciones.addView(btnAbrir);
-                item.setOnClickListener(v -> {
-                    if (esClickRapido()) return; // <--- Y BLOQUEO AQUÍ
-                    abrirNotificacionPrivada(dialogRef[0], notificacion);
-                });
             }
             item.addView(acciones);
             container.addView(item);
         }
-
-        dialogRef[0] = new AlertDialog.Builder(this)
-                .setTitle("Notificaciones")
-                .setView(scrollView)
-                .setPositiveButton("Cerrar", null)
-                .create();
+        dialogRef[0] = new AlertDialog.Builder(this).setTitle("Notificaciones").setView(scrollView).setPositiveButton("Cerrar", null).create();
         dialogRef[0].show();
     }
 
@@ -765,108 +562,82 @@ public class HomeActivity extends BaseActivity {
 
     private void responderNotificacionPrivada(AlertDialog dialog, NotificacionPrivada notificacion, boolean aceptada) {
         if (dialog != null) dialog.dismiss();
-
-        String controlMessage = aceptada
-                ? PrivateChatConversationPolicy.acceptedMessage()
-                : PrivateChatConversationPolicy.rejectedMessage();
-
-        RetrofitClient.getChatApiServices()
-                .enviarMensajePrivado(currentUserId, notificacion.idRemitente, currentUserId, controlMessage)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (!response.isSuccessful()) {
-                            Toast.makeText(HomeActivity.this, "Error al responder la solicitud", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        marcarMensajePrivadoLeido(notificacion.idMensaje);
-                        actualizarBadgeNotificaciones();
-                        PrivateChatHistoryStore.touchChat(HomeActivity.this, currentUserId, notificacion.idRemitente, notificacion.nombreRemitente);
-                        if (aceptada) {
-                            abrirChatPrivado(notificacion.idRemitente, notificacion.nombreRemitente);
-                        } else {
-                            Toast.makeText(HomeActivity.this, "Conversacion rechazada", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(HomeActivity.this, "Error al responder la solicitud", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        String controlMessage = aceptada ? PrivateChatConversationPolicy.acceptedMessage() : PrivateChatConversationPolicy.rejectedMessage();
+        RetrofitClient.getChatApiServices().enviarMensajePrivado(currentUserId, notificacion.idRemitente, currentUserId, controlMessage).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    marcarMensajePrivadoLeido(notificacion.idMensaje);
+                    actualizarBadgeNotificaciones();
+                    PrivateChatHistoryStore.touchChat(HomeActivity.this, currentUserId, notificacion.idRemitente, notificacion.nombreRemitente);
+                    if (aceptada) abrirChatPrivado(notificacion.idRemitente, notificacion.nombreRemitente);
+                }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {}
+        });
     }
 
     private void marcarMensajePrivadoLeido(int idMensaje) {
-        if (idMensaje == -1) return;
-        RetrofitClient.getChatApiServices()
-                .marcarLeidoPrivado(idMensaje)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
-                    @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                });
+        if (idMensaje != -1) RetrofitClient.getChatApiServices().marcarLeidoPrivado(idMensaje).enqueue(new Callback<ResponseBody>() {
+            @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+            @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
+        });
     }
 
     private void abrirChatPrivado(int idRemitente, String nombreRemitente) {
-        RetrofitClient.getChatApiServices()
-                .crearChatPrivado(currentUserId, idRemitente)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        PrivateChatHistoryStore.touchChat(HomeActivity.this, currentUserId, idRemitente, nombreRemitente);
-                        Intent intent = new Intent(HomeActivity.this, PrivateChatActivity.class);
-                        intent.putExtra("CURRENT_USER_ID", currentUserId);
-                        intent.putExtra("OTHER_USER_ID", idRemitente);
-                        intent.putExtra("OTHER_USER_NAME", nombreRemitente);
-                        PrivateChatGeofenceStore.attachExtrasIfAvailable(
-                                HomeActivity.this,
-                                intent,
-                                currentUserId,
-                                idRemitente
-                        );
-                        startActivity(intent);
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(HomeActivity.this, "Error al abrir chat", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        RetrofitClient.getChatApiServices().crearChatPrivado(currentUserId, idRemitente).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                PrivateChatHistoryStore.touchChat(HomeActivity.this, currentUserId, idRemitente, nombreRemitente);
+                Intent intent = new Intent(HomeActivity.this, PrivateChatActivity.class);
+                intent.putExtra("CURRENT_USER_ID", currentUserId);
+                intent.putExtra("OTHER_USER_ID", idRemitente);
+                intent.putExtra("OTHER_USER_NAME", nombreRemitente);
+                PrivateChatGeofenceStore.attachExtrasIfAvailable(HomeActivity.this, intent, currentUserId, idRemitente);
+                startActivity(intent);
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {}
+        });
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == 3000) {
-            boolean camaraAceptada = false;
-            boolean ubicacionAceptada = false;
-
-            // Revisamos qué ha respondido a cada cosa
-            for (int i = 0; i < permissions.length; i++) {
-                if (permissions[i].equals(android.Manifest.permission.CAMERA) && grantResults[i] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    camaraAceptada = true;
-                }
-                if (permissions[i].equals(android.Manifest.permission.ACCESS_FINE_LOCATION) && grantResults[i] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    ubicacionAceptada = true;
-                }
-            }
-
-            // Si ha aceptado AMBOS, le dejamos pasar
-            if (camaraAceptada && ubicacionAceptada) {
-                startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE);
-            } else {
-                // Si ha rechazado alguno, bloqueamos el acceso
-                Toast.makeText(this, "Para acceder al escáner necesitas aceptar los permisos de Cámara y Ubicación", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
     private boolean esClickRapido() {
         long tiempoActual = System.currentTimeMillis();
-        if (tiempoActual - ultimoClickTime < 1000) {
-            return true; // Es un clic muy rápido, lo bloqueamos
-        }
+        if (tiempoActual - ultimoClickTime < 1000) return true;
         ultimoClickTime = tiempoActual;
-        return false; // Es un clic normal, lo dejamos pasar
+        return false;
     }
+    private void confirmarAbandonoTotal(String idSala) {
+        new AlertDialog.Builder(this)
+                .setTitle("¿Cerrar sesión en la sala?")
+                .setMessage("Se borrarán tus mensajes y chats privados de esta sala. Volverás al estado inicial.")
+                .setPositiveButton("SÍ, SALIR", (dialog, which) -> {
+                    RetrofitClient.getChatApiServices().salirDeSala(currentUserId, idSala)
+                            .enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    if (response.isSuccessful()) {
+                                        // 1. Limpiar historial de chats privados locales
+                                        List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(HomeActivity.this, currentUserId, idSala);
+                                        for (Integer otherId : otrosUsuarios) {
+                                            PrivateChatHistoryStore.removeChat(HomeActivity.this, currentUserId, otherId);
+                                            PrivateChatGeofenceStore.remove(HomeActivity.this, currentUserId, otherId);
+                                        }
 
+                                        Toast.makeText(HomeActivity.this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
+
+                                        // 2. Refrescar la lista (esto ocultará el icono automáticamente)
+                                        cargarMisSalas();
+                                    }
+                                }
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    Toast.makeText(HomeActivity.this, "Error al conectar", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                })
+                .setNegativeButton("CANCELAR", null)
+                .show();
+    }
 }

@@ -5,15 +5,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.text.TextUtils;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.credentials.Credential;
 import androidx.credentials.CredentialManager;
@@ -30,10 +25,12 @@ import com.example.chat.utils.AlertHelper;
 import com.example.chat.utils.AlertHelper.AlertType;
 import android.text.Editable;
 import android.text.TextWatcher;
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 
@@ -48,10 +45,14 @@ public class LoginActivity extends BaseActivity {
 
     private static final String PREF_GOOGLE_PROFILE_SETUP_DONE = "google_profile_setup_done_";
 
-    // Componentes de la interfaz de usuario
-    private EditText editEmail, editPassword;
-    private Button btnLogin, btnGoogleLogin, textResendVerification, btnVerificarCorreoLogin;
-    private TextView textGoToRegister;
+    // Componentes de la interfaz (Actualizados a Material)
+    private TextInputLayout tilEmail, tilPassword;
+    private TextInputEditText editEmail, editPassword;
+    private MaterialButton btnLogin;
+    private MaterialButton btnGoogleLogin;
+    private MaterialButton textResendVerification;
+    private MaterialButton btnVerificarCorreoLogin;
+    private TextView textGoToRegister,tvGeneralError;
 
     // Servicios de red y gestión de credenciales
     private ChatApiServices api;
@@ -85,12 +86,19 @@ public class LoginActivity extends BaseActivity {
         configurarValidacionDinamica();
     }
 
-    /**
-     * Vincula las variables con los componentes del layout XML.
-     */
     private void inicializarVistas() {
+        // Vinculamos los Layouts para gestionar los errores debajo
+        tilEmail = findViewById(R.id.tilEmail);
+        tilPassword = findViewById(R.id.tilPassword);
         editEmail = findViewById(R.id.editEmail);
         editPassword = findViewById(R.id.editPassword);
+        tvGeneralError =findViewById(R.id.tvGeneralError);
+
+
+        // 🚀 Eliminamos el icono del círculo rojo (exclamación)
+        if (tilEmail != null) tilEmail.setErrorIconDrawable(null);
+        if (tilPassword != null) tilPassword.setErrorIconDrawable(null);
+
         btnLogin = findViewById(R.id.btnLogin);
         btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         textGoToRegister = findViewById(R.id.textGoToRegister);
@@ -98,11 +106,18 @@ public class LoginActivity extends BaseActivity {
         btnVerificarCorreoLogin = findViewById(R.id.btnVerificarCorreoLogin);
     }
 
-    /**
-     * Configura los eventos de click para los elementos interactivos.
-     */
+    private void setSilentError(TextInputLayout layout, boolean active) {
+        if (active) {
+            layout.setError(" "); // Activa el estado de error (borde rojo)
+            // El 'indicador' es el contenedor del texto de error (hijo índice 1)
+            if (layout.getChildCount() > 1) {
+                layout.getChildAt(1).setVisibility(View.GONE); // Lo ocultamos para que no ocupe espacio
+            }
+        } else {
+            layout.setError(null); // Quita el error
+        }
+    }
     private void configurarListeners() {
-        // Carga de datos previos si existen en el Intent
         String prefillEmail = getIntent().getStringExtra("PREFILL_EMAIL");
         boolean showVerificationHint = getIntent().getBooleanExtra("SHOW_VERIFICATION_HINT", false);
 
@@ -126,38 +141,37 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    /**
-     * Limpia los estados de error de forma reactiva mientras el usuario escribe.
-     */
     private void configurarValidacionDinamica() {
         TextWatcher watcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void afterTextChanged(Editable s) {
-                if (editEmail != null && editEmail.getError() != null) editEmail.setError(null);
-                if (editPassword != null && editPassword.getError() != null) editPassword.setError(null);
+                //Limpiamos el error del TextInputLayout al escribir
+                setSilentError(tilEmail, false);
+                setSilentError(tilPassword, false);
+                tvGeneralError.setVisibility(View.GONE);
             }
         };
-
-        if (editEmail != null) editEmail.addTextChangedListener(watcher);
-        if (editPassword != null) editPassword.addTextChangedListener(watcher);
-
-        if (btnLogin != null) {
-            btnLogin.setEnabled(true);
-            btnLogin.setAlpha(1.0f);
-        }
+        editEmail.addTextChangedListener(watcher);
+        editPassword.addTextChangedListener(watcher);
     }
-
 
     private void login() {
         String email = editEmail.getText().toString().trim();
         String password = editPassword.getText().toString().trim();
 
+        // Limpieza de errores
+        tilEmail.setError(null);
+        tilPassword.setError(null);
+        tvGeneralError.setVisibility(View.GONE);
+
         if (email.isEmpty() || password.isEmpty()) {
-            AlertHelper.showActionAlert(btnLogin, "Por favor, rellene todos los campos para continuar", AlertType.WARNING);
-            if (email.isEmpty()) editEmail.setError("Campo obligatorio");
-            if (password.isEmpty()) editPassword.setError("Campo obligatorio");
+            if (email.isEmpty()) setSilentError(tilEmail, true);
+            if (password.isEmpty()) setSilentError(tilPassword, true);
+
+            tvGeneralError.setText("Rellena todos los campos");
+            tvGeneralError.setVisibility(View.VISIBLE);
             return;
         }
 
@@ -243,11 +257,23 @@ public class LoginActivity extends BaseActivity {
 
     private void manejarRespuestaLogin(Response<ResponseBody> response, String email, String provider) {
         try {
+            tilEmail.setError(null);
+            tilPassword.setError(null);
+
             String bodyStr = response.isSuccessful() && response.body() != null
                     ? response.body().string()
                     : (response.errorBody() != null ? response.errorBody().string() : "");
 
             if (!response.isSuccessful()) {
+                // 🚀 Credenciales incorrectas
+                if (response.code() == 401 || response.code() == 404) {
+                    // 🚀 Credenciales incorrectas: cuadros rojos + texto general
+                    setSilentError(tilEmail, true);
+                    setSilentError(tilPassword, true);
+                    tvGeneralError.setText("El correo o la contraseña son incorrectos");
+                    tvGeneralError.setVisibility(View.VISIBLE);
+                    return;
+                }
                 if (response.code() == 403 || contieneEmailNoVerificado(bodyStr)) {
                     mostrarEstadoNoVerificado(email);
                     return;
@@ -276,7 +302,11 @@ public class LoginActivity extends BaseActivity {
                 return;
             }
 
-            Toast.makeText(this, json.optString("message", "Credenciales incorrectas"), Toast.LENGTH_SHORT).show();
+            // Fallback para otros errores de autenticación
+            String msgError = "El correo o la contraseña son incorrectos";
+            tilEmail.setError(msgError);
+            tilPassword.setError(msgError);
+
         } catch (Exception e) {
             Toast.makeText(this, "Error al procesar respuesta: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -364,9 +394,7 @@ public class LoginActivity extends BaseActivity {
     }
 
     private boolean debeCompletarPerfilGoogle(JSONObject json) {
-        if (json == null) {
-            return false;
-        }
+        if (json == null) return false;
 
         if (json.optBoolean("requiere_completar_perfil", false)
                 || json.optBoolean("needs_profile_completion", false)
@@ -392,9 +420,7 @@ public class LoginActivity extends BaseActivity {
     private String valorPerfil(JSONObject json, String... keys) {
         for (String key : keys) {
             String value = json.optString(key, "");
-            if (!estaVacio(value)) {
-                return value;
-            }
+            if (!estaVacio(value)) return value;
         }
         return "";
     }
@@ -433,14 +459,12 @@ public class LoginActivity extends BaseActivity {
 
     private void mostrarEstadoNoVerificado(String email) {
         pendingVerificationEmail = email;
-        textResendVerification.setVisibility(View.VISIBLE);
+        if (textResendVerification != null) textResendVerification.setVisibility(View.VISIBLE);
         Toast.makeText(this, R.string.email_not_verified, Toast.LENGTH_LONG).show();
     }
 
     private boolean contieneEmailNoVerificado(String value) {
-        if (value == null) {
-            return false;
-        }
+        if (value == null) return false;
         String normalized = value.toLowerCase();
         return normalized.contains("email_not_verified")
                 || normalized.contains("correo no verificado")
@@ -488,18 +512,18 @@ public class LoginActivity extends BaseActivity {
                     if (esEmailYaVerificado(body)) {
                         Toast.makeText(LoginActivity.this, "Este correo ya está verificado", Toast.LENGTH_SHORT).show();
                     } else if (response.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this, "Código de verificación enviado a " + email, Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, "Código enviado a " + email, Toast.LENGTH_LONG).show();
                     } else {
-                        Toast.makeText(LoginActivity.this, "No se encontró ese correo o no se pudo enviar", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "No se encontró el correo", Toast.LENGTH_SHORT).show();
                     }
                 } catch (Exception e) {
-                    AlertHelper.showActionAlert(btnLogin, "Hubo un problema al procesar los datos", AlertType.ERROR);
+                    AlertHelper.showActionAlert(btnLogin, "Problema al procesar datos", AlertType.ERROR);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                AlertHelper.showActionAlert(btnLogin, "Sin conexión. Revisa tu red.", AlertType.ERROR);
+                AlertHelper.showActionAlert(btnLogin, "Sin conexión.", AlertType.ERROR);
             }
         });
     }
@@ -509,18 +533,15 @@ public class LoginActivity extends BaseActivity {
         String lower = body.toLowerCase();
         return lower.contains("already_verified")
                 || lower.contains("ya verificado")
-                || lower.contains("ya está verificado")
                 || lower.contains("email_verified");
     }
 
     private void reenviarVerificacion() {
         String email = editEmail.getText().toString().trim();
-        if (email.isEmpty()) {
-            email = pendingVerificationEmail;
-        }
+        if (email.isEmpty()) email = pendingVerificationEmail;
 
         if (email.isEmpty()) {
-            Toast.makeText(this, "Introduce tu correo para reenviar la verificación", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Introduce tu correo", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -528,15 +549,14 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(LoginActivity.this, "Te hemos enviado un nuevo correo de verificación", Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this, "Nuevo correo enviado", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(LoginActivity.this, "No se pudo reenviar la verificación", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "No se pudo reenviar", Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(LoginActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

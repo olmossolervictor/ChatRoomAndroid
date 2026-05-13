@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawerLayout"
@@ -28,26 +27,38 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                    <ImageButton
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnMenuDrawer"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="61dp"
+                        android:layout_height="56dp"
                         android:layout_centerVertical="true"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@android:drawable/ic_menu_sort_by_size"
-                        android:padding="12dp"
-                        app:tint="@color/text_high" />
+                        android:visibility="visible"
+                        app:icon="@drawable/icono_drawer"
+                        app:iconSize="24dp"
+                        app:iconTint="@color/text_high" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
                         android:fontFamily="@font/poppins_bold"
+                        android:letterSpacing="0.2"
                         android:text="CHATROOM"
                         android:textColor="@color/primary"
-                        android:textSize="16sp"
-                        android:letterSpacing="0.2" />
+                        android:textSize="16sp" />
 
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAbandonarGlobal"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:visibility="gone"
+                        app:icon="@drawable/icon_logout"
+                        app:iconSize="24dp"
+                        app:iconTint="#D32F2F" />
                 </RelativeLayout>
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>
@@ -72,20 +83,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_bold"
+                    android:letterSpacing="-0.03"
+                    android:lineSpacingExtra="-4dp"
                     android:text="Mis Salas"
                     android:textColor="@color/text_high"
-                    android:textSize="34sp"
-                    android:letterSpacing="-0.03"
-                    android:lineSpacingExtra="-4dp" />
+                    android:textSize="34sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:alpha="0.9"
                     android:text="Tus accesos activos por proximidad"
                     android:textColor="@color/text_medium"
-                    android:textSize="14sp"
-                    android:layout_marginTop="4dp"
-                    android:alpha="0.9"/>
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <RelativeLayout
@@ -105,11 +116,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
+                        android:clipToPadding="false"
                         android:divider="@android:color/transparent"
                         android:dividerHeight="12dp"
-                        android:paddingHorizontal="20dp"
-                        android:clipToPadding="false"
                         android:overScrollMode="never"
+                        android:paddingHorizontal="20dp"
                         tools:listitem="@layout/item_sala" />
 
                     <!-- Botón de Acción Principal (Scan) -->
@@ -119,17 +130,19 @@
                         android:layout_height="64dp"
                         android:layout_margin="24dp"
                         android:background="@drawable/bg_button"
+                        android:elevation="8dp"
                         android:fontFamily="@font/poppins_bold"
+                        android:letterSpacing="0.02"
+                        android:stateListAnimator="@null"
                         android:text="ESCANEAR NUEVA SALA"
                         android:textColor="@color/white"
-                        android:letterSpacing="0.02"
                         app:backgroundTint="@null"
                         app:cornerRadius="20dp"
-                        app:icon="@android:drawable/ic_menu_camera"
+                        app:icon="@drawable/icono_camera"
                         app:iconGravity="textStart"
                         app:iconPadding="12dp"
-                        android:elevation="8dp"
-                        android:stateListAnimator="@null" />
+                        app:iconSize="24dp"
+                        app:iconTint="@color/white" />
                 </LinearLayout>
 
                 <!-- ESTADO VACÍO PROFESIONAL -->
@@ -145,10 +158,11 @@
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="140dp"
                         android:layout_height="140dp"
+                        app:cardBackgroundColor="@color/accent_soft"
                         app:cardCornerRadius="70dp"
                         app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/accent_soft"
                         app:strokeWidth="0dp">
+
                         <ImageView
                             android:layout_width="60dp"
                             android:layout_height="60dp"
@@ -170,25 +184,25 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
+                        android:gravity="center"
+                        android:lineSpacingExtra="4dp"
                         android:text="Escanea un código QR para unirte a una sala de chat segura."
                         android:textColor="@color/text_medium"
-                        android:textSize="15sp"
-                        android:gravity="center"
-                        android:lineSpacingExtra="4dp" />
+                        android:textSize="15sp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnScanQRHomeCentro"
                         android:layout_width="wrap_content"
                         android:layout_height="56dp"
                         android:layout_marginTop="40dp"
-                        android:paddingHorizontal="40dp"
                         android:background="@drawable/bg_button"
+                        android:elevation="4dp"
+                        android:fontFamily="@font/poppins_bold"
+                        android:paddingHorizontal="40dp"
                         android:text="EMPEZAR AHORA"
                         android:textColor="@color/white"
-                        android:fontFamily="@font/poppins_bold"
                         app:backgroundTint="@null"
-                        app:cornerRadius="28dp"
-                        android:elevation="4dp" />
+                        app:cornerRadius="28dp" />
                 </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
@@ -200,36 +214,36 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/surface_card"
-        android:orientation="vertical"
-        android:elevation="16dp"
         android:clickable="true"
-        android:focusable="true">
+        android:elevation="16dp"
+        android:focusable="true"
+        android:orientation="vertical">
 
         <!-- Header de Perfil con Estilo -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/accent_soft"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingTop="64dp"
-            android:paddingBottom="32dp"
-            android:background="@color/accent_soft">
+            android:paddingBottom="32dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="84dp"
                 android:layout_height="84dp"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="30dp"
                 app:cardElevation="4dp"
-                app:strokeWidth="2dp"
                 app:strokeColor="@color/white"
-                app:cardBackgroundColor="@color/surface_card">
+                app:strokeWidth="2dp">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/imgDrawerFoto"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@android:drawable/ic_menu_camera"
-                    android:padding="2dp" />
+                    android:padding="2dp"
+                    android:src="@android:drawable/ic_menu_camera" />
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
@@ -238,101 +252,142 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:fontFamily="@font/poppins_bold"
+                android:letterSpacing="-0.02"
                 android:text="Usuario Premium"
                 android:textColor="@color/text_high"
-                android:textSize="22sp"
-                android:letterSpacing="-0.02" />
+                android:textSize="22sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="MIEMBRO VERIFICADO"
-                android:textColor="@color/secondary_dark"
-                android:textSize="11sp"
+                android:layout_marginTop="2dp"
                 android:fontFamily="@font/poppins_bold"
                 android:letterSpacing="0.12"
-                android:layout_marginTop="2dp" />
+                android:text="MIEMBRO VERIFICADO"
+                android:textColor="@color/secondary_dark"
+                android:textSize="11sp" />
         </LinearLayout>
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:paddingTop="20dp"
+            android:overScrollMode="never"
             android:paddingHorizontal="16dp"
-            android:overScrollMode="never">
+            android:paddingTop="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/drawerEditarPerfil"
-                    style="@style/DrawerItemStylePremium"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:gravity="start|center_vertical"
                     android:text="Mi Cuenta"
-                    android:drawableStart="@android:drawable/ic_menu_edit" />
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/icono_edit"
+                    app:iconTint="@color/text_high"
+                    app:iconSize="28dp"/>
 
                 <RelativeLayout
                     android:id="@+id/drawerNotificaciones"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_drawer_item_selector"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="4dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:padding="16dp"
-                    android:layout_marginBottom="4dp">
+                    android:focusable="true">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
+                    <!-- COPIA EXACTA DE "MI CUENTA" (Pero desactivamos su clic individual) -->
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fontFamily="@font/poppins_medium"
+                        android:gravity="start|center_vertical"
                         android:text="Notificaciones"
                         android:textColor="@color/text_high"
                         android:textSize="15sp"
-                        android:fontFamily="@font/poppins_medium"
-                        android:drawableStart="@android:drawable/ic_popup_reminder"
-                        android:drawablePadding="18dp"
-                        app:drawableTint="@color/primary" />
+                        app:cornerRadius="16dp"
+                        app:icon="@drawable/icon_notification"
+                        app:iconTint="@color/text_high"
+                        app:iconSize="28dp"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
 
+                    <!-- EL BADGE ROJO (Pegado a la derecha) -->
                     <TextView
                         android:id="@+id/drawerNotifBadge"
                         android:layout_width="22dp"
                         android:layout_height="22dp"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
+                        android:layout_marginEnd="16dp"
                         android:background="@drawable/bg_circle_icon"
                         android:backgroundTint="@color/error_main"
+                        android:fontFamily="@font/poppins_bold"
                         android:gravity="center"
                         android:text="3"
                         android:textColor="@color/white"
                         android:textSize="11sp"
-                        android:fontFamily="@font/poppins_bold"
+                        android:elevation="2dp"
                         android:visibility="gone" />
+
                 </RelativeLayout>
 
                 <View style="@style/DrawerDivider" />
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/drawerAjustes"
-                    style="@style/DrawerItemStylePremium"
-                    android:text="Configuración"
-                    android:drawableStart="@android:drawable/ic_menu_preferences"
-                    app:drawableTint="@color/text_medium" />
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:gravity="start|center_vertical"
+                    android:text="Ajustes"
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/icon_setting"
+                    app:iconTint="@color/text_high"
+                    app:iconSize="28dp"/>
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/drawerGestionUsuarios"
-                    style="@style/DrawerItemStylePremium"
-                    android:text="Admin Panel"
-                    android:drawableStart="@android:drawable/ic_menu_manage"
-                    android:visibility="gone" />
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:gravity="start|center_vertical"
+                    android:text="Panel de Control"
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/icon_administration"
+                    app:iconTint="@color/text_high"
+                    app:iconSize="28dp"/>
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/drawerTerminos"
-                    style="@style/DrawerItemStylePremium"
-                    android:text="Legal"
-                    android:drawableStart="@android:drawable/ic_menu_info_details"
-                    app:drawableTint="@color/text_medium" />
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:gravity="start|center_vertical"
+                    android:text="Terminos y Condiciones"
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/icon_information"
+                    app:iconTint="@color/text_high"
+                    app:iconSize="28dp"/>
 
             </LinearLayout>
         </ScrollView>
@@ -348,15 +403,15 @@
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
+                android:backgroundTint="@color/error_bg"
+                android:fontFamily="@font/poppins_bold"
+                android:gravity="start|center_vertical"
                 android:text="Cerrar Sesión"
                 android:textColor="@color/error_main"
-                android:fontFamily="@font/poppins_bold"
                 android:textSize="14sp"
-                android:gravity="start|center_vertical"
-                app:icon="@android:drawable/ic_lock_power_off"
-                app:iconTint="@color/error_main"
                 app:cornerRadius="16dp"
-                android:backgroundTint="@color/error_bg" />
+                app:icon="@android:drawable/ic_lock_power_off"
+                app:iconTint="@color/error_main" />
         </LinearLayout>
 
     </LinearLayout>

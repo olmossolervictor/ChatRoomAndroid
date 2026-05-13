@@ -297,8 +297,8 @@ public class MainActivity extends BaseActivity {
         long horas = minutos / 60;
         long mins = minutos % 60;
         String texto = horas > 0
-                ? String.format("Tiempo restante: %dh %02dm", horas, mins)
-                : String.format("Tiempo restante: %dm", mins);
+                ? String.format("%dh %02dm", horas, mins)
+                : String.format("%dm", mins);
         textTiempoRestante.setText(texto);
 
         if (minutos >= 60) {
