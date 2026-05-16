@@ -7,12 +7,9 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -36,13 +33,14 @@ public class AjustesActivity extends BaseActivity {
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
-        ImageButton btnBackAjustes = findViewById(R.id.btnBackAjustes);
+        // 🚀 Nuevo Toolbar para ir atrás
+        androidx.appcompat.widget.Toolbar toolbarAjustes = findViewById(R.id.toolbarAjustes);
+        toolbarAjustes.setNavigationOnClickListener(v -> finish());
+
         switchGps = findViewById(R.id.switchGps);
         switchCamara = findViewById(R.id.switchCamara);
         radioTema = findViewById(R.id.radioTema);
         radioTamanoFuente = findViewById(R.id.radioTamanoFuente);
-
-        btnBackAjustes.setOnClickListener(v -> finish());
 
         // --- Cargar valores guardados (Diseño) ---
         int modoNoche = prefs.getInt("modo_noche", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
@@ -76,7 +74,6 @@ public class AjustesActivity extends BaseActivity {
         });
     }
 
-    // Usamos onResume para que, si el usuario vuelve de los ajustes de Android, los switches se actualicen solos
     @Override
     protected void onResume() {
         super.onResume();
@@ -84,28 +81,23 @@ public class AjustesActivity extends BaseActivity {
     }
 
     private void actualizarSwitchesPermisos() {
-        // Leemos si el sistema Android nos ha dado permiso DE VERDAD
         boolean tieneGps = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
         boolean tieneCamara = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
 
-        // Quitamos los listeners un momento para que no hagan doble ejecución
         switchGps.setOnCheckedChangeListener(null);
         switchCamara.setOnCheckedChangeListener(null);
 
         switchGps.setChecked(tieneGps);
         switchCamara.setChecked(tieneCamara);
 
-        // Volvemos a poner los listeners
         switchGps.setOnCheckedChangeListener((b, isChecked) -> manejarPermiso(Manifest.permission.ACCESS_FINE_LOCATION, isChecked));
         switchCamara.setOnCheckedChangeListener((b, isChecked) -> manejarPermiso(Manifest.permission.CAMERA, isChecked));
     }
 
     private void manejarPermiso(String permiso, boolean isChecked) {
         if (isChecked) {
-            // Si lo activa, le pedimos permiso a Android
             ActivityCompat.requestPermissions(this, new String[]{permiso}, 100);
         } else {
-            // Si lo desactiva, le mandamos a la pantalla de la app en Android para que lo quite de verdad
             AlertHelper.showActionAlert(switchGps, "Para mayor seguridad, desactívalo desde los ajustes del sistema", AlertType.INFO);
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             intent.setData(Uri.parse("package:" + getPackageName()));

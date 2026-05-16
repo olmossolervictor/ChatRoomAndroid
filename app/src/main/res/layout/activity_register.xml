@@ -8,38 +8,45 @@
     android:background="@color/bg_main"
     android:fitsSystemWindows="true">
 
-    <!-- Decorative Glow -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnBackEdit"
-        style="@style/Widget.Material3.Button.IconButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:visibility="gone"
-        app:icon="?attr/homeAsUpIndicator"
-        app:iconSize="28dp"
-        app:iconTint="@color/text_high"
-        app:layout_constraintStart_toStartOf="parent"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_main"
+        app:elevation="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        android:translationZ="10dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarRegister"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIconTint="@color/text_high"
+            android:visibility="gone" />
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:fillViewport="true"
-        android:overScrollMode="never">
+        android:overScrollMode="never"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="32dp"
-            android:paddingTop="48dp"
+            android:paddingTop="32dp"
             android:paddingBottom="48dp"
             android:gravity="center_horizontal">
 
-            <!-- Title Section -->
             <TextView
                 android:id="@+id/textTitle"
                 android:layout_width="wrap_content"
@@ -60,7 +67,6 @@
                 android:textSize="15sp"
                 android:alpha="0.8" />
 
-            <!-- Profile Photo Selector -->
             <RelativeLayout
                 android:layout_width="140dp"
                 android:layout_height="140dp"
@@ -107,7 +113,6 @@
                 </com.google.android.material.card.MaterialCardView>
             </RelativeLayout>
 
-            <!-- Form Fields -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -154,7 +159,6 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <!-- FECHA NACIMIENTO -->
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
@@ -175,7 +179,6 @@
                         android:fontFamily="@font/poppins_medium" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- NOMBRE USUARIO -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/layoutRegNombreUsuario"
                     style="@style/Widget.App.TextInputLayout"
@@ -207,7 +210,6 @@
                     android:layout_marginStart="16dp"
                     android:fontFamily="@font/poppins_bold" />
 
-                <!-- Sugerencias -->
                 <LinearLayout
                     android:id="@+id/layoutSugerencias"
                     android:layout_width="match_parent"
@@ -238,7 +240,6 @@
                     </HorizontalScrollView>
                 </LinearLayout>
 
-                <!-- TELÉFONO -->
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
@@ -246,7 +247,7 @@
                     android:layout_marginBottom="16dp"
                     android:hint="@string/reg_telefono_hint"
                     app:startIconDrawable="@drawable/icon_phone_pequeno"
-                    app:startIconTint="@color/text_high"> <!-- CAMBIADO A HIGH -->
+                    app:startIconTint="@color/text_high">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editRegTelefono"
@@ -257,7 +258,6 @@
                         android:fontFamily="@font/poppins_medium" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- EMAIL -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/layoutRegEmail"
                     style="@style/Widget.App.TextInputLayout"
@@ -289,7 +289,6 @@
                     android:layout_marginStart="16dp"
                     android:fontFamily="@font/poppins_bold" />
 
-                <!-- PASSWORD -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilRegPassword"
                     style="@style/Widget.App.TextInputLayout"
@@ -303,18 +302,17 @@
                     app:startIconDrawable="@drawable/icon_password_pequeno"
                     app:startIconTint="@color/text_high">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editRegPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@null"
-                    android:inputType="textPassword"
-                    android:textSize="15sp"
-                    android:fontFamily="@font/poppins_medium" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editRegPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@null"
+                        android:inputType="textPassword"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/poppins_medium" />
 
-            </com.google.android.material.textfield.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- TÉRMINOS Y CONDICIONES -->
                 <LinearLayout
                     android:id="@+id/layoutTerminos"
                     android:layout_width="match_parent"
@@ -341,7 +339,6 @@
                         android:fontFamily="@font/poppins_medium" />
                 </LinearLayout>
 
-                <!-- Action Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegister"
                     android:layout_width="match_parent"
@@ -356,16 +353,30 @@
 
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/textBackToLogin"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:padding="12dp"
-                android:text="@string/reg_back_to_login"
-                android:textColor="@color/text_high"
-                android:textSize="15sp"
-                android:fontFamily="@font/poppins_bold" />
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reg_have_account"
+                    android:textColor="@color/text_medium"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/poppins_medium" />
+
+                <TextView
+                    android:id="@+id/textBackToLogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/register_login_here"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/poppins_bold" />
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

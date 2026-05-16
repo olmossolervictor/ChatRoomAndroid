@@ -2,11 +2,13 @@ package com.example.chat.activities;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory; // 🚀 Importado para la imagen
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64; // 🚀 Importado para decodificar la foto
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -35,6 +37,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView; // 🚀 Importado para la foto circular
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -94,8 +98,8 @@ public class PrivateChatActivity extends BaseActivity {
         Toolbar toolbar = findViewById(R.id.toolbarPrivateChat);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enciende la flecha
-            getSupportActionBar().setDisplayShowTitleEnabled(false); // Oculta el título feo por defecto
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
         toolbar.setOnClickListener(v -> mostrarDialogoDenuncias(otherUserId));
 
@@ -104,7 +108,9 @@ public class PrivateChatActivity extends BaseActivity {
             textToolbarPrivateTitle.setText(otherUserName);
         }
 
-        // ❌ ¡LÍNEAS DE btnBackPrivate ELIMINADAS AQUÍ! ❌
+        // 🚀 Cargar la foto de perfil del otro usuario en la toolbar
+        CircleImageView imgToolbarFoto = findViewById(R.id.imgToolbarFoto);
+        cargarFotoOtroUsuario(imgToolbarFoto);
 
         listMessagesPrivate = findViewById(R.id.listMessagesPrivate);
         editMessagePrivate = findViewById(R.id.editMessagePrivate);
@@ -158,6 +164,40 @@ public class PrivateChatActivity extends BaseActivity {
         cargarInfoGeofenceSiHaceFalta();
         verificarUbicacionPrivada(true);
         iniciarAutoRefresco();
+    }
+
+    // 🚀 NUEVA FUNCIÓN: Va al servidor, pide los datos del usuario y le coloca la foto
+    private void cargarFotoOtroUsuario(CircleImageView imageView) {
+        if (imageView == null || otherUserId == -1) return;
+
+        RetrofitClient.getChatApiServices().getUsuario(otherUserId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            try {
+                                JSONObject json = new JSONObject(response.body().string());
+                                String fotoBase64 = json.optString("foto", "");
+
+                                if (!fotoBase64.isEmpty() && !fotoBase64.equalsIgnoreCase("null")) {
+                                    byte[] decoded = Base64.decode(fotoBase64, Base64.DEFAULT);
+                                    imageView.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
+                                } else {
+                                    imageView.setImageResource(R.drawable.defecto);
+                                }
+                            } catch (Exception e) {
+                                imageView.setImageResource(R.drawable.defecto);
+                            }
+                        } else {
+                            imageView.setImageResource(R.drawable.defecto);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        imageView.setImageResource(R.drawable.defecto);
+                    }
+                });
     }
 
     private void iniciarAutoRefresco() {
@@ -642,13 +682,13 @@ public class PrivateChatActivity extends BaseActivity {
                     public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(refreshRunnable);
     }
 
-    // --- EL MÉTODO PARA QUE LA FLECHA NATIVA RETROCEDA ---
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

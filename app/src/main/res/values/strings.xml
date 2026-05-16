@@ -18,7 +18,6 @@
     <string name="login_or_continue">o continúa con</string>
     <string name="login_verify_email_text">Verificar correo</string>
     <string name="login_resend_prompt">¿No recibiste el código? Reenviar</string>
-    <string name="login_goto_register">¿No tienes cuenta? Regístrate</string>
 
     <!-- REGISTER -->
     <string name="reg_title">Crea tu cuenta</string>
@@ -33,6 +32,8 @@
     <string name="reg_btn_photo">Seleccionar foto</string>
     <string name="reg_btn_register">Crear cuenta</string>
     <string name="reg_terms_accept">Acepto los términos y condiciones</string>
+    <string name="reg_have_account">¿Ya tienes cuenta? </string>
+    <string name="register_login_here">Iniciar Sesión</string>
     <string name="reg_back_to_login">¿Ya tienes cuenta? Inicia sesión</string>
     <string name="reg_error_username_exists">Este nombre de usuario ya existe</string>
     <string name="reg_error_email_exists">Ya existe una cuenta con este correo</string>

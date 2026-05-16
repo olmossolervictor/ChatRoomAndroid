@@ -1,13 +1,11 @@
 package com.example.chat.activities;
 
 import android.Manifest;
-import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -19,21 +17,18 @@ import org.json.JSONArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import java.util.Locale;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import com.google.android.material.snackbar.Snackbar;
 
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
@@ -45,8 +40,6 @@ import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import java.util.TimeZone;
-
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -64,9 +57,9 @@ public class RegisterActivity extends BaseActivity {
     // Componentes de la interfaz de usuario
     private com.google.android.material.textfield.TextInputEditText editNombre, editApellidos, editRegFechaNac, editRegEmail, editRegTelefono, editRegPassword, editRegNombreUsuario;
     private TextView textEmailError, textNombreUsuarioError;
-    private de.hdodenhof.circleimageview.CircleImageView imgUser; // Si sigues usando la librería CircleImageView
+    private de.hdodenhof.circleimageview.CircleImageView imgUser;
     private com.google.android.material.button.MaterialButton btnRegister;
-    private com.google.android.material.card.MaterialCardView btnSelectPhoto; // Cambiado de View a MaterialCardView
+    private com.google.android.material.card.MaterialCardView btnSelectPhoto;
     private TextView textBackToLogin, textTitle;
     private LinearLayout layoutSugerencias, layoutBotonesSugerencias;
 
@@ -80,7 +73,7 @@ public class RegisterActivity extends BaseActivity {
     private static final int CAMERA_REQUEST = 2;
     private static final int PERMISSION_GALLERY_CODE = 100;
     private static final int PERMISSION_CAMERA_CODE = 101;
-    
+
     // Variables de estado de la actividad
     private String encodedImage = "";
     private boolean isEditMode = false;
@@ -117,11 +110,10 @@ public class RegisterActivity extends BaseActivity {
         layoutTerminos = findViewById(R.id.layoutTerminos);
         textVerTerminos = findViewById(R.id.textVerTerminos);
 
-        // Configuración de listeners y comportamiento inicial
         if (checkTerminos != null) {
             checkTerminos.setClickable(false);
         }
-        
+
         if (textVerTerminos != null) {
             textVerTerminos.setOnClickListener(v -> mostrarAlertaTerminos());
         }
@@ -176,16 +168,13 @@ public class RegisterActivity extends BaseActivity {
         if (btnRegister != null) {
             btnRegister.setOnClickListener(v -> { if (isEditMode) actualizar(); else registrar(); });
         }
-        
+
         if (textBackToLogin != null) {
             textBackToLogin.setOnClickListener(v -> finish());
         }
         configurarValidacionDinamica();
     }
 
-    /**
-     * Establece listeners para limpiar los estados de error visual de forma dinámica.
-     */
     private void configurarValidacionDinamica() {
         TextWatcher watcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -201,21 +190,17 @@ public class RegisterActivity extends BaseActivity {
         if (editNombre != null) editNombre.addTextChangedListener(watcher);
         if (editRegEmail != null) editRegEmail.addTextChangedListener(watcher);
         if (editRegPassword != null) editRegPassword.addTextChangedListener(watcher);
-        
+
         if (btnRegister != null) {
             btnRegister.setEnabled(true);
             btnRegister.setAlpha(1.0f);
         }
     }
 
-    /**
-     * Muestra el diálogo de lectura de términos y condiciones con validación de scroll.
-     */
     private void mostrarAlertaTerminos() {
         ScrollView scrollView = new ScrollView(this);
         TextView textView = new TextView(this);
 
-        // AQUÍ ESTÁ LA CORRECCIÓN: Le decimos que lea el XML como HTML
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             textView.setText(android.text.Html.fromHtml(getString(R.string.terminos_legales), android.text.Html.FROM_HTML_MODE_COMPACT));
         } else {
@@ -241,11 +226,9 @@ public class RegisterActivity extends BaseActivity {
 
         dialog.show();
 
-        // Bloqueamos el botón de aceptar por defecto
         Button btnAceptar = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         btnAceptar.setEnabled(false);
 
-        // Escuchamos el scroll para desbloquear el botón cuando llegue al final
         scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
             View view = scrollView.getChildAt(scrollView.getChildCount() - 1);
             int diff = (view.getBottom() - (scrollView.getHeight() + scrollView.getScrollY()));
@@ -254,7 +237,6 @@ public class RegisterActivity extends BaseActivity {
             }
         });
 
-        // Por si el texto es tan corto que no hace falta scrollear
         scrollView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             View view = scrollView.getChildAt(scrollView.getChildCount() - 1);
             if (view.getBottom() <= scrollView.getHeight()) {
@@ -263,12 +245,10 @@ public class RegisterActivity extends BaseActivity {
         });
     }
 
-    // 📷 LÓGICA DE FOTO Y PERMISOS
     private void mostrarOpcionesFoto() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.layout_photo_options, null);
 
-        // Controlamos si mostramos la opción de eliminar
         boolean mostrarEliminar = isEditMode || !encodedImage.isEmpty();
         View btnDelete = view.findViewById(R.id.btnDeletePhoto);
         btnDelete.setVisibility(mostrarEliminar ? View.VISIBLE : View.GONE);
@@ -312,17 +292,23 @@ public class RegisterActivity extends BaseActivity {
             openGallery();
         }
     }
+
     public void eliminarFoto(){
-        imgUser.setImageResource(R.drawable.defecto); // Ponemos el icono por defecto
-        encodedImage = ""; // Vaciamos el texto para que al servidor le llegue en blanco
+        imgUser.setImageResource(R.drawable.defecto);
+        encodedImage = "";
         Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show();
     }
+
+    // =========================================================
+    // 🚀 AQUÍ SE CONFIGURA LA BARRA SÓLO PARA MODO EDICIÓN
+    // =========================================================
     private void prepararPantallaParaEdicion() {
-        com.google.android.material.button.MaterialButton btnBackEdit = findViewById(R.id.btnBackEdit);
-        if (btnBackEdit != null) {
-            btnBackEdit.setVisibility(View.VISIBLE); // La hacemos aparecer
-            btnBackEdit.setOnClickListener(v -> finish()); // Que cierre al pulsar
+        androidx.appcompat.widget.Toolbar toolbarRegister = findViewById(R.id.toolbarRegister);
+        if (toolbarRegister != null) {
+            toolbarRegister.setVisibility(View.VISIBLE); // Lo hacemos visible al editar
+            toolbarRegister.setNavigationOnClickListener(v -> finish()); // Flecha hacia atrás cierra la pantalla
         }
+
         if (textTitle != null) textTitle.setText("Editar Mi Perfil");
         btnRegister.setText("Guardar Cambios");
 
@@ -350,22 +336,26 @@ public class RegisterActivity extends BaseActivity {
         if (editRegNombreUsuario != null) editRegNombreUsuario.setEnabled(true);
         editRegPassword.setEnabled(true);
 
-        // RECUPERAMOS TU ID DE USUARIO (Súper importante)
         currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
 
         cargarDatosUsuario();
     }
 
     private void prepararPantallaParaRegistro() {
-        // Configuraciones normales de registro por si acaso
+        // Aseguramos que la barra superior no salga en el registro
+        androidx.appcompat.widget.Toolbar toolbarRegister = findViewById(R.id.toolbarRegister);
+        if (toolbarRegister != null) {
+            toolbarRegister.setVisibility(View.GONE);
+        }
+
         textTitle.setText("Registro de Usuario");
         btnRegister.setText("Registrarse");
         layoutTerminos.setVisibility(View.VISIBLE);
         textBackToLogin.setVisibility(View.VISIBLE);
-        
-        // Ponemos la imagen por defecto al iniciar el registro
+
         imgUser.setImageResource(R.drawable.defecto);
     }
+    // =========================================================
 
     private void openCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -375,7 +365,6 @@ public class RegisterActivity extends BaseActivity {
             Toast.makeText(this, "No se encontró aplicación de cámara", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -390,11 +379,7 @@ public class RegisterActivity extends BaseActivity {
         }
     }
 
-
-    // =========================================================
-
     private void mostrarCalendario() {
-        // Configuramos la restricción: máximo hoy hace 18 años
         Calendar constraintsCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         constraintsCal.add(Calendar.YEAR, -18);
         long maxDate = constraintsCal.getTimeInMillis();
@@ -414,14 +399,14 @@ public class RegisterActivity extends BaseActivity {
         datePicker.addOnPositiveButtonClickListener(selection -> {
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             calendar.setTimeInMillis(selection);
-            
+
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
 
             String diaF = String.format(Locale.getDefault(), "%02d", day);
             String mesF = String.format(Locale.getDefault(), "%02d", month + 1);
-            
+
             fechaSeleccionada = year + "-" + mesF + "-" + diaF;
             String fechaMostrar = diaF + "/" + mesF + "/" + year;
             editRegFechaNac.setText(fechaMostrar);
@@ -431,7 +416,6 @@ public class RegisterActivity extends BaseActivity {
         datePicker.show(getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
     }
 
-    // Método que ya no usaremos pero mantenemos la estructura limpia
     private void configurarTextWatcherEmail() {
         editRegEmail.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -470,15 +454,8 @@ public class RegisterActivity extends BaseActivity {
                 });
     }
 
-    private void setupEditMode() {
-        if (textTitle != null) textTitle.setText("Modificar mi Perfil");
-        btnRegister.setText("Guardar Cambios");
-        currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
-        cargarDatosUsuario();
-    }
-
     private void cargarDatosUsuario() {
-        if (currentUserId == -1) return; // Si no hay ID, no hacemos la petición
+        if (currentUserId == -1) return;
 
         RetrofitClient.getChatApiServices().getUsuario(currentUserId).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -499,12 +476,11 @@ public class RegisterActivity extends BaseActivity {
 
                         editRegTelefono.setText(limpiarValor(json.optString("telefono", "")));
 
-                        // CARGAMOS EL NOMBRE DE USUARIO (EL NUEVO CAMPO)
                         if (editRegNombreUsuario != null) {
                             editRegNombreUsuario.setText(limpiarValor(json.optString("nombre_usuario", "")));
                         }
 
-                        editRegPassword.setText(""); // Dejamos la contraseña en blanco por seguridad
+                        editRegPassword.setText("");
 
                         String fotoBase64 = json.optString("foto", "");
                         if (!fotoBase64.isEmpty()) {
@@ -540,23 +516,19 @@ public class RegisterActivity extends BaseActivity {
         String telefono = editRegTelefono.getText().toString().trim();
         String password = editRegPassword.getText().toString().trim();
 
-        // VALIDACIÓN GENERAL: Si falta algún campo obligatorio, mostramos el aviso inferior
         boolean faltanCampos = nombre.isEmpty() || apellidos.isEmpty() || nombreUsuario.isEmpty() ||
-                             email.isEmpty() || telefono.isEmpty() || (passwordObligatoria && password.isEmpty()) ||
-                             fechaSeleccionada.isEmpty();
+                email.isEmpty() || telefono.isEmpty() || (passwordObligatoria && password.isEmpty()) ||
+                fechaSeleccionada.isEmpty();
 
         if (faltanCampos) {
             AlertHelper.showActionAlert(btnRegister, "Por favor, rellene todos los campos para continuar", AlertType.WARNING);
         }
 
-        // 1. TÉRMINOS LEGALES
         if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
             AlertHelper.showActionAlert(checkTerminos, "Es necesario aceptar los términos para continuar", AlertType.WARNING);
             return false;
         }
 
-
-        // 2. NOMBRE DE USUARIO
         if (nombreUsuario.isEmpty()) {
             if (editRegNombreUsuario != null) {
                 editRegNombreUsuario.setError("El nombre de usuario es obligatorio");
@@ -572,7 +544,6 @@ public class RegisterActivity extends BaseActivity {
             return false;
         }
 
-        // 3. NOMBRE Y APELLIDOS
         if (nombre.isEmpty()) {
             editNombre.setError("Tu nombre es obligatorio");
             editNombre.requestFocus();
@@ -590,14 +561,12 @@ public class RegisterActivity extends BaseActivity {
             return false;
         }
 
-        // 4. FECHA DE NACIMIENTO
         if (fechaSeleccionada.isEmpty()) {
             editRegFechaNac.setError("Selecciona tu fecha de nacimiento");
             AlertHelper.showActionAlert(editRegFechaNac, "Indica tu fecha de nacimiento", AlertType.INFO);
             return false;
         }
 
-        // 5. EMAIL
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             editRegEmail.setError("Introduce un correo electrónico válido");
             editRegEmail.requestFocus();
@@ -609,14 +578,12 @@ public class RegisterActivity extends BaseActivity {
             return false;
         }
 
-        // 6. TELÉFONO
         if (!telefono.matches("^[0-9]{9}$")) {
             editRegTelefono.setError("El teléfono debe tener 9 dígitos numéricos");
             editRegTelefono.requestFocus();
             return false;
         }
 
-        // 7. CONTRASEÑA
         if (passwordObligatoria || (!passwordObligatoria && !password.isEmpty())) {
             if (password.isEmpty()) {
                 editRegPassword.setError("Crea una contraseña para proteger tu cuenta");
@@ -630,13 +597,11 @@ public class RegisterActivity extends BaseActivity {
             }
         }
 
-        // VALIDACIÓN DE LOS TÉRMINOS LEGALES (Solo si es un registro nuevo)
         if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
             Toast.makeText(this, "Debes aceptar los términos y condiciones legales", Toast.LENGTH_LONG).show();
             checkTerminos.requestFocus();
             return false;
         }
-
 
         return true;
     }
@@ -678,6 +643,7 @@ public class RegisterActivity extends BaseActivity {
             }
         });
     }
+
     private void registrar() {
         if (!validarCampos(true)) return;
 
@@ -686,35 +652,34 @@ public class RegisterActivity extends BaseActivity {
         RetrofitClient.getChatApiServices()
                 .iniciarRegistro(email)
                 .enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    // Guardar datos del usuario para la verificación
-                    Intent intent = new Intent(RegisterActivity.this, VerificacionEmailActivity.class);
-                    intent.putExtra("VERIFICACION_EMAIL", email);
-                    intent.putExtra("VERIFICACION_NOMBRE_USUARIO", editRegNombreUsuario.getText().toString().trim());
-                    intent.putExtra("VERIFICACION_NOMBRE", editNombre.getText().toString().trim());
-                    intent.putExtra("VERIFICACION_APELLIDOS", editApellidos.getText().toString().trim());
-                    intent.putExtra("VERIFICACION_FECHA", fechaSeleccionada);
-                    intent.putExtra("VERIFICACION_TELEFONO", editRegTelefono.getText().toString().trim());
-                    intent.putExtra("VERIFICACION_PASSWORD", editRegPassword.getText().toString().trim());
-                    intent.putExtra("VERIFICACION_FOTO", encodedImage);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    try {
-                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "sin detalle";
-                        Toast.makeText(RegisterActivity.this, "Error " + response.code() + ": " + errorBody, Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        Toast.makeText(RegisterActivity.this, "Error en el registro (código " + response.code() + ")", Toast.LENGTH_LONG).show();
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            Intent intent = new Intent(RegisterActivity.this, VerificacionEmailActivity.class);
+                            intent.putExtra("VERIFICACION_EMAIL", email);
+                            intent.putExtra("VERIFICACION_NOMBRE_USUARIO", editRegNombreUsuario.getText().toString().trim());
+                            intent.putExtra("VERIFICACION_NOMBRE", editNombre.getText().toString().trim());
+                            intent.putExtra("VERIFICACION_APELLIDOS", editApellidos.getText().toString().trim());
+                            intent.putExtra("VERIFICACION_FECHA", fechaSeleccionada);
+                            intent.putExtra("VERIFICACION_TELEFONO", editRegTelefono.getText().toString().trim());
+                            intent.putExtra("VERIFICACION_PASSWORD", editRegPassword.getText().toString().trim());
+                            intent.putExtra("VERIFICACION_FOTO", encodedImage);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            try {
+                                String errorBody = response.errorBody() != null ? response.errorBody().string() : "sin detalle";
+                                Toast.makeText(RegisterActivity.this, "Error " + response.code() + ": " + errorBody, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                Toast.makeText(RegisterActivity.this, "Error en el registro (código " + response.code() + ")", Toast.LENGTH_LONG).show();
+                            }
+                        }
                     }
-                }
-            }
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(RegisterActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Toast.makeText(RegisterActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void openGallery() {
@@ -754,11 +719,9 @@ public class RegisterActivity extends BaseActivity {
                                 JSONArray sugerencias = json.optJSONArray("sugerencias");
 
                                 if (disponible) {
-                                    // Nombre disponible
                                     textNombreUsuarioError.setVisibility(View.GONE);
                                     layoutSugerencias.setVisibility(View.GONE);
                                 } else {
-                                    // Nombre no disponible, mostrar sugerencias
                                     textNombreUsuarioError.setVisibility(View.VISIBLE);
                                     layoutSugerencias.setVisibility(View.VISIBLE);
                                     layoutBotonesSugerencias.removeAllViews();
@@ -769,8 +732,8 @@ public class RegisterActivity extends BaseActivity {
                                         btnSugerencia.setText(sugerencia);
                                         btnSugerencia.setTextSize(12);
                                         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                LinearLayout.LayoutParams.WRAP_CONTENT);
                                         params.setMargins(4, 0, 4, 0);
                                         btnSugerencia.setLayoutParams(params);
                                         btnSugerencia.setOnClickListener(v -> {

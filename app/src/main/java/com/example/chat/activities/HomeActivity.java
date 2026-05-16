@@ -9,8 +9,7 @@ import android.os.Looper;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -18,9 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Button;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -60,7 +57,6 @@ public class HomeActivity extends BaseActivity {
     private ImageView imgDrawerFoto;
     private TextView textDrawerNombre;
 
-    // 👇 AQUÍ ESTÁ LA MAGIA. Agrupamos todos los MaterialButtons juntos
     private com.google.android.material.button.MaterialButton drawerEditarPerfil;
     private com.google.android.material.button.MaterialButton drawerCerrarSesion;
     private com.google.android.material.button.MaterialButton btnAbandonarGlobal;
@@ -117,7 +113,6 @@ public class HomeActivity extends BaseActivity {
         salaAdapter = new SalaAdapter(this, listaMisSalas);
         listSalas.setAdapter(salaAdapter);
 
-        // Click normal para entrar a la sala
         listSalas.setOnItemClickListener((parent, view, position, id) -> {
             if (esClickRapido()) return;
             Sala sala = listaMisSalas.get(position);
@@ -150,10 +145,8 @@ public class HomeActivity extends BaseActivity {
         });
 
         btnAbandonarGlobal = findViewById(R.id.btnAbandonarGlobal);
-
         btnAbandonarGlobal.setOnClickListener(v -> {
             if (listaMisSalas != null && !listaMisSalas.isEmpty()) {
-                // Pillamos la sala activa (la primera)
                 Sala sala = listaMisSalas.get(0);
                 String idSala = sala.getIdSala() != null ? sala.getIdSala() : sala.getNombre();
                 confirmarAbandonoTotal(idSala);
@@ -177,6 +170,11 @@ public class HomeActivity extends BaseActivity {
 
         drawerNotificaciones.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
+            // 🚀 EXTRA SEGURIDAD: Si logran hacer clic, comprobamos que haya sala
+            if (listaMisSalas.isEmpty()) {
+                Toast.makeText(this, "Debes entrar a una sala general primero", Toast.LENGTH_SHORT).show();
+                return;
+            }
             mostrarNotificacionesConSolicitud();
         });
 
@@ -194,9 +192,10 @@ public class HomeActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         cargarPerfilDrawer();
+
+        // 🚀 OJO AQUÍ: cargarMisSalas ahora es el que dispara notificaciones e historial
+        // cuando responde el servidor, para saber seguro si estamos en una sala o no.
         cargarMisSalas();
-        actualizarBadgeNotificaciones();
-        refrescarHistorialPrivado();
         iniciarRefrescoHistorialPrivado();
     }
 
@@ -207,8 +206,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void actualizarVistasSalas() {
-        boolean hayHistorialPrivado = !PrivateChatHistoryStore.getActiveHistory(this, currentUserId).isEmpty();
-        if (listaMisSalas.isEmpty() && !hayHistorialPrivado) {
+        if (listaMisSalas.isEmpty()) {
             layoutConSalas.setVisibility(View.GONE);
             layoutSinSalas.setVisibility(View.VISIBLE);
         } else {
@@ -267,21 +265,28 @@ public class HomeActivity extends BaseActivity {
                             }
                         }
 
-                        // 🚀 CONTROL DEL ICONO DE SALIDA
+                        // 🚀 REGLA DE ORO: SI NO HAY SALA GENERAL...
                         if (listaMisSalas.isEmpty()) {
                             btnAbandonarGlobal.setVisibility(View.GONE);
+                            drawerNotificaciones.setVisibility(View.GONE); // Desaparecen notificaciones del menú
                         } else {
                             btnAbandonarGlobal.setVisibility(View.VISIBLE);
+                            drawerNotificaciones.setVisibility(View.VISIBLE); // Aparecen notificaciones
                         }
 
                         salaAdapter.notifyDataSetChanged();
                         actualizarVistasSalas();
+
+                        // 🚀 Lanzamos esto solo DESPUÉS de saber si estamos en una sala
+                        actualizarBadgeNotificaciones();
+                        refrescarHistorialPrivado();
                     }
 
                     @Override
                     public void onFailure(Call<List<Sala>> call, Throwable t) {
                         actualizarVistasSalas();
                         btnAbandonarGlobal.setVisibility(View.GONE);
+                        drawerNotificaciones.setVisibility(View.GONE);
                     }
                 });
     }
@@ -308,8 +313,7 @@ public class HomeActivity extends BaseActivity {
         historialRefreshRunnable = new Runnable() {
             @Override
             public void run() {
-                refrescarHistorialPrivado();
-                cargarMisSalas();
+                cargarMisSalas(); // Cargar salas dispara todo lo demás en cadena
                 historialHandler.postDelayed(this, 30_000L);
             }
         };
@@ -318,12 +322,20 @@ public class HomeActivity extends BaseActivity {
 
     private void refrescarHistorialPrivado() {
         if (layoutHistorialPrivadoItems == null || textHistorialPrivadoVacio == null) return;
-        List<PrivateChatHistoryItem> historial = PrivateChatHistoryStore.getActiveHistory(this, currentUserId);
         layoutHistorialPrivadoItems.removeAllViews();
+
+        // 🚀 CORTAFUEGOS: Si no hay sala, no se procesa ni se muestra el historial
+        if (listaMisSalas.isEmpty()) {
+            textHistorialPrivadoVacio.setVisibility(View.GONE);
+            return;
+        }
+
+        List<PrivateChatHistoryItem> historial = PrivateChatHistoryStore.getActiveHistory(this, currentUserId);
         if (historial.isEmpty()) {
             textHistorialPrivadoVacio.setVisibility(View.VISIBLE);
             return;
         }
+
         textHistorialPrivadoVacio.setVisibility(View.GONE);
         for (PrivateChatHistoryItem item : historial) {
             View row = LayoutInflater.from(this).inflate(R.layout.item_historial_privado, layoutHistorialPrivadoItems, false);
@@ -437,10 +449,12 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void actualizarBadgeNotificaciones() {
-        if (!getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("notificaciones", true)) {
+        // 🚀 CORTAFUEGOS: Si no hay sala, cortamos la petición a la API
+        if (listaMisSalas.isEmpty() || !getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("notificaciones", true)) {
             drawerNotifBadge.setVisibility(View.GONE);
             return;
         }
+
         RetrofitClient.getChatApiServices().getNoLeidosPrivados(currentUserId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -608,6 +622,7 @@ public class HomeActivity extends BaseActivity {
         ultimoClickTime = tiempoActual;
         return false;
     }
+
     private void confirmarAbandonoTotal(String idSala) {
         new AlertDialog.Builder(this)
                 .setTitle("¿Cerrar sesión en la sala?")
@@ -618,7 +633,6 @@ public class HomeActivity extends BaseActivity {
                                 @Override
                                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                                     if (response.isSuccessful()) {
-                                        // 1. Limpiar historial de chats privados locales
                                         List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(HomeActivity.this, currentUserId, idSala);
                                         for (Integer otherId : otrosUsuarios) {
                                             PrivateChatHistoryStore.removeChat(HomeActivity.this, currentUserId, otherId);
@@ -626,8 +640,6 @@ public class HomeActivity extends BaseActivity {
                                         }
 
                                         Toast.makeText(HomeActivity.this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
-
-                                        // 2. Refrescar la lista (esto ocultará el icono automáticamente)
                                         cargarMisSalas();
                                     }
                                 }

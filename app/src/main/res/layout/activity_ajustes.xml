@@ -1,42 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/bg_main">
+    android:background="@color/bg_main"
+    android:fitsSystemWindows="true">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="?attr/colorPrimary"
-        android:paddingStart="4dp"
-        android:paddingEnd="16dp">
-
-        <ImageButton
-            android:id="@+id/btnBackAjustes"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Atrás"
-            android:src="@android:drawable/ic_menu_revert"
-            android:tint="@android:color/white" />
+        android:layout_height="wrap_content"
+        android:background="@color/bg_main"
+        app:elevation="0dp"> <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarAjustes"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/text_high">
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="AJUSTES"
-                android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingStart="8dp"/>
-    </LinearLayout>
+            android:textColor="@color/text_high"
+            android:textSize="17sp"
+            android:fontFamily="@font/poppins_bold" /> </androidx.appcompat.widget.Toolbar>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/border_subtle" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -44,14 +43,13 @@
             android:orientation="vertical"
             android:paddingBottom="32dp">
 
-            <!-- SECCIÓN: APARIENCIA -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="APARIENCIA"
                 android:textSize="12sp"
-                android:textColor="?attr/colorPrimary"
-                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:fontFamily="@font/poppins_bold"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:paddingTop="20dp"
@@ -72,6 +70,7 @@
                     android:text="Tema de la aplicación"
                     android:textColor="@color/text_high"
                     android:textSize="15sp"
+                    android:fontFamily="@font/poppins_medium"
                     android:layout_marginBottom="8dp"/>
 
                 <RadioGroup
@@ -86,6 +85,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Sistema"
+                        android:fontFamily="@font/poppins_regular"
                         android:textColor="@color/text_high"
                         android:checked="true"/>
 
@@ -95,6 +95,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Claro"
+                        android:fontFamily="@font/poppins_regular"
                         android:textColor="@color/text_high"/>
 
                     <RadioButton
@@ -103,6 +104,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Oscuro"
+                        android:fontFamily="@font/poppins_regular"
                         android:textColor="@color/text_high"/>
                 </RadioGroup>
             </LinearLayout>
@@ -110,7 +112,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="?attr/dividerHorizontal"
+                android:background="@color/border_subtle"
                 android:layout_marginStart="16dp"/>
 
             <LinearLayout
@@ -128,6 +130,7 @@
                     android:text="Tamaño de letra del chat"
                     android:textColor="@color/text_high"
                     android:textSize="15sp"
+                    android:fontFamily="@font/poppins_medium"
                     android:layout_marginBottom="8dp"/>
 
                 <RadioGroup
@@ -142,6 +145,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Pequeña"
+                        android:fontFamily="@font/poppins_regular"
                         android:textColor="@color/text_high"/>
 
                     <RadioButton
@@ -150,6 +154,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Normal"
+                        android:fontFamily="@font/poppins_regular"
                         android:textColor="@color/text_high"
                         android:checked="true"/>
 
@@ -159,25 +164,24 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Grande"
+                        android:fontFamily="@font/poppins_regular"
                         android:textColor="@color/text_high"/>
                 </RadioGroup>
             </LinearLayout>
 
-
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="?attr/dividerHorizontal"
+                android:background="@color/border_subtle"
                 android:layout_marginStart="16dp"/>
 
-            <!-- SECCIÓN: UBICACIÓN -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="UBICACIÓN"
                 android:textSize="12sp"
-                android:textColor="?attr/colorPrimary"
-                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:fontFamily="@font/poppins_bold"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:paddingTop="20dp"
@@ -198,6 +202,7 @@
                     android:layout_weight="1"
                     android:text="Localización"
                     android:textColor="@color/text_high"
+                    android:fontFamily="@font/poppins_regular"
                     android:textSize="15sp"/>
 
                 <Switch
@@ -209,15 +214,16 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="?attr/dividerHorizontal"
+                android:background="@color/border_subtle"
                 android:layout_marginStart="16dp"/>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="CÁMARA"
                 android:textSize="12sp"
-                android:textColor="?attr/colorPrimary"
-                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:fontFamily="@font/poppins_bold"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:paddingTop="20dp"
@@ -238,6 +244,7 @@
                     android:layout_weight="1"
                     android:text="Permiso de Cámara"
                     android:textColor="@color/text_high"
+                    android:fontFamily="@font/poppins_regular"
                     android:textSize="15sp"/>
 
                 <Switch
@@ -249,7 +256,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="?attr/dividerHorizontal"
+                android:background="@color/border_subtle"
                 android:layout_marginStart="16dp"/>
 
         </LinearLayout>
