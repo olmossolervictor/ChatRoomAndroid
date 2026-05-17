@@ -37,6 +37,14 @@
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:fontFamily="@font/poppins_bold" />
+
+            <ImageView
+                android:id="@+id/imgFotoHistorialPrivado"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
         </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout

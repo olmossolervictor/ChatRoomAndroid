@@ -341,11 +341,51 @@ public class HomeActivity extends BaseActivity {
             View row = LayoutInflater.from(this).inflate(R.layout.item_historial_privado, layoutHistorialPrivadoItems, false);
             TextView textNombre = row.findViewById(R.id.textNombreHistorialPrivado);
             TextView textInicial = row.findViewById(R.id.textInicialHistorialPrivado);
+
+            // 🚀 NUEVO: Enlazamos el ImageView de la foto (debe existir en el XML)
+            ImageView imgFoto = row.findViewById(R.id.imgFotoHistorialPrivado);
+
             String nombreUsuario = item.getOtherUserName();
             if (nombreUsuario != null && !nombreUsuario.isEmpty()) {
                 textInicial.setText(nombreUsuario.substring(0, 1).toUpperCase());
             }
             textNombre.setText(item.getOtherUserName());
+
+            // 🚀 LÓGICA PARA CARGAR LA FOTO DE PERFIL
+            if (imgFoto != null) {
+                // Por defecto, ocultamos la foto y mostramos la letra inicial
+                imgFoto.setVisibility(View.GONE);
+                textInicial.setVisibility(View.VISIBLE);
+
+                // Pedimos los datos del usuario al servidor para ver si tiene foto
+                RetrofitClient.getChatApiServices().getUsuario(item.getOtherUserId())
+                        .enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    try {
+                                        JSONObject json = new JSONObject(response.body().string());
+                                        String foto = json.optString("foto", "");
+
+                                        // Si tiene foto, la decodificamos y la mostramos
+                                        if (!foto.isEmpty() && !foto.equalsIgnoreCase("null")) {
+                                            byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
+                                            imgFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
+
+                                            // Hacemos visible la foto y ocultamos el círculo de la letra
+                                            imgFoto.setVisibility(View.VISIBLE);
+                                            textInicial.setVisibility(View.GONE);
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                        });
+            }
+
             row.setOnClickListener(v -> {
                 if (esClickRapido()) return;
                 abrirChatPrivadoDesdeHistorial(item);
