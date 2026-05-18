@@ -2,13 +2,13 @@ package com.example.chat.activities;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory; // 🚀 Importado para la imagen
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Base64; // 🚀 Importado para decodificar la foto
+import android.util.Base64;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -38,7 +38,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.hdodenhof.circleimageview.CircleImageView; // 🚀 Importado para la foto circular
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -69,6 +69,8 @@ public class PrivateChatActivity extends BaseActivity {
     private long ultimoCheckGeofence = 0L;
     private boolean chatCerradoPorGeofence = false;
 
+    private boolean isSolicitandoPermiso = false;
+
     // VARIABLES PARA LA ANIMACIÓN
     private long ultimoAvisoEscribiendo = 0;
     private LinearLayout layoutTyping;
@@ -94,7 +96,6 @@ public class PrivateChatActivity extends BaseActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         PrivateChatHistoryStore.touchChat(this, currentUserId, otherUserId, otherUserName);
 
-        // --- CONFIGURACIÓN DE LA TOOLBAR NATIVA ---
         Toolbar toolbar = findViewById(R.id.toolbarPrivateChat);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -108,7 +109,6 @@ public class PrivateChatActivity extends BaseActivity {
             textToolbarPrivateTitle.setText(otherUserName);
         }
 
-        // 🚀 Cargar la foto de perfil del otro usuario en la toolbar
         CircleImageView imgToolbarFoto = findViewById(R.id.imgToolbarFoto);
         cargarFotoOtroUsuario(imgToolbarFoto);
 
@@ -125,7 +125,6 @@ public class PrivateChatActivity extends BaseActivity {
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessagesPrivate.setAdapter(adapter);
 
-        // Ajuste automático cuando sale el teclado
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() | androidx.core.view.WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -136,7 +135,6 @@ public class PrivateChatActivity extends BaseActivity {
             return insets;
         });
 
-        // ESCUCHADOR DE ESCRITURA PARA AVISAR AL OTRO
         editMessagePrivate.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -166,7 +164,36 @@ public class PrivateChatActivity extends BaseActivity {
         iniciarAutoRefresco();
     }
 
-    // 🚀 NUEVA FUNCIÓN: Va al servidor, pide los datos del usuario y le coloca la foto
+    // 🔥 EL BYPASS DEFINITIVO CONTRA BASEACTIVITY 🔥
+    @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
+        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (v instanceof EditText) {
+                View bottomContainer = findViewById(R.id.layoutInputMessageContainer);
+
+                if (bottomContainer != null) {
+                    android.graphics.Rect containerRect = new android.graphics.Rect();
+                    bottomContainer.getGlobalVisibleRect(containerRect);
+
+                    if (!containerRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
+                        v.clearFocus();
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Llamada directa al sistema operativo, evitando el BaseActivity
+        if (getWindow().superDispatchTouchEvent(ev)) {
+            return true;
+        }
+        return onTouchEvent(ev);
+    }
+
     private void cargarFotoOtroUsuario(CircleImageView imageView) {
         if (imageView == null || otherUserId == -1) return;
 
@@ -363,14 +390,15 @@ public class PrivateChatActivity extends BaseActivity {
             return;
         }
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_PRIVATE_CHAT_REQUEST
-            );
-            Toast.makeText(this, "Necesito ubicación para mantener este chat privado activo", Toast.LENGTH_SHORT).show();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (!isSolicitandoPermiso) {
+                isSolicitandoPermiso = true;
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_PRIVATE_CHAT_REQUEST
+                );
+            }
             return;
         }
 
@@ -381,12 +409,7 @@ public class PrivateChatActivity extends BaseActivity {
 
         fusedLocationClient.getCurrentLocation(request, null)
                 .addOnSuccessListener(this, location -> {
-                    if (location == null) {
-                        if (accionSiValida != null) {
-                            Toast.makeText(this, "No se pudo comprobar tu ubicación", Toast.LENGTH_SHORT).show();
-                        }
-                        return;
-                    }
+                    if (location == null) return;
 
                     float[] resultado = new float[1];
                     Location.distanceBetween(
@@ -442,10 +465,11 @@ public class PrivateChatActivity extends BaseActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_PRIVATE_CHAT_REQUEST
-                && (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED)
-                && tieneGeofencePrivada()) {
-            cerrarChatPrivadoPorGeofence("Sin ubicación no se puede mantener este chat privado.");
+        if (requestCode == LOCATION_PERMISSION_PRIVATE_CHAT_REQUEST) {
+            isSolicitandoPermiso = false;
+            if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                cerrarChatPrivadoPorGeofence("Se requiere permiso de ubicación para este chat.");
+            }
         }
     }
 

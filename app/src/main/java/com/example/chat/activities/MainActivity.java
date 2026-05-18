@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Base64;
 import android.view.LayoutInflater;
-import android.view.MenuItem; // <--- IMPORTANTE AÑADIDO
+import android.view.MenuItem;
 import android.view.View;
 import android.graphics.Color;
 import android.widget.Button;
@@ -19,13 +19,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.Toolbar; // <--- IMPORTANTE AÑADIDO
+import androidx.appcompat.widget.Toolbar;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -66,7 +64,6 @@ public class MainActivity extends BaseActivity {
     private boolean isAdmin = false;
     private TextView textTiempoRestante;
     private TextView textSalaTitulo;
-    private TextView textSalaUsuarios;
 
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
@@ -79,13 +76,14 @@ public class MainActivity extends BaseActivity {
     private int currentUserId;
     private String currentSalaId;
 
-    // Datos de geovalla de la sala (0 = sin restricción)
+    // Datos de geovalla de la sala
     private double salaLatitud = 0;
     private double salaLongitud = 0;
     private double salaRadioMetros = 0;
     private String salaNombreMostrado;
-    private int usuariosEnSala = 0;
     private boolean salaFinalizadaPorTiempo = false;
+
+    private boolean isSolicitandoPermiso = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,7 +130,6 @@ public class MainActivity extends BaseActivity {
             return insets;
         });
 
-        // --- AQUÍ ACTIVAMOS LA BARRA CON LA FLECHA NATIVA ---
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -146,7 +143,6 @@ public class MainActivity extends BaseActivity {
         layoutInputMessage = findViewById(R.id.layoutInputMessage);
         textTiempoRestante = findViewById(R.id.textTiempoRestante);
         textSalaTitulo = findViewById(R.id.textSalaTitulo);
-        textSalaUsuarios = findViewById(R.id.textSalaUsuarios);
         salaNombreMostrado = currentSalaId;
         actualizarCabeceraSala();
 
@@ -182,9 +178,42 @@ public class MainActivity extends BaseActivity {
         solicitarPermisoUbicacionSiNecesario();
     }
 
+    // 🔥 EL BYPASS DEFINITIVO CONTRA BASEACTIVITY 🔥
+    @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
+        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (v instanceof EditText) {
+                View bottomContainer = findViewById(R.id.layoutInputMessageContainer);
+
+                if (bottomContainer != null) {
+                    android.graphics.Rect containerRect = new android.graphics.Rect();
+                    bottomContainer.getGlobalVisibleRect(containerRect);
+
+                    // Solo si tocas FUERA de toda la barra inferior, quitamos el foco
+                    if (!containerRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
+                        v.clearFocus();
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        }
+                    }
+                }
+            }
+        }
+
+        // ¡OJO! Ya NO usamos `return super.dispatchTouchEvent(ev);` porque nos llama al BaseActivity.
+        // Llamamos directamente al sistema para ejecutar el toque sin que BaseActivity nos sabotee.
+        if (getWindow().superDispatchTouchEvent(ev)) {
+            return true;
+        }
+        return onTouchEvent(ev);
+    }
+
     private void solicitarPermisoUbicacionSiNecesario() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
+            isSolicitandoPermiso = true;
             ActivityCompat.requestPermissions(
                     this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -193,37 +222,13 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void salirDeSalaManualmente() {
-        if (handler != null && refreshRunnable != null) {
-            handler.removeCallbacks(refreshRunnable);
-        }
-
-        Toast.makeText(this, "Saliendo y borrando datos...", Toast.LENGTH_SHORT).show();
-
-        RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        finish();
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        finish();
-                    }
-                });
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            isSolicitandoPermiso = false;
             if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                if (salaLatitud != 0 || salaLongitud != 0) {
-                    Toast.makeText(this,
-                            "Sin permiso de ubicación no se puede verificar si estás dentro del área de la sala",
-                            Toast.LENGTH_LONG).show();
-                }
+                expulsarUsuario("Permiso de ubicación denegado. Saliendo de la sala...");
             }
         }
     }
@@ -311,12 +316,16 @@ public class MainActivity extends BaseActivity {
     }
 
     private void verificarUbicacion() {
+        if (isSolicitandoPermiso) return;
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            expulsarUsuario("Permiso de ubicación revocado. Saliendo de la sala...");
+            return;
+        }
+
         if (salaLatitud == 0 && salaLongitud == 0) return;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) return;
 
         double radioEfectivo = salaRadioMetros > 0 ? salaRadioMetros : 100.0;
-
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                 .setMaxUpdateAgeMillis(5000)
@@ -405,26 +414,6 @@ public class MainActivity extends BaseActivity {
 
     private void obtenerUbicacionYEnviar(String mensaje) {
         enviarMensajeAlServidor(mensaje);
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
-        // Lógica limpia para ocultar el teclado al tocar fuera
-        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-            View v = getCurrentFocus();
-            if (v instanceof EditText) {
-                android.graphics.Rect outRect = new android.graphics.Rect();
-                v.getGlobalVisibleRect(outRect);
-                if (!outRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
-                    v.clearFocus();
-                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-                    if (imm != null) {
-                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                    }
-                }
-            }
-        }
-        return super.dispatchTouchEvent(ev);
     }
 
     private void enviarMensajeAlServidor(String mensajeLimpio) {
@@ -631,20 +620,6 @@ public class MainActivity extends BaseActivity {
             salaNombreMostrado = nombre;
         }
 
-        int usuarios = extraerPrimerEntero(json,
-                "activos_en_sala",
-                "usuarios_activos",
-                "usuarios_activos_sala",
-                "activos",
-                "usuarios_en_sala",
-                "personas_en_sala",
-                "total_usuarios",
-                "miembros",
-                "integrantes");
-        if (usuarios >= 0) {
-            usuariosEnSala = usuarios;
-        }
-
         double latitud = extraerPrimerDouble(json,
                 "latitud", "latitude", "sala_latitud", "lat");
         if (!Double.isNaN(latitud)) {
@@ -673,29 +648,6 @@ public class MainActivity extends BaseActivity {
                     : salaNombreMostrado;
             textSalaTitulo.setText(titulo);
         }
-
-        if (textSalaUsuarios != null) {
-            textSalaUsuarios.setText("(" + Math.max(usuariosEnSala, 0) + ") activos en esta sala");
-            textSalaUsuarios.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private int extraerPrimerEntero(JSONObject json, String... keys) {
-        for (String key : keys) {
-            if (!json.has(key)) continue;
-            try {
-                return json.getInt(key);
-            } catch (Exception ignored) {
-            }
-            try {
-                String value = json.getString(key);
-                if (value != null && !value.trim().isEmpty()) {
-                    return Integer.parseInt(value.trim());
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return -1;
     }
 
     private String extraerPrimerString(JSONObject json, String... keys) {
@@ -739,10 +691,6 @@ public class MainActivity extends BaseActivity {
             adapter.notifyDataSetChanged();
         }
         textTiempoRestante.setVisibility(View.GONE);
-        if (textSalaUsuarios != null) {
-            textSalaUsuarios.setText("(0) activos en esta sala");
-            textSalaUsuarios.setVisibility(View.VISIBLE);
-        }
 
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
                 .enqueue(new Callback<ResponseBody>() {
@@ -903,11 +851,10 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    // --- AQUÍ ESTÁ EL MÉTODO DE LA FLECHA ---
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish(); // Esto SÓLO te devuelve al Home, NO cierra sesión en la sala
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
