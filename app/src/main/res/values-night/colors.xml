@@ -17,16 +17,21 @@
     <color name="text_low">#8F8F8F</color>
     <color name="text_title">#FFFFFF</color>
 
-    <color name="chat_bubble_sent">#7460E8</color>
+    <color name="chat_bubble_sent">#6F55E8</color>
+    <color name="chat_bubble_sent_border">#816BFA</color>
     <color name="chat_text_sent">#FFFFFF</color>
     <color name="chat_bubble_received">#232323</color>
+    <color name="chat_bubble_received_border">#353535</color>
     <color name="chat_text_received">#FFFFFF</color>
-    <color name="chat_time_sent">#E8E2FF</color>
+    <color name="chat_time_sent">#D6CCFF</color>
     <color name="chat_time_received">#8F8F8F</color>
+    <color name="chat_sender_name">#B7A5FF</color>
     <color name="chat_system_text">#B8B8B8</color>
     <color name="chat_general_bubble">#7460E8</color>
-    <color name="chat_private_bubble">#8B5CF6</color>
-    <color name="chat_private_bubble_soft">#2B2638</color>
+    <color name="chat_private_bubble">#6F55E8</color>
+    <color name="chat_private_bubble_border">#816BFA</color>
+    <color name="chat_private_bubble_soft">#272333</color>
+    <color name="chat_private_bubble_soft_border">#3A3448</color>
 
     <color name="error_main">#FF9A9A</color>
     <color name="error_text">#FFB3B3</color>

@@ -5,31 +5,34 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="4dp">
+    android:paddingHorizontal="14dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="7dp">
 
     <LinearLayout
         android:id="@+id/containerMensaje"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:minWidth="80dp"
-        android:maxWidth="280dp"
-        android:paddingHorizontal="14dp"
-        android:paddingVertical="10dp"
+        android:minWidth="82dp"
+        android:maxWidth="294dp"
+        android:paddingStart="13dp"
+        android:paddingTop="9dp"
+        android:paddingEnd="13dp"
+        android:paddingBottom="8dp"
         android:background="@drawable/bubble_others"
-        android:elevation="1dp">
+        android:elevation="0dp">
 
         <TextView
             android:id="@+id/textNombre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="11sp"
-            android:fontFamily="@font/poppins_bold"
-            android:textColor="@color/text_medium"
+            android:fontFamily="@font/poppins_medium"
+            android:textColor="@color/chat_sender_name"
             android:letterSpacing="0"
-            android:textAllCaps="true"
-            android:layout_marginBottom="2dp"
+            android:textAllCaps="false"
+            android:layout_marginBottom="3dp"
             tools:text="ALEX VIP" />
 
         <TextView
@@ -38,7 +41,8 @@
             android:layout_height="wrap_content"
             android:textColor="@color/chat_text_received"
             android:textSize="15sp"
-            android:lineSpacingMultiplier="1.2"
+            android:lineSpacingExtra="1dp"
+            android:lineSpacingMultiplier="1.06"
             android:fontFamily="@font/poppins_regular"
             tools:text="¿A qué hora empieza el set de mañana?" />
 
@@ -46,10 +50,10 @@
             android:id="@+id/textFecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="10sp"
+            android:textSize="9sp"
             android:layout_gravity="end"
-            android:layout_marginTop="4dp"
-            android:alpha="0.7"
+            android:layout_marginTop="5dp"
+            android:alpha="0.62"
             android:fontFamily="@font/poppins_medium"
             android:textColor="@color/chat_time_received"
             tools:text="22:45" />
