@@ -9,6 +9,14 @@
         <item name="colorSurface">@color/surface_card</item>
         <item name="colorSurfaceVariant">@color/bg_secondary</item>
         <item name="colorOnSurfaceVariant">@color/text_medium</item>
+        <item name="colorError">@color/error_icon</item>
+        <item name="colorErrorContainer">@color/error_bg</item>
+        <item name="colorOnErrorContainer">@color/error_text</item>
+        <item name="android:popupBackground">@drawable/bg_error_popup</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.App.AlertDialog</item>
+        <item name="android:alertDialogTheme">@style/ThemeOverlay.App.AlertDialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.App.BottomSheetDialog</item>
 
         <!-- Elevación y bordes de componentes -->
         <item name="materialCardViewStyle">@style/Widget.App.CardView.Night</item>
@@ -18,7 +26,7 @@
     <style name="Widget.App.CardView.Night" parent="Widget.App.CardView">
         <item name="cardBackgroundColor">@color/surface_card</item>
         <item name="strokeColor">@color/border_subtle</item>
-        <item name="cardElevation">2dp</item>
+        <item name="cardElevation">0dp</item>
     </style>
 
     <!-- Ajuste de DatePicker para modo noche -->
@@ -29,6 +37,6 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="android:headerBackground">@color/bg_secondary</item>
         <item name="android:calendarTextColor">@color/text_high</item>
-        <item name="android:windowBackground">@color/bg_main</item>
+        <item name="android:windowBackground">@color/dialog_background</item>
     </style>
 </resources>

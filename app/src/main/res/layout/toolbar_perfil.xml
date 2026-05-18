@@ -15,7 +15,7 @@
         android:scaleType="centerCrop"
         android:src="@android:drawable/ic_menu_camera"
         app:shapeAppearanceOverlay="@style/CircleImage"
-        app:strokeColor="@color/accent_neon"
+        app:strokeColor="@color/border_subtle"
         app:strokeWidth="1dp" />
 
     <LinearLayout

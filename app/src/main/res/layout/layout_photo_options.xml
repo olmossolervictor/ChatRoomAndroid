@@ -3,36 +3,39 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:background="@drawable/bg_bottom_sheet">
+    android:paddingHorizontal="24dp"
+    android:paddingTop="14dp"
+    android:paddingBottom="28dp">
 
     <View
         android:layout_width="48dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="24dp"
-        android:background="@color/border_subtle" />
+        android:layout_marginBottom="22dp"
+        android:background="@color/dialog_border" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="22dp"
+        android:fontFamily="@font/poppins_bold"
         android:text="Cambiar foto de perfil"
         android:textColor="@color/text_high"
-        android:textSize="20sp"
-        android:fontFamily="@font/poppins_bold"
-        android:layout_marginBottom="24dp" />
+        android:textSize="20sp" />
 
     <LinearLayout
         android:id="@+id/btnCamera"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingVertical="12dp"
+        android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackground">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="14dp">
 
         <ImageView
             android:layout_width="24dp"
@@ -43,23 +46,25 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/poppins_medium"
             android:text="Hacer una foto"
             android:textColor="@color/text_high"
-            android:textSize="16sp"
-            android:layout_marginStart="16dp" />
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/btnGallery"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingVertical="12dp"
+        android:layout_marginTop="8dp"
+        android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackground"
-        android:layout_marginTop="8dp">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="14dp">
 
         <ImageView
             android:layout_width="24dp"
@@ -70,23 +75,25 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/poppins_medium"
             android:text="Elegir de la galería"
             android:textColor="@color/text_high"
-            android:textSize="16sp"
-            android:layout_marginStart="16dp" />
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/btnDeletePhoto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingVertical="12dp"
+        android:layout_marginTop="8dp"
+        android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackground"
-        android:layout_marginTop="8dp">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="14dp">
 
         <ImageView
             android:layout_width="24dp"
@@ -97,10 +104,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/poppins_medium"
             android:text="Eliminar foto actual"
             android:textColor="@color/error"
-            android:textSize="16sp"
-            android:layout_marginStart="16dp" />
+            android:textSize="16sp" />
     </LinearLayout>
 
 </LinearLayout>

@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_main"
     android:padding="24dp">
 
     <LinearLayout
@@ -12,145 +13,155 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Gestión de Usuarios"
-            android:textSize="22sp"
-            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:fontFamily="@font/poppins_bold"
             android:gravity="center"
-            android:layout_marginBottom="24dp"/>
+            android:text="Gestión de Usuarios"
+            android:textColor="@color/text_high"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <!-- Buscador -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/editBuscarEmail"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@drawable/bg_input"
                 android:hint="Buscar por correo electrónico"
+                android:importantForAutofill="no"
                 android:inputType="textEmailAddress"
-                android:importantForAutofill="no"/>
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="12dp"
+                android:textColor="@color/text_high"
+                android:textColorHint="@color/text_low" />
 
             <Button
                 android:id="@+id/btnBuscar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/button_primary"
                 android:text="Buscar"
-                android:layout_marginStart="8dp"/>
+                android:textColor="@color/white" />
         </LinearLayout>
 
-        <!-- Mensaje no encontrado -->
         <TextView
             android:id="@+id/textNoEncontrado"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No se encontró ningún usuario con ese correo"
-            android:textColor="#888888"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:visibility="gone"
-            android:layout_marginBottom="16dp"/>
+            android:text="No se encontró ningún usuario con ese correo"
+            android:textColor="@color/text_medium"
+            android:visibility="gone" />
 
-        <!-- Lista de resultados (si hay varios) -->
         <LinearLayout
             android:id="@+id/layoutListaResultados"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_marginBottom="16dp"
+            android:orientation="vertical"
             android:visibility="gone">
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:text="RESULTADOS ENCONTRADOS"
+                android:textColor="@color/text_medium"
                 android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="#888888"
-                android:layout_marginBottom="8dp"/>
-            <!-- Aquí se añadirán los items dinámicamente -->
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Tarjeta con datos del usuario -->
         <LinearLayout
             android:id="@+id/layoutUserInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
             android:orientation="vertical"
-            android:background="#F5F5F5"
             android:padding="16dp"
             android:visibility="gone">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="DATOS DEL USUARIO SELECCIONADO"
+                android:textColor="@color/text_medium"
                 android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="#888888"
-                android:layout_marginBottom="12dp"/>
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/textNombreUser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="6dp"/>
+                android:layout_marginBottom="6dp"
+                android:textColor="@color/text_high"
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/textApellidosUser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="6dp"/>
+                android:layout_marginBottom="6dp"
+                android:textColor="@color/text_high"
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/textEmailUser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="6dp"/>
+                android:layout_marginBottom="6dp"
+                android:textColor="@color/text_high"
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/textTelefonoUser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="6dp"/>
+                android:layout_marginBottom="6dp"
+                android:textColor="@color/text_high"
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/textFechaNacUser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginBottom="12dp"
+                android:textColor="@color/text_high"
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/textRolActual"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:textColor="@color/text_high"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp"/>
+                android:textStyle="bold" />
 
-            <!-- Botones de cambio de rol -->
             <Button
                 android:id="@+id/btnHacerAdmin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:backgroundTint="@color/secondary"
                 android:text="Asignar rol ADMIN"
-                android:backgroundTint="#1565C0"
-                android:layout_marginBottom="8dp"/>
+                android:textColor="@color/white" />
 
             <Button
                 android:id="@+id/btnHacerUsuario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/success_main"
                 android:text="Asignar rol USUARIO"
-                android:backgroundTint="#2E7D32"/>
-
+                android:textColor="@color/white" />
         </LinearLayout>
-
     </LinearLayout>
 </ScrollView>

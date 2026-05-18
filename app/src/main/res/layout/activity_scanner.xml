@@ -64,7 +64,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@android:drawable/ic_menu_camera"
-            app:tint="@color/white"
+            app:tint="@color/primary"
             android:layout_centerVertical="true"
             android:alpha="0.8" />
 
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="ACCESO POR QR"
-            android:textColor="@color/white"
+            android:textColor="@color/text_high"
             android:textSize="18sp"
             android:fontFamily="@font/poppins_bold"
             android:letterSpacing="0.1" />
@@ -122,8 +122,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
-        app:cardCornerRadius="30dp"
-        app:cardElevation="16dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
         app:cardBackgroundColor="@color/surface_card"
         app:strokeWidth="1dp"
         app:strokeColor="@color/border_subtle"
@@ -187,8 +187,8 @@
                     android:textColor="@color/white"
                     app:backgroundTint="@null"
                     android:background="@drawable/bg_button"
-                    app:cornerRadius="26dp"
-                    app:elevation="4dp" />
+                    app:cornerRadius="16dp"
+                    app:elevation="0dp" />
 
             </LinearLayout>
         </LinearLayout>
