@@ -2,51 +2,62 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:background="@drawable/bg_dialog"
     android:gravity="center"
-    android:padding="24dp">
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="24dp">
 
     <ImageView
         android:id="@+id/dialogImgFoto"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:src="@android:drawable/ic_menu_camera"
-        android:background="#E0E0E0"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_dialog_avatar"
         android:scaleType="centerCrop"
-        android:layout_marginBottom="12dp"/>
+        android:src="@android:drawable/ic_menu_camera" />
 
     <TextView
         android:id="@+id/dialogTextNombre"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="#212121"
+        android:layout_marginBottom="4dp"
+        android:fontFamily="@font/poppins_bold"
         android:gravity="center"
-        android:layout_marginBottom="4dp"/>
+        android:textColor="@color/text_high"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/dialogTextApellidos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textColor="#888888"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@font/poppins_regular"
         android:gravity="center"
-        android:layout_marginBottom="24dp"/>
+        android:textColor="@color/text_medium"
+        android:textSize="14sp" />
 
     <Button
         android:id="@+id/dialogBtnChatPrivado"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_dialog_primary_button"
+        android:fontFamily="@font/poppins_bold"
         android:text="Chat Privado"
-        android:layout_marginBottom="8dp"/>
+        android:textAllCaps="false"
+        android:textColor="@color/white" />
 
     <Button
         android:id="@+id/dialogBtnDenunciar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_dialog_destructive_button"
+        android:fontFamily="@font/poppins_bold"
         android:text="Denunciar"
-        android:backgroundTint="#D32F2F"
-        android:textColor="@android:color/white"/>
+        android:textAllCaps="false"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>

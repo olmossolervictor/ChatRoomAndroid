@@ -30,7 +30,7 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnMenuDrawer"
                         style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="61dp"
+                        android:layout_width="56dp"
                         android:layout_height="56dp"
                         android:layout_centerVertical="true"
                         android:visibility="visible"
@@ -43,7 +43,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
                         android:fontFamily="@font/poppins_bold"
-                        android:letterSpacing="0.2"
+                        android:letterSpacing="0"
                         android:text="CHATROOM"
                         android:textColor="@color/primary"
                         android:textSize="16sp" />
@@ -58,7 +58,7 @@
                         android:visibility="gone"
                         app:icon="@drawable/icon_logout"
                         app:iconSize="24dp"
-                        app:iconTint="#D32F2F" />
+                        app:iconTint="@color/error_main" />
                 </RelativeLayout>
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>
@@ -83,11 +83,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_bold"
-                    android:letterSpacing="-0.03"
+                    android:letterSpacing="0"
                     android:lineSpacingExtra="-4dp"
                     android:text="Mis Salas"
                     android:textColor="@color/text_high"
-                    android:textSize="34sp" />
+                    android:textSize="30sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -130,14 +130,14 @@
                         android:layout_height="64dp"
                         android:layout_margin="24dp"
                         android:background="@drawable/bg_button"
-                        android:elevation="8dp"
+                        android:elevation="0dp"
                         android:fontFamily="@font/poppins_bold"
-                        android:letterSpacing="0.02"
+                        android:letterSpacing="0"
                         android:stateListAnimator="@null"
                         android:text="ESCANEAR NUEVA SALA"
                         android:textColor="@color/white"
                         app:backgroundTint="@null"
-                        app:cornerRadius="20dp"
+                        app:cornerRadius="16dp"
                         app:icon="@drawable/icono_camera"
                         app:iconGravity="textStart"
                         app:iconPadding="12dp"
@@ -159,7 +159,7 @@
                         android:layout_width="140dp"
                         android:layout_height="140dp"
                         app:cardBackgroundColor="@color/accent_soft"
-                        app:cardCornerRadius="70dp"
+                        app:cardCornerRadius="40dp"
                         app:cardElevation="0dp"
                         app:strokeWidth="0dp">
 
@@ -196,7 +196,7 @@
                         android:layout_height="56dp"
                         android:layout_marginTop="40dp"
                         android:background="@drawable/bg_button"
-                        android:elevation="4dp"
+                        android:elevation="0dp"
                         android:fontFamily="@font/poppins_bold"
                         android:paddingHorizontal="40dp"
                         android:text="EMPEZAR AHORA"
@@ -215,7 +215,7 @@
         android:layout_gravity="start"
         android:background="@color/surface_card"
         android:clickable="true"
-        android:elevation="16dp"
+                android:elevation="0dp"
         android:focusable="true"
         android:orientation="vertical">
 
@@ -223,7 +223,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/accent_soft"
+            android:background="@color/bg_main"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingTop="64dp"
@@ -233,10 +233,10 @@
                 android:layout_width="84dp"
                 android:layout_height="84dp"
                 app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="30dp"
-                app:cardElevation="4dp"
-                app:strokeColor="@color/white"
-                app:strokeWidth="2dp">
+                app:cardCornerRadius="28dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/border_subtle"
+                app:strokeWidth="1dp">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/imgDrawerFoto"
@@ -252,7 +252,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:fontFamily="@font/poppins_bold"
-                android:letterSpacing="-0.02"
+                android:letterSpacing="0"
                 android:text="Usuario Premium"
                 android:textColor="@color/text_high"
                 android:textSize="22sp" />
@@ -262,7 +262,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:fontFamily="@font/poppins_bold"
-                android:letterSpacing="0.12"
+                android:letterSpacing="0"
                 android:text="MIEMBRO VERIFICADO"
                 android:textColor="@color/secondary_dark"
                 android:textSize="11sp" />

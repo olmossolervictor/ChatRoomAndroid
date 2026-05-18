@@ -83,9 +83,9 @@
                 android:id="@+id/listMessagesPrivate"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingHorizontal="8dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
+                android:paddingHorizontal="10dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
                 android:divider="@null"
                 android:dividerHeight="0dp"
                 android:stackFromBottom="true"
@@ -138,7 +138,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
+                app:cardElevation="0dp"
                 app:cardBackgroundColor="@color/bg_secondary"
                 app:strokeWidth="1dp"
                 app:strokeColor="@color/border_subtle"
@@ -183,7 +183,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="ACEPTAR"
-                            android:backgroundTint="@color/primary"
+                            android:backgroundTint="@color/button_primary"
                             android:textColor="@color/white"
                             app:cornerRadius="12dp" />
                     </LinearLayout>
@@ -202,7 +202,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:cardCornerRadius="24dp"
+                    app:cardCornerRadius="18dp"
                     app:cardElevation="0dp"
                     app:cardBackgroundColor="@color/bg_secondary"
                     app:strokeWidth="1dp"
@@ -232,8 +232,8 @@
                     android:layout_marginStart="8dp"
                     app:icon="@android:drawable/ic_menu_send"
                     app:iconTint="@color/white"
-                    app:backgroundTint="@color/primary"
-                    app:cornerRadius="24dp" />
+                    app:backgroundTint="@color/button_primary_tint"
+                    app:cornerRadius="16dp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
