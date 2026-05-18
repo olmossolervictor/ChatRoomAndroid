@@ -33,8 +33,7 @@ import androidx.core.content.ContextCompat;
 import com.example.chat.R;
 import com.example.chat.network.ChatApiServices;
 import com.example.chat.network.RetrofitClient;
-import com.example.chat.utils.AlertHelper;
-import com.example.chat.utils.AlertHelper.AlertType;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -54,7 +53,10 @@ public class RegisterActivity extends BaseActivity {
 
     private static final String PREF_GOOGLE_PROFILE_SETUP_DONE = "google_profile_setup_done_";
 
-    // Componentes de la interfaz de usuario
+    // Componentes TextInputLayout (Para gestionar los bordes y textos rojos de forma nativa)
+    private TextInputLayout tilRegNombre, tilRegApellidos, tilRegEdad, tilRegNombreUsuario, tilRegTelefono, tilRegEmail, tilRegPassword;
+
+    // Campos de entrada
     private com.google.android.material.textfield.TextInputEditText editNombre, editApellidos, editRegFechaNac, editRegEmail, editRegTelefono, editRegPassword, editRegNombreUsuario;
     private TextView textEmailError, textNombreUsuarioError;
     private de.hdodenhof.circleimageview.CircleImageView imgUser;
@@ -62,6 +64,10 @@ public class RegisterActivity extends BaseActivity {
     private com.google.android.material.card.MaterialCardView btnSelectPhoto;
     private TextView textBackToLogin, textTitle;
     private LinearLayout layoutSugerencias, layoutBotonesSugerencias;
+
+    // Componentes de alertas generales y links
+    private TextView tvGeneralError;
+    private LinearLayout layoutRegLoginLink;
 
     // Gestión de términos y condiciones
     private CheckBox checkTerminos;
@@ -92,7 +98,25 @@ public class RegisterActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Inicialización de componentes y configuración de la interfaz
+        // Inicializar TextInputLayouts (Para colorearlos de rojo al haber error)
+        tilRegNombre = findViewById(R.id.tilRegNombre);
+        tilRegApellidos = findViewById(R.id.tilRegApellidos);
+        tilRegEdad = findViewById(R.id.tilRegEdad);
+        tilRegNombreUsuario = findViewById(R.id.tilRegNombreUsuario);
+        tilRegTelefono = findViewById(R.id.tilRegTelefono);
+        tilRegEmail = findViewById(R.id.tilRegEmail);
+        tilRegPassword = findViewById(R.id.tilRegPassword);
+
+        // Quitar el icono de error nativo por si acaso para igualarlo al Login
+        if (tilRegNombre != null) tilRegNombre.setErrorIconDrawable(null);
+        if (tilRegApellidos != null) tilRegApellidos.setErrorIconDrawable(null);
+        if (tilRegEdad != null) tilRegEdad.setErrorIconDrawable(null);
+        if (tilRegNombreUsuario != null) tilRegNombreUsuario.setErrorIconDrawable(null);
+        if (tilRegTelefono != null) tilRegTelefono.setErrorIconDrawable(null);
+        if (tilRegEmail != null) tilRegEmail.setErrorIconDrawable(null);
+        if (tilRegPassword != null) tilRegPassword.setErrorIconDrawable(null);
+
+        // Inicialización de componentes
         textTitle = findViewById(R.id.textTitle);
         editNombre = findViewById(R.id.editRegNombre);
         editApellidos = findViewById(R.id.editRegApellidos);
@@ -101,10 +125,14 @@ public class RegisterActivity extends BaseActivity {
         textEmailError = findViewById(R.id.textEmailError);
         editRegTelefono = findViewById(R.id.editRegTelefono);
         editRegPassword = findViewById(R.id.editRegPassword);
+        editRegNombreUsuario = findViewById(R.id.editRegNombreUsuario);
         imgUser = findViewById(R.id.imgUser);
         btnSelectPhoto = findViewById(R.id.btnSelectPhoto);
         btnRegister = findViewById(R.id.btnRegister);
+
+        tvGeneralError = findViewById(R.id.tvGeneralError);
         textBackToLogin = findViewById(R.id.textBackToLogin);
+        layoutRegLoginLink = findViewById(R.id.layoutRegLoginLink);
 
         checkTerminos = findViewById(R.id.checkTerminos);
         layoutTerminos = findViewById(R.id.layoutTerminos);
@@ -118,7 +146,6 @@ public class RegisterActivity extends BaseActivity {
             textVerTerminos.setOnClickListener(v -> mostrarAlertaTerminos());
         }
 
-        editRegNombreUsuario = findViewById(R.id.editRegNombreUsuario);
         textNombreUsuarioError = findViewById(R.id.textNombreUsuarioError);
         layoutSugerencias = findViewById(R.id.layoutSugerencias);
         layoutBotonesSugerencias = findViewById(R.id.layoutBotonesSugerencias);
@@ -175,25 +202,49 @@ public class RegisterActivity extends BaseActivity {
         configurarValidacionDinamica();
     }
 
+    // 🚀 LÓGICA DE ERROR SILENCIOSO (Igual que en LoginActivity)
+    private void setSilentError(TextInputLayout layout, boolean active) {
+        if (active) {
+            layout.setError(" "); // Activa el estado de error (borde rojo y hint rojo)
+            // El 'indicador' es el contenedor del texto de error (hijo índice 1)
+            if (layout.getChildCount() > 1) {
+                layout.getChildAt(1).setVisibility(View.GONE); // Lo ocultamos para que no ocupe espacio y deforme el diseño
+            }
+        } else {
+            layout.setError(null); // Quita el error visual por completo
+        }
+    }
+
     private void configurarValidacionDinamica() {
         TextWatcher watcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void afterTextChanged(Editable s) {
-                if (editNombre != null && editNombre.getError() != null) editNombre.setError(null);
-                if (editRegEmail != null && editRegEmail.getError() != null) editRegEmail.setError(null);
-                if (editRegPassword != null && editRegPassword.getError() != null) editRegPassword.setError(null);
+                if (tvGeneralError != null) tvGeneralError.setVisibility(View.GONE);
+
+                // Si el usuario escribe algo nuevo, quitamos el error rojo de ese campo específico
+                if (editNombre.hasFocus()) setSilentError(tilRegNombre, false);
+                if (editApellidos.hasFocus()) setSilentError(tilRegApellidos, false);
+                if (editRegNombreUsuario.hasFocus()) setSilentError(tilRegNombreUsuario, false);
+                if (editRegEmail.hasFocus()) setSilentError(tilRegEmail, false);
+                if (editRegTelefono.hasFocus()) setSilentError(tilRegTelefono, false);
+                if (editRegPassword.hasFocus()) setSilentError(tilRegPassword, false);
             }
         };
 
-        if (editNombre != null) editNombre.addTextChangedListener(watcher);
-        if (editRegEmail != null) editRegEmail.addTextChangedListener(watcher);
-        if (editRegPassword != null) editRegPassword.addTextChangedListener(watcher);
+        editNombre.addTextChangedListener(watcher);
+        editApellidos.addTextChangedListener(watcher);
+        editRegNombreUsuario.addTextChangedListener(watcher);
+        editRegEmail.addTextChangedListener(watcher);
+        editRegTelefono.addTextChangedListener(watcher);
+        editRegPassword.addTextChangedListener(watcher);
+    }
 
-        if (btnRegister != null) {
-            btnRegister.setEnabled(true);
-            btnRegister.setAlpha(1.0f);
+    private void mostrarErrorGeneral(String mensaje) {
+        if (tvGeneralError != null) {
+            tvGeneralError.setText(mensaje);
+            tvGeneralError.setVisibility(View.VISIBLE);
         }
     }
 
@@ -217,10 +268,11 @@ public class RegisterActivity extends BaseActivity {
                 .setCancelable(false)
                 .setPositiveButton("Aceptar", (d, which) -> {
                     checkTerminos.setChecked(true);
+                    if (tvGeneralError != null) tvGeneralError.setVisibility(View.GONE);
                 })
                 .setNegativeButton("Rechazar", (d, which) -> {
                     checkTerminos.setChecked(false);
-                    Toast.makeText(RegisterActivity.this, "Debes aceptar los términos para registrarte", Toast.LENGTH_SHORT).show();
+                    mostrarErrorGeneral("Debes aceptar los términos para registrarte");
                 })
                 .create();
 
@@ -299,24 +351,20 @@ public class RegisterActivity extends BaseActivity {
         Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show();
     }
 
-    // =========================================================
-    // 🚀 AQUÍ SE CONFIGURA LA BARRA SÓLO PARA MODO EDICIÓN
-    // =========================================================
     private void prepararPantallaParaEdicion() {
         androidx.appcompat.widget.Toolbar toolbarRegister = findViewById(R.id.toolbarRegister);
         if (toolbarRegister != null) {
-            toolbarRegister.setVisibility(View.VISIBLE); // Lo hacemos visible al editar
-            toolbarRegister.setNavigationOnClickListener(v -> finish()); // Flecha hacia atrás cierra la pantalla
+            toolbarRegister.setVisibility(View.VISIBLE);
+            toolbarRegister.setNavigationOnClickListener(v -> finish());
         }
 
         if (textTitle != null) textTitle.setText("Editar Mi Perfil");
         btnRegister.setText("Guardar Cambios");
 
         if (layoutTerminos != null) layoutTerminos.setVisibility(View.GONE);
-        if (textBackToLogin != null) textBackToLogin.setVisibility(View.GONE);
+        if (layoutRegLoginLink != null) layoutRegLoginLink.setVisibility(View.GONE);
         if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
 
-        // BLOQUEO DE CAMPOS
         editNombre.setEnabled(false);
         editApellidos.setEnabled(false);
         editRegFechaNac.setEnabled(false);
@@ -332,7 +380,6 @@ public class RegisterActivity extends BaseActivity {
             editRegTelefono.setEnabled(true);
         }
 
-        // CAMPOS EDITABLES
         if (editRegNombreUsuario != null) editRegNombreUsuario.setEnabled(true);
         editRegPassword.setEnabled(true);
 
@@ -342,7 +389,6 @@ public class RegisterActivity extends BaseActivity {
     }
 
     private void prepararPantallaParaRegistro() {
-        // Aseguramos que la barra superior no salga en el registro
         androidx.appcompat.widget.Toolbar toolbarRegister = findViewById(R.id.toolbarRegister);
         if (toolbarRegister != null) {
             toolbarRegister.setVisibility(View.GONE);
@@ -351,11 +397,11 @@ public class RegisterActivity extends BaseActivity {
         textTitle.setText("Registro de Usuario");
         btnRegister.setText("Registrarse");
         layoutTerminos.setVisibility(View.VISIBLE);
-        textBackToLogin.setVisibility(View.VISIBLE);
+
+        if (layoutRegLoginLink != null) layoutRegLoginLink.setVisibility(View.VISIBLE);
 
         imgUser.setImageResource(R.drawable.defecto);
     }
-    // =========================================================
 
     private void openCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -410,7 +456,10 @@ public class RegisterActivity extends BaseActivity {
             fechaSeleccionada = year + "-" + mesF + "-" + diaF;
             String fechaMostrar = diaF + "/" + mesF + "/" + year;
             editRegFechaNac.setText(fechaMostrar);
-            editRegFechaNac.setError(null);
+
+            // Limpia el error rojo de la fecha
+            setSilentError(tilRegEdad, false);
+            if (tvGeneralError != null) tvGeneralError.setVisibility(View.GONE);
         });
 
         datePicker.show(getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
@@ -508,6 +557,7 @@ public class RegisterActivity extends BaseActivity {
         return value;
     }
 
+    // 🚀 LÓGICA DE VALIDACIÓN CON LOS BORDES EN ROJO SILENCIOSOS
     private boolean validarCampos(boolean passwordObligatoria) {
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
@@ -516,91 +566,93 @@ public class RegisterActivity extends BaseActivity {
         String telefono = editRegTelefono.getText().toString().trim();
         String password = editRegPassword.getText().toString().trim();
 
-        boolean faltanCampos = nombre.isEmpty() || apellidos.isEmpty() || nombreUsuario.isEmpty() ||
-                email.isEmpty() || telefono.isEmpty() || (passwordObligatoria && password.isEmpty()) ||
-                fechaSeleccionada.isEmpty();
+        // 1. Limpiar todos los errores visuales nativos previos
+        if (tvGeneralError != null) tvGeneralError.setVisibility(View.GONE);
+        setSilentError(tilRegNombre, false);
+        setSilentError(tilRegApellidos, false);
+        if (tilRegNombreUsuario != null) setSilentError(tilRegNombreUsuario, false);
+        setSilentError(tilRegEmail, false);
+        setSilentError(tilRegTelefono, false);
+        setSilentError(tilRegPassword, false);
+        setSilentError(tilRegEdad, false);
 
-        if (faltanCampos) {
-            AlertHelper.showActionAlert(btnRegister, "Por favor, rellene todos los campos para continuar", AlertType.WARNING);
+        boolean hasEmptyFields = false;
+
+        // 2. Comprobar vacíos y subrayarlos (borde rojo)
+        if (nombre.isEmpty()) { setSilentError(tilRegNombre, true); hasEmptyFields = true; }
+        if (apellidos.isEmpty()) { setSilentError(tilRegApellidos, true); hasEmptyFields = true; }
+        if (nombreUsuario.isEmpty() && tilRegNombreUsuario != null) { setSilentError(tilRegNombreUsuario, true); hasEmptyFields = true; }
+        if (email.isEmpty()) { setSilentError(tilRegEmail, true); hasEmptyFields = true; }
+        if (telefono.isEmpty()) { setSilentError(tilRegTelefono, true); hasEmptyFields = true; }
+        if (fechaSeleccionada.isEmpty()) { setSilentError(tilRegEdad, true); hasEmptyFields = true; }
+        if (passwordObligatoria && password.isEmpty()) { setSilentError(tilRegPassword, true); hasEmptyFields = true; }
+
+        if (hasEmptyFields) {
+            mostrarErrorGeneral("Rellena todos los campos vacíos.");
+            return false;
         }
 
+        // 3. Comprobar Términos y Condiciones
         if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
-            AlertHelper.showActionAlert(checkTerminos, "Es necesario aceptar los términos para continuar", AlertType.WARNING);
+            mostrarErrorGeneral("Debes aceptar los términos y condiciones legales.");
             return false;
         }
 
-        if (nombreUsuario.isEmpty()) {
-            if (editRegNombreUsuario != null) {
-                editRegNombreUsuario.setError("El nombre de usuario es obligatorio");
-                editRegNombreUsuario.requestFocus();
-            }
-            return false;
-        }
-        if (nombreUsuario.length() < 4) {
-            if (editRegNombreUsuario != null) {
-                editRegNombreUsuario.setError("Usa al menos 4 caracteres para tu usuario");
-                editRegNombreUsuario.requestFocus();
-            }
-            return false;
-        }
-
-        if (nombre.isEmpty()) {
-            editNombre.setError("Tu nombre es obligatorio");
-            editNombre.requestFocus();
-            return false;
-        }
+        // 4. Comprobaciones de reglas de negocio específicas (El primero que falle lanza su borde rojo y la alerta general)
         if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙñÑüÜ\\s]+")) {
-            editNombre.setError("Por favor, usa solo letras");
+            setSilentError(tilRegNombre, true);
+            mostrarErrorGeneral("El nombre solo debe contener letras");
             editNombre.requestFocus();
             return false;
         }
 
-        if (apellidos.isEmpty()) {
-            editApellidos.setError("Tus apellidos son obligatorios");
-            editApellidos.requestFocus();
+        if (nombreUsuario.length() < 4) {
+            if (tilRegNombreUsuario != null) setSilentError(tilRegNombreUsuario, true);
+            mostrarErrorGeneral("El usuario debe tener al menos 4 caracteres");
+            if (editRegNombreUsuario != null) editRegNombreUsuario.requestFocus();
             return false;
         }
 
-        if (fechaSeleccionada.isEmpty()) {
-            editRegFechaNac.setError("Selecciona tu fecha de nacimiento");
-            AlertHelper.showActionAlert(editRegFechaNac, "Indica tu fecha de nacimiento", AlertType.INFO);
-            return false;
-        }
-
-        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            editRegEmail.setError("Introduce un correo electrónico válido");
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            setSilentError(tilRegEmail, true);
+            mostrarErrorGeneral("Introduce un correo electrónico válido");
             editRegEmail.requestFocus();
             return false;
         }
+
         if (emailYaExiste) {
-            textEmailError.setVisibility(View.VISIBLE);
+            setSilentError(tilRegEmail, true);
+            mostrarErrorGeneral("Este correo electrónico ya está registrado");
             editRegEmail.requestFocus();
             return false;
         }
 
         if (!telefono.matches("^[0-9]{9}$")) {
-            editRegTelefono.setError("El teléfono debe tener 9 dígitos numéricos");
+            setSilentError(tilRegTelefono, true);
+            mostrarErrorGeneral("El teléfono debe tener 9 dígitos exactos");
             editRegTelefono.requestFocus();
             return false;
         }
 
         if (passwordObligatoria || (!passwordObligatoria && !password.isEmpty())) {
-            if (password.isEmpty()) {
-                editRegPassword.setError("Crea una contraseña para proteger tu cuenta");
+            if (password.length() < 8) {
+                setSilentError(tilRegPassword, true);
+                mostrarErrorGeneral("La contraseña debe tener al menos 8 caracteres");
                 editRegPassword.requestFocus();
                 return false;
             }
-            if (password.length() < 6) {
-                editRegPassword.setError("Usa al menos 6 caracteres");
+            if (!password.matches(".*[A-Z].*")) {
+                setSilentError(tilRegPassword, true);
+                mostrarErrorGeneral("La contraseña debe contener al menos una mayúscula");
                 editRegPassword.requestFocus();
                 return false;
             }
-        }
-
-        if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
-            Toast.makeText(this, "Debes aceptar los términos y condiciones legales", Toast.LENGTH_LONG).show();
-            checkTerminos.requestFocus();
-            return false;
+            if (!password.matches(".*[^a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ].*")) {
+                setSilentError(tilRegPassword, true);
+                mostrarErrorGeneral("Debe tener un carácter especial (ej: @, #, $, -)");
+                editRegPassword.requestFocus();
+                return false;
+            }
         }
 
         return true;
@@ -634,12 +686,12 @@ public class RegisterActivity extends BaseActivity {
                     }
                     finish();
                 } else {
-                    Toast.makeText(RegisterActivity.this, "Error al actualizar", Toast.LENGTH_SHORT).show();
+                    mostrarErrorGeneral("Error al actualizar el perfil.");
                 }
             }
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(RegisterActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
+                mostrarErrorGeneral("Error de red. Inténtalo de nuevo más tarde.");
             }
         });
     }
@@ -669,15 +721,15 @@ public class RegisterActivity extends BaseActivity {
                         } else {
                             try {
                                 String errorBody = response.errorBody() != null ? response.errorBody().string() : "sin detalle";
-                                Toast.makeText(RegisterActivity.this, "Error " + response.code() + ": " + errorBody, Toast.LENGTH_LONG).show();
+                                mostrarErrorGeneral("Error " + response.code() + ": " + errorBody);
                             } catch (Exception e) {
-                                Toast.makeText(RegisterActivity.this, "Error en el registro (código " + response.code() + ")", Toast.LENGTH_LONG).show();
+                                mostrarErrorGeneral("Error en el registro (código " + response.code() + ")");
                             }
                         }
                     }
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(RegisterActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        mostrarErrorGeneral("Error de red: " + t.getMessage());
                     }
                 });
     }
@@ -689,15 +741,30 @@ public class RegisterActivity extends BaseActivity {
         );
     }
 
+    // 🚀 AQUI ESTÁ LA SOLUCIÓN AL BUG DE LA CÁMARA
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
-                imgUser.setImageBitmap(bitmap);
-                encodedImage = encodeImage(bitmap);
-            } catch (IOException e) { e.printStackTrace(); }
+
+        if (resultCode == RESULT_OK && data != null) {
+            // Caso 1: Viene de la galería
+            if (requestCode == PICK_IMAGE_REQUEST && data.getData() != null) {
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
+                    imgUser.setImageBitmap(bitmap);
+                    encodedImage = encodeImage(bitmap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // Caso 2: Viene de la cámara
+            else if (requestCode == CAMERA_REQUEST && data.getExtras() != null) {
+                Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+                if (bitmap != null) {
+                    imgUser.setImageBitmap(bitmap);
+                    encodedImage = encodeImage(bitmap);
+                }
+            }
         }
     }
 

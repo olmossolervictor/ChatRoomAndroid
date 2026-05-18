@@ -126,6 +126,7 @@
                     android:layout_marginBottom="16dp">
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilRegNombre"
                         style="@style/Widget.App.TextInputLayout"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -146,6 +147,7 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilRegApellidos"
                         style="@style/Widget.App.TextInputLayout"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -166,6 +168,7 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilRegEdad"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -189,7 +192,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutRegNombreUsuario"
+                    android:id="@+id/tilRegNombreUsuario"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -255,6 +258,7 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilRegTelefono"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -276,7 +280,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutRegEmail"
+                    android:id="@+id/tilRegEmail"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -344,7 +348,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="32dp"
+                    android:layout_marginBottom="12dp"
                     android:paddingHorizontal="4dp">
 
                     <CheckBox
@@ -364,6 +368,21 @@
                         android:fontFamily="@font/poppins_medium" />
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/tvGeneralError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_error_message"
+                    android:textColor="@color/error_main"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:lineSpacingExtra="2dp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:text="Mensaje de error general aquí" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegister"
                     android:layout_width="match_parent"
@@ -379,6 +398,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/layoutRegLoginLink"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"

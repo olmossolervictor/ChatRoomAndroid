@@ -43,16 +43,6 @@
                         android:textSize="18sp"
                         android:fontFamily="@font/poppins_bold"
                         android:letterSpacing="0" />
-
-                    <TextView
-                        android:id="@+id/textSalaUsuarios"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sesión activa"
-                        android:textColor="@color/success_main"
-                        android:textSize="11sp"
-                        android:fontFamily="@font/poppins_bold"
-                        android:letterSpacing="0" />
                 </LinearLayout>
 
                 <com.google.android.material.card.MaterialCardView
