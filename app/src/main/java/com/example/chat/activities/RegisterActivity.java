@@ -61,7 +61,7 @@ public class RegisterActivity extends BaseActivity {
     private com.google.android.material.button.MaterialButton btnRegister;
     private com.google.android.material.card.MaterialCardView btnSelectPhoto;
     private TextView textBackToLogin, textTitle;
-    private LinearLayout layoutSugerencias, layoutBotonesSugerencias;
+    private LinearLayout layoutSugerencias, layoutBotonesSugerencias, layoutYaTienesCuenta;
 
     // Gestión de términos y condiciones
     private CheckBox checkTerminos;
@@ -81,10 +81,13 @@ public class RegisterActivity extends BaseActivity {
     private int currentUserId;
     private String fechaSeleccionada = "";
     private String emailOriginal = "";
+    private String nombreUsuarioOriginal = "";
+    private boolean datosUsuarioCargados = false;
 
     // Control de validación asíncrona y temporizadores
     private final Handler debounceHandler = new Handler();
     private Runnable emailCheckRunnable;
+    private Runnable usernameCheckRunnable;
     private boolean emailYaExiste = false;
 
     @Override
@@ -105,6 +108,7 @@ public class RegisterActivity extends BaseActivity {
         btnSelectPhoto = findViewById(R.id.btnSelectPhoto);
         btnRegister = findViewById(R.id.btnRegister);
         textBackToLogin = findViewById(R.id.textBackToLogin);
+        layoutYaTienesCuenta = findViewById(R.id.layoutYaTienesCuenta);
 
         checkTerminos = findViewById(R.id.checkTerminos);
         layoutTerminos = findViewById(R.id.layoutTerminos);
@@ -130,15 +134,27 @@ public class RegisterActivity extends BaseActivity {
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (textNombreUsuarioError != null) textNombreUsuarioError.setVisibility(View.GONE);
-                    if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
+                    if (usernameCheckRunnable != null) debounceHandler.removeCallbacks(usernameCheckRunnable);
                 }
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    String nombreUsuario = s.toString().trim();
-                    if (nombreUsuario.length() > 3) {
-                        validarNombreUsuario(nombreUsuario);
+                    String input = s.toString().trim();
+                    
+                    // SI ES EL NOMBRE PROPIO, OCULTAMOS ERROR Y NO HACEMOS PETICIÓN
+                    if (isEditMode && !nombreUsuarioOriginal.isEmpty() && input.equalsIgnoreCase(nombreUsuarioOriginal)) {
+                        textNombreUsuarioError.setVisibility(View.GONE);
+                        layoutSugerencias.setVisibility(View.GONE);
+                        return;
+                    }
+
+                    // Limpiar errores mientras escribe algo nuevo
+                    if (textNombreUsuarioError != null) textNombreUsuarioError.setVisibility(View.GONE);
+                    if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
+
+                    if (input.length() > 3) {
+                        usernameCheckRunnable = () -> validarNombreUsuario(input);
+                        debounceHandler.postDelayed(usernameCheckRunnable, 600);
                     }
                 }
             });
@@ -157,6 +173,7 @@ public class RegisterActivity extends BaseActivity {
             prepararPantallaParaEdicion();
         } else {
             prepararPantallaParaRegistro();
+            datosUsuarioCargados = true;
         }
 
         configurarTextWatcherEmail();
@@ -315,30 +332,53 @@ public class RegisterActivity extends BaseActivity {
         if (layoutTerminos != null) layoutTerminos.setVisibility(View.GONE);
         if (textBackToLogin != null) textBackToLogin.setVisibility(View.GONE);
         if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
+        if (layoutYaTienesCuenta != null) layoutYaTienesCuenta.setVisibility(View.GONE);
 
-        // BLOQUEO DE CAMPOS
-        editNombre.setEnabled(false);
-        editApellidos.setEnabled(false);
-        editRegFechaNac.setEnabled(false);
-        editRegFechaNac.setClickable(false);
-        editRegTelefono.setEnabled(false);
-        editRegEmail.setEnabled(false);
+        // BLOQUEO DE CAMPOS (Solo los que no se pueden editar)
+        // Usamos setFocusable(false) en vez de setEnabled(false) para que el color sea negro/nítido
+        bloquearLectura(editNombre);
+        bloquearLectura(editApellidos);
+        bloquearLectura(editRegFechaNac);
+        bloquearLectura(editRegTelefono);
+        bloquearLectura(editRegEmail);
+
+        // LA FOTO SÍ SE PUEDE EDITAR
+        if (btnSelectPhoto != null) {
+            btnSelectPhoto.setVisibility(View.VISIBLE);
+        }
 
         if (isGoogleProfileSetup) {
-            editNombre.setEnabled(true);
-            editApellidos.setEnabled(true);
-            editRegFechaNac.setEnabled(true);
-            editRegFechaNac.setClickable(true);
-            editRegTelefono.setEnabled(true);
+            habilitarEscritura(editNombre);
+            habilitarEscritura(editApellidos);
+            habilitarEscritura(editRegFechaNac);
+            habilitarEscritura(editRegTelefono);
         }
 
         // CAMPOS EDITABLES
-        if (editRegNombreUsuario != null) editRegNombreUsuario.setEnabled(true);
-        editRegPassword.setEnabled(true);
+        if (editRegNombreUsuario != null) habilitarEscritura(editRegNombreUsuario);
+        habilitarEscritura(editRegPassword);
 
         currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
 
         cargarDatosUsuario();
+    }
+
+    private void bloquearLectura(com.google.android.material.textfield.TextInputEditText campo) {
+        if (campo == null) return;
+        campo.setFocusable(false);
+        campo.setFocusableInTouchMode(false);
+        campo.setClickable(false);
+        campo.setCursorVisible(false);
+        campo.setAlpha(1.0f); // Opacidad total para que la letra no sea gris
+    }
+
+    private void habilitarEscritura(com.google.android.material.textfield.TextInputEditText campo) {
+        if (campo == null) return;
+        campo.setFocusable(true);
+        campo.setFocusableInTouchMode(true);
+        campo.setClickable(true);
+        campo.setCursorVisible(true);
+        campo.setAlpha(1.0f);
     }
 
     private void prepararPantallaParaRegistro() {
@@ -350,8 +390,9 @@ public class RegisterActivity extends BaseActivity {
 
         textTitle.setText("Registro de Usuario");
         btnRegister.setText("Registrarse");
-        layoutTerminos.setVisibility(View.VISIBLE);
-        textBackToLogin.setVisibility(View.VISIBLE);
+        if (layoutTerminos != null) layoutTerminos.setVisibility(View.VISIBLE);
+        if (textBackToLogin != null) textBackToLogin.setVisibility(View.VISIBLE);
+        if (layoutYaTienesCuenta != null) layoutYaTienesCuenta.setVisibility(View.VISIBLE);
 
         imgUser.setImageResource(R.drawable.defecto);
     }
@@ -462,32 +503,51 @@ public class RegisterActivity extends BaseActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     try {
-                        JSONObject json = new JSONObject(response.body().string());
+                        String body = response.body().string();
+                        JSONObject json = new JSONObject(body);
 
                         editNombre.setText(limpiarValor(json.optString("nombre", "")));
                         editApellidos.setText(limpiarValor(json.optString("apellidos", "")));
 
                         fechaSeleccionada = limpiarValor(json.optString("fechaNacimiento",
                                 json.optString("fecha_nacimiento", json.optString("fecha_nac", ""))));
-                        editRegFechaNac.setText(fechaSeleccionada);
+                        
+                        if (fechaSeleccionada.contains("-")) {
+                            try {
+                                String[] parts = fechaSeleccionada.split("-");
+                                editRegFechaNac.setText(parts[2] + "/" + parts[1] + "/" + parts[0]);
+                            } catch (Exception e) {
+                                editRegFechaNac.setText(fechaSeleccionada);
+                            }
+                        } else {
+                            editRegFechaNac.setText(fechaSeleccionada);
+                        }
 
-                        emailOriginal = limpiarValor(json.optString("email", ""));
+                        emailOriginal = limpiarValor(json.optString("email", "")).trim();
                         editRegEmail.setText(emailOriginal);
 
                         editRegTelefono.setText(limpiarValor(json.optString("telefono", "")));
 
+                        String uName = json.optString("nombre_usuario", 
+                                       json.optString("nombreUsuario", 
+                                       json.optString("username", "")));
+                        
+                        nombreUsuarioOriginal = limpiarValor(uName).trim();
+                        
                         if (editRegNombreUsuario != null) {
-                            editRegNombreUsuario.setText(limpiarValor(json.optString("nombre_usuario", "")));
+                            editRegNombreUsuario.setText(nombreUsuarioOriginal);
                         }
 
                         editRegPassword.setText("");
 
                         String fotoBase64 = json.optString("foto", "");
-                        if (!fotoBase64.isEmpty()) {
+                        if (!fotoBase64.isEmpty() && !fotoBase64.equals("null")) {
                             encodedImage = fotoBase64;
                             byte[] decoded = Base64.decode(fotoBase64, Base64.DEFAULT);
                             imgUser.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
                         }
+                        
+                        datosUsuarioCargados = true;
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -505,7 +565,7 @@ public class RegisterActivity extends BaseActivity {
         if (value == null || "null".equalsIgnoreCase(value.trim())) {
             return "";
         }
-        return value;
+        return value.trim();
     }
 
     private boolean validarCampos(boolean passwordObligatoria) {
@@ -578,6 +638,17 @@ public class RegisterActivity extends BaseActivity {
             return false;
         }
 
+        if (textNombreUsuarioError.getVisibility() == View.VISIBLE) {
+            // COMPROBACIÓN DEFINITIVA AL GUARDAR: Si es el suyo, limpiamos error y permitimos guardar
+            if (isEditMode && !nombreUsuarioOriginal.isEmpty() && nombreUsuario.equalsIgnoreCase(nombreUsuarioOriginal)) {
+                textNombreUsuarioError.setVisibility(View.GONE);
+                if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
+            } else {
+                if (editRegNombreUsuario != null) editRegNombreUsuario.requestFocus();
+                return false;
+            }
+        }
+
         if (!telefono.matches("^[0-9]{9}$")) {
             editRegTelefono.setError("El teléfono debe tener 9 dígitos numéricos");
             editRegTelefono.requestFocus();
@@ -623,6 +694,10 @@ public class RegisterActivity extends BaseActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(RegisterActivity.this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
+                    
+                    nombreUsuarioOriginal = nombreUsuario;
+                    emailOriginal = email;
+
                     SharedPreferences.Editor editor = getSharedPreferences("ChatPrefs", MODE_PRIVATE).edit()
                             .putString("nombre", nombre);
                     if (isGoogleProfileSetup) {
@@ -708,10 +783,27 @@ public class RegisterActivity extends BaseActivity {
     }
 
     private void validarNombreUsuario(String nombreUsuario) {
-        RetrofitClient.getChatApiServices().sugerirNombreUsuario(nombreUsuario)
+        String input = nombreUsuario.trim();
+        
+        if (isEditMode && !nombreUsuarioOriginal.isEmpty() && input.equalsIgnoreCase(nombreUsuarioOriginal)) {
+            if (textNombreUsuarioError != null) textNombreUsuarioError.setVisibility(View.GONE);
+            if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
+            return;
+        }
+
+        RetrofitClient.getChatApiServices().sugerirNombreUsuario(input)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        String currentInput = editRegNombreUsuario.getText().toString().trim();
+                        if (isEditMode && !nombreUsuarioOriginal.isEmpty() && currentInput.equalsIgnoreCase(nombreUsuarioOriginal)) {
+                            textNombreUsuarioError.setVisibility(View.GONE);
+                            if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
+                            return;
+                        }
+                        
+                        if (!currentInput.equalsIgnoreCase(input)) return;
+
                         if (response.isSuccessful() && response.body() != null) {
                             try {
                                 JSONObject json = new JSONObject(response.body().string());
@@ -722,24 +814,29 @@ public class RegisterActivity extends BaseActivity {
                                     textNombreUsuarioError.setVisibility(View.GONE);
                                     layoutSugerencias.setVisibility(View.GONE);
                                 } else {
-                                    textNombreUsuarioError.setVisibility(View.VISIBLE);
-                                    layoutSugerencias.setVisibility(View.VISIBLE);
-                                    layoutBotonesSugerencias.removeAllViews();
+                                    if (isEditMode && !nombreUsuarioOriginal.isEmpty() && input.equalsIgnoreCase(nombreUsuarioOriginal)) {
+                                        textNombreUsuarioError.setVisibility(View.GONE);
+                                        layoutSugerencias.setVisibility(View.GONE);
+                                    } else {
+                                        textNombreUsuarioError.setVisibility(View.VISIBLE);
+                                        layoutSugerencias.setVisibility(View.VISIBLE);
+                                        layoutBotonesSugerencias.removeAllViews();
 
-                                    for (int i = 0; i < sugerencias.length(); i++) {
-                                        String sugerencia = sugerencias.getString(i);
-                                        Button btnSugerencia = new Button(RegisterActivity.this);
-                                        btnSugerencia.setText(sugerencia);
-                                        btnSugerencia.setTextSize(12);
-                                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                                LinearLayout.LayoutParams.WRAP_CONTENT);
-                                        params.setMargins(4, 0, 4, 0);
-                                        btnSugerencia.setLayoutParams(params);
-                                        btnSugerencia.setOnClickListener(v -> {
-                                            editRegNombreUsuario.setText(sugerencia);
-                                        });
-                                        layoutBotonesSugerencias.addView(btnSugerencia);
+                                        for (int i = 0; i < sugerencias.length(); i++) {
+                                            String sugerencia = sugerencias.getString(i);
+                                            Button btnSugerencia = new Button(RegisterActivity.this);
+                                            btnSugerencia.setText(sugerencia);
+                                            btnSugerencia.setTextSize(12);
+                                            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                                                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                    LinearLayout.LayoutParams.WRAP_CONTENT);
+                                            params.setMargins(4, 0, 4, 0);
+                                            btnSugerencia.setLayoutParams(params);
+                                            btnSugerencia.setOnClickListener(v -> {
+                                                editRegNombreUsuario.setText(sugerencia);
+                                            });
+                                            layoutBotonesSugerencias.addView(btnSugerencia);
+                                        }
                                     }
                                 }
                             } catch (Exception e) {

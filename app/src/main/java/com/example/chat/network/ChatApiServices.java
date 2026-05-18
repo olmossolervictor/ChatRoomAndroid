@@ -124,8 +124,8 @@ public interface ChatApiServices {
     );
 
     @GET("usuarios/buscar")
-    Call<ResponseBody> buscarUsuarioPorEmail(
-            @Query("email") String email
+    Call<ResponseBody> buscarUsuarios(
+            @Query("query") String query
     );
 
     @FormUrlEncoded
