@@ -398,7 +398,6 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/layoutRegLoginLink"
                 android:id="@+id/layoutYaTienesCuenta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

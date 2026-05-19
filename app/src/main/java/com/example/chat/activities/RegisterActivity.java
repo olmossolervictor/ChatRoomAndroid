@@ -67,7 +67,6 @@ public class RegisterActivity extends BaseActivity {
 
     // Componentes de alertas generales y links
     private TextView tvGeneralError;
-    private LinearLayout layoutRegLoginLink;
 
     // Gestión de términos y condiciones
     private CheckBox checkTerminos;
@@ -136,7 +135,6 @@ public class RegisterActivity extends BaseActivity {
         tvGeneralError = findViewById(R.id.tvGeneralError);
         textBackToLogin = findViewById(R.id.textBackToLogin);
         layoutYaTienesCuenta = findViewById(R.id.layoutYaTienesCuenta);
-        layoutRegLoginLink = findViewById(R.id.layoutRegLoginLink);
 
         checkTerminos = findViewById(R.id.checkTerminos);
         layoutTerminos = findViewById(R.id.layoutTerminos);
@@ -253,7 +251,6 @@ public class RegisterActivity extends BaseActivity {
 
         editNombre.addTextChangedListener(watcher);
         editApellidos.addTextChangedListener(watcher);
-        editRegNombreUsuario.addTextChangedListener(watcher);
         editRegEmail.addTextChangedListener(watcher);
         editRegTelefono.addTextChangedListener(watcher);
         editRegPassword.addTextChangedListener(watcher);
@@ -380,7 +377,6 @@ public class RegisterActivity extends BaseActivity {
         btnRegister.setText("Guardar Cambios");
 
         if (layoutTerminos != null) layoutTerminos.setVisibility(View.GONE);
-        if (layoutRegLoginLink != null) layoutRegLoginLink.setVisibility(View.GONE);
         if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
         if (layoutYaTienesCuenta != null) layoutYaTienesCuenta.setVisibility(View.GONE);
 
@@ -449,7 +445,6 @@ public class RegisterActivity extends BaseActivity {
         btnRegister.setText("Registrarse");
         layoutTerminos.setVisibility(View.VISIBLE);
 
-        if (layoutRegLoginLink != null) layoutRegLoginLink.setVisibility(View.VISIBLE);
         if (layoutTerminos != null) layoutTerminos.setVisibility(View.VISIBLE);
         if (textBackToLogin != null) textBackToLogin.setVisibility(View.VISIBLE);
         if (layoutYaTienesCuenta != null) layoutYaTienesCuenta.setVisibility(View.VISIBLE);

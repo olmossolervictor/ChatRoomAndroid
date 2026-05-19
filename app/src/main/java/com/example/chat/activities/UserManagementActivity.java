@@ -40,6 +40,9 @@ public class UserManagementActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_management);
 
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbarUserManagement);
+        toolbar.setNavigationOnClickListener(v -> finish());
+
         editBuscarEmail = findViewById(R.id.editBuscarEmail);
         btnBuscar = findViewById(R.id.btnBuscar);
         layoutUserInfo = findViewById(R.id.layoutUserInfo);
