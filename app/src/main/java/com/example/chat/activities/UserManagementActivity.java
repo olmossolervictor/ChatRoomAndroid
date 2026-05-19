@@ -29,7 +29,7 @@ public class UserManagementActivity extends AppCompatActivity {
     private EditText editBuscarEmail;
     private Button btnBuscar;
     private LinearLayout layoutUserInfo, layoutListaResultados;
-    private TextView textNombreUser, textApellidosUser, textEmailUser,
+    private TextView textNombreUsuarioUser, textNombreUser, textApellidosUser, textEmailUser,
             textTelefonoUser, textFechaNacUser, textRolActual, textNoEncontrado;
     private Button btnHacerAdmin, btnHacerUsuario;
 
@@ -44,6 +44,9 @@ public class UserManagementActivity extends AppCompatActivity {
         btnBuscar = findViewById(R.id.btnBuscar);
         layoutUserInfo = findViewById(R.id.layoutUserInfo);
         layoutListaResultados = findViewById(R.id.layoutListaResultados);
+        
+        // Inicializar TextViews
+        textNombreUsuarioUser = findViewById(R.id.textNombreUsuarioUser);
         textNombreUser = findViewById(R.id.textNombreUser);
         textApellidosUser = findViewById(R.id.textApellidosUser);
         textEmailUser = findViewById(R.id.textEmailUser);
@@ -51,6 +54,7 @@ public class UserManagementActivity extends AppCompatActivity {
         textFechaNacUser = findViewById(R.id.textFechaNacUser);
         textRolActual = findViewById(R.id.textRolActual);
         textNoEncontrado = findViewById(R.id.textNoEncontrado);
+        
         btnHacerAdmin = findViewById(R.id.btnHacerAdmin);
         btnHacerUsuario = findViewById(R.id.btnHacerUsuario);
 
@@ -73,9 +77,9 @@ public class UserManagementActivity extends AppCompatActivity {
     }
 
     private void buscarUsuario() {
-        String email = editBuscarEmail.getText().toString().trim();
-        if (email.isEmpty()) {
-            Toast.makeText(this, "Escribe un correo para buscar", Toast.LENGTH_SHORT).show();
+        String query = editBuscarEmail.getText().toString().trim();
+        if (query.isEmpty()) {
+            Toast.makeText(this, "Escribe algo para buscar", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -86,7 +90,7 @@ public class UserManagementActivity extends AppCompatActivity {
         foundUserId = -1;
 
         RetrofitClient.getChatApiServices()
-                .buscarUsuarioPorEmail(email)
+                .buscarUsuarios(query)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -124,8 +128,6 @@ public class UserManagementActivity extends AppCompatActivity {
     private void procesarMultiplesResultados(JSONArray jsonArray) {
         layoutListaResultados.setVisibility(View.VISIBLE);
         
-        // Añadimos el título de nuevo (porque removeAllViews lo borró si estaba en el XML, 
-        // pero mejor lo manejamos dinámicamente o dejamos el título fuera del contenedor que se limpia)
         TextView tvTitulo = new TextView(this);
         tvTitulo.setText("RESULTADOS ENCONTRADOS (" + jsonArray.length() + "):");
         tvTitulo.setTextSize(12);
@@ -136,17 +138,18 @@ public class UserManagementActivity extends AppCompatActivity {
             try {
                 JSONObject user = jsonArray.getJSONObject(i);
                 String nombre = user.optString("nombre", "Sin nombre");
+                String username = user.optString("nombre_usuario", "Sin usuario");
                 String email = user.optString("email", "");
 
-                // Crear un "botón" o vista para cada usuario
+                // Crear una vista para cada usuario
                 TextView item = new TextView(this);
-                item.setText(nombre + "\n" + email);
-                item.setPadding(20, 20, 20, 20);
+                item.setText(nombre + " (@" + username + ")\n" + email);
+                item.setPadding(24, 24, 24, 24);
+                item.setTextColor(getResources().getColor(R.color.text_high));
                 item.setBackgroundResource(android.R.drawable.list_selector_background);
                 item.setClickable(true);
                 item.setFocusable(true);
                 
-                // Separación entre items
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT, 
                         LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -176,6 +179,11 @@ public class UserManagementActivity extends AppCompatActivity {
         try {
             foundUserId = json.optInt("id_usuario", -1);
 
+            // Mostrar el nombre de usuario
+            String username = json.optString("nombre_usuario", "-");
+            textNombreUsuarioUser.setText("Usuario: @" + username);
+            textNombreUsuarioUser.setVisibility(View.VISIBLE);
+
             textNombreUser.setText("Nombre: " + json.optString("nombre", "-"));
             textApellidosUser.setText("Apellidos: " + json.optString("apellidos", "-"));
             textEmailUser.setText("Email: " + json.optString("email", "-"));
@@ -185,7 +193,7 @@ public class UserManagementActivity extends AppCompatActivity {
             String rol = json.optString("rol", "usuario");
             textRolActual.setText("Rol actual: " + rol.toUpperCase());
 
-            // Mostrar solo el botón que tiene sentido (no el rol que ya tiene)
+            // Mostrar solo el botón que tiene sentido
             btnHacerAdmin.setVisibility("admin".equals(rol) ? View.GONE : View.VISIBLE);
             btnHacerUsuario.setVisibility("usuario".equals(rol) ? View.GONE : View.VISIBLE);
 

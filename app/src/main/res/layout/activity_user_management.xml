@@ -33,9 +33,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/bg_input"
-                android:hint="Buscar por correo electrónico"
+                android:hint="Email, nombre o usuario..."
                 android:importantForAutofill="no"
-                android:inputType="textEmailAddress"
+                android:inputType="text"
                 android:paddingHorizontal="14dp"
                 android:paddingVertical="12dp"
                 android:textColor="@color/text_high"
@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:text="No se encontró ningún usuario con ese correo"
+            android:text="No se encontró ningún usuario"
             android:textColor="@color/text_medium"
             android:visibility="gone" />
 
@@ -95,6 +95,15 @@
                 android:text="DATOS DEL USUARIO SELECCIONADO"
                 android:textColor="@color/text_medium"
                 android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textNombreUsuarioUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:textColor="@color/text_high"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
