@@ -785,20 +785,22 @@ public class RegisterActivity extends BaseActivity {
         String email = editRegEmail.getText().toString().trim();
 
         RetrofitClient.getChatApiServices()
-                .iniciarRegistro(email)
+                .iniciarRegistro(
+                        email,
+                        editRegNombreUsuario.getText().toString().trim(),
+                        editNombre.getText().toString().trim(),
+                        editApellidos.getText().toString().trim(),
+                        fechaSeleccionada,
+                        editRegTelefono.getText().toString().trim(),
+                        editRegPassword.getText().toString().trim(),
+                        encodedImage
+                )
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             Intent intent = new Intent(RegisterActivity.this, VerificacionEmailActivity.class);
                             intent.putExtra("VERIFICACION_EMAIL", email);
-                            intent.putExtra("VERIFICACION_NOMBRE_USUARIO", editRegNombreUsuario.getText().toString().trim());
-                            intent.putExtra("VERIFICACION_NOMBRE", editNombre.getText().toString().trim());
-                            intent.putExtra("VERIFICACION_APELLIDOS", editApellidos.getText().toString().trim());
-                            intent.putExtra("VERIFICACION_FECHA", fechaSeleccionada);
-                            intent.putExtra("VERIFICACION_TELEFONO", editRegTelefono.getText().toString().trim());
-                            intent.putExtra("VERIFICACION_PASSWORD", editRegPassword.getText().toString().trim());
-                            intent.putExtra("VERIFICACION_FOTO", encodedImage);
                             startActivity(intent);
                             finish();
                         } else {

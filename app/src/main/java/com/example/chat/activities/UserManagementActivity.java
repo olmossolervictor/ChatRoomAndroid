@@ -34,11 +34,13 @@ public class UserManagementActivity extends AppCompatActivity {
     private Button btnHacerAdmin, btnHacerUsuario;
 
     private int foundUserId = -1;
+    private int currentUserId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_management);
+        currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
 
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbarUserManagement);
         toolbar.setNavigationOnClickListener(v -> finish());
@@ -210,7 +212,7 @@ public class UserManagementActivity extends AppCompatActivity {
         if (foundUserId == -1) return;
 
         RetrofitClient.getChatApiServices()
-                .cambiarRolUsuario(foundUserId, nuevoRol)
+                .cambiarRolUsuario(currentUserId, foundUserId, nuevoRol)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

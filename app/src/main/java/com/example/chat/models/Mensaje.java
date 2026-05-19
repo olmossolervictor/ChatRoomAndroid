@@ -7,6 +7,7 @@ public class Mensaje {
     private String nombre_usuario;
     private String mensaje;
     private String fecha_hora;
+    private String estado;
 
     public Mensaje(int id, int id_usuario, String nombre, String mensaje, String fecha_hora) {
         this.id = id;
@@ -25,4 +26,5 @@ public class Mensaje {
     }
     public String getMensaje() { return mensaje; }
     public String getFechaHora() { return fecha_hora; }
+    public String getEstado() { return estado; }
 }

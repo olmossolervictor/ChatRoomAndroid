@@ -173,7 +173,6 @@ public class MainActivity extends BaseActivity {
 
         unirseASalaEnServidor(currentSalaId);
         cargarInfoCabeceraSala();
-        obtenerMensajes();
         iniciarAutoRefresco();
         solicitarPermisoUbicacionSiNecesario();
     }
@@ -238,7 +237,6 @@ public class MainActivity extends BaseActivity {
             @Override
             public void run() {
                 if (salaFinalizadaPorTiempo) return;
-                obtenerMensajes();
                 verificarTiempoSesion();
                 verificarUbicacion();
                 handler.postDelayed(this, 3000);
@@ -249,7 +247,7 @@ public class MainActivity extends BaseActivity {
 
     private void verificarTiempoSesion() {
         RetrofitClient.getChatApiServices()
-                .verificarSesionSala(currentUserId, currentSalaId)
+                .verificarSesionSala(currentUserId, currentSalaId, null, null)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -319,13 +317,15 @@ public class MainActivity extends BaseActivity {
         if (isSolicitandoPermiso) return;
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            expulsarUsuario("Permiso de ubicación revocado. Saliendo de la sala...");
+            expulsarUsuario("Permiso de ubicacion revocado. Saliendo de la sala...");
             return;
         }
 
-        if (salaLatitud == 0 && salaLongitud == 0) return;
+        if (salaLatitud == 0 && salaLongitud == 0) {
+            obtenerMensajes();
+            return;
+        }
 
-        double radioEfectivo = salaRadioMetros > 0 ? salaRadioMetros : 100.0;
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                 .setMaxUpdateAgeMillis(5000)
@@ -334,19 +334,39 @@ public class MainActivity extends BaseActivity {
         fusedLocationClient.getCurrentLocation(request, null)
                 .addOnSuccessListener(this, location -> {
                     if (location == null) return;
-
-                    float[] resultado = new float[1];
-                    Location.distanceBetween(
-                            location.getLatitude(), location.getLongitude(),
-                            salaLatitud, salaLongitud,
-                            resultado
-                    );
-
-                    float distanciaMetros = resultado[0];
-                    if (distanciaMetros > radioEfectivo) {
-                        expulsarUsuario("Has salido del área de la sala");
-                    }
+                    verificarUbicacionEnServidor(location);
                 });
+    }
+
+    private void verificarUbicacionEnServidor(Location location) {
+        RetrofitClient.getChatApiServices()
+                .verificarSesionSala(currentUserId, currentSalaId, location.getLatitude(), location.getLongitude())
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            obtenerMensajes();
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
+    }
+
+    private void manejarExpulsionServidor(Response<?> response) {
+        String motivo = "Has sido expulsado de la sala";
+        try {
+            String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+            if (!errorBody.isEmpty()) {
+                JSONObject json = new JSONObject(errorBody);
+                motivo = json.optString("motivo", motivo);
+            }
+        } catch (Exception ignored) {
+        }
+        expulsarUsuario(motivo);
     }
 
     private void expulsarUsuario(String motivo) {
@@ -381,7 +401,7 @@ public class MainActivity extends BaseActivity {
     private void obtenerMensajes() {
         if (salaFinalizadaPorTiempo) return;
         RetrofitClient.getChatApiServices()
-                .getMensajesGrupal(currentSalaId)
+                .getMensajesGrupal(currentSalaId, currentUserId)
                 .enqueue(new Callback<List<Mensaje>>() {
                     @Override
                     public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
@@ -404,6 +424,8 @@ public class MainActivity extends BaseActivity {
                             } else {
                                 listMessages.setSelectionFromTop(index, top);
                             }
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
                         }
                     }
 
@@ -413,14 +435,32 @@ public class MainActivity extends BaseActivity {
     }
 
     private void obtenerUbicacionYEnviar(String mensaje) {
-        enviarMensajeAlServidor(mensaje);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Se requiere ubicacion para enviar en esta sala", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CurrentLocationRequest request = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setMaxUpdateAgeMillis(5000)
+                .build();
+
+        fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener(this, location -> {
+                    if (location == null) {
+                        enviarMensajeAlServidor(mensaje, null, null);
+                    } else {
+                        enviarMensajeAlServidor(mensaje, location.getLatitude(), location.getLongitude());
+                    }
+                })
+                .addOnFailureListener(e -> enviarMensajeAlServidor(mensaje, null, null));
     }
 
-    private void enviarMensajeAlServidor(String mensajeLimpio) {
+    private void enviarMensajeAlServidor(String mensajeLimpio, Double latitud, Double longitud) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
         btnSend.setEnabled(false);
 
-        api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio)
+        api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio, latitud, longitud)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -429,6 +469,8 @@ public class MainActivity extends BaseActivity {
                         if (response.isSuccessful()) {
                             editMessage.setText("");
                             obtenerMensajes();
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
                         } else {
                             Toast.makeText(MainActivity.this, "Error " + response.code() + " del servidor", Toast.LENGTH_LONG).show();
                         }
