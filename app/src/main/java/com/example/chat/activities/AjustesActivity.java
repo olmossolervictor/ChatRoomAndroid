@@ -33,7 +33,6 @@ public class AjustesActivity extends BaseActivity {
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
-        // 🚀 Nuevo Toolbar para ir atrás
         androidx.appcompat.widget.Toolbar toolbarAjustes = findViewById(R.id.toolbarAjustes);
         toolbarAjustes.setNavigationOnClickListener(v -> finish());
 

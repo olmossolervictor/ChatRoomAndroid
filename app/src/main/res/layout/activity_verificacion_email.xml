@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/bg_main">
 
     <LinearLayout
@@ -26,7 +27,7 @@
             android:id="@+id/textVerificacionEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
             android:textColor="@color/text_medium"
             android:textSize="14sp" />
@@ -116,6 +117,21 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvGeneralError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginHorizontal="2dp"
+            android:background="@drawable/bg_error_message"
+            android:textColor="@color/error_main"
+            android:textSize="12sp"
+            android:fontFamily="@font/poppins_medium"
+            android:lineSpacingExtra="2dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="El código introducido es incorrecto" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnVerificarCodigo"

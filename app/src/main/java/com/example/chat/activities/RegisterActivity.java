@@ -52,11 +52,7 @@ import retrofit2.Response;
 public class RegisterActivity extends BaseActivity {
 
     private static final String PREF_GOOGLE_PROFILE_SETUP_DONE = "google_profile_setup_done_";
-
-    // Componentes TextInputLayout (Para gestionar los bordes y textos rojos de forma nativa)
     private TextInputLayout tilRegNombre, tilRegApellidos, tilRegEdad, tilRegNombreUsuario, tilRegTelefono, tilRegEmail, tilRegPassword;
-
-    // Campos de entrada
     private com.google.android.material.textfield.TextInputEditText editNombre, editApellidos, editRegFechaNac, editRegEmail, editRegTelefono, editRegPassword, editRegNombreUsuario;
     private TextView textEmailError, textNombreUsuarioError;
     private de.hdodenhof.circleimageview.CircleImageView imgUser;
@@ -64,22 +60,14 @@ public class RegisterActivity extends BaseActivity {
     private com.google.android.material.card.MaterialCardView btnSelectPhoto;
     private TextView textBackToLogin, textTitle;
     private LinearLayout layoutSugerencias, layoutBotonesSugerencias, layoutYaTienesCuenta;
-
-    // Componentes de alertas generales y links
     private TextView tvGeneralError;
-
-    // Gestión de términos y condiciones
     private CheckBox checkTerminos;
     private LinearLayout layoutTerminos;
     private TextView textVerTerminos;
-
-    // Identificadores de solicitud para resultados de actividad y permisos
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final int CAMERA_REQUEST = 2;
     private static final int PERMISSION_GALLERY_CODE = 100;
     private static final int PERMISSION_CAMERA_CODE = 101;
-
-    // Variables de estado de la actividad
     private String encodedImage = "";
     private boolean isEditMode = false;
     private boolean isGoogleProfileSetup = false;
@@ -88,8 +76,6 @@ public class RegisterActivity extends BaseActivity {
     private String emailOriginal = "";
     private String nombreUsuarioOriginal = "";
     private boolean datosUsuarioCargados = false;
-
-    // Control de validación asíncrona y temporizadores
     private final Handler debounceHandler = new Handler();
     private Runnable emailCheckRunnable;
     private Runnable usernameCheckRunnable;
@@ -100,7 +86,6 @@ public class RegisterActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Inicializar TextInputLayouts (Para colorearlos de rojo al haber error)
         tilRegNombre = findViewById(R.id.tilRegNombre);
         tilRegApellidos = findViewById(R.id.tilRegApellidos);
         tilRegEdad = findViewById(R.id.tilRegEdad);
@@ -109,7 +94,6 @@ public class RegisterActivity extends BaseActivity {
         tilRegEmail = findViewById(R.id.tilRegEmail);
         tilRegPassword = findViewById(R.id.tilRegPassword);
 
-        // Quitar el icono de error nativo por si acaso para igualarlo al Login
         if (tilRegNombre != null) tilRegNombre.setErrorIconDrawable(null);
         if (tilRegApellidos != null) tilRegApellidos.setErrorIconDrawable(null);
         if (tilRegEdad != null) tilRegEdad.setErrorIconDrawable(null);
@@ -118,7 +102,6 @@ public class RegisterActivity extends BaseActivity {
         if (tilRegEmail != null) tilRegEmail.setErrorIconDrawable(null);
         if (tilRegPassword != null) tilRegPassword.setErrorIconDrawable(null);
 
-        // Inicialización de componentes
         textTitle = findViewById(R.id.textTitle);
         editNombre = findViewById(R.id.editRegNombre);
         editApellidos = findViewById(R.id.editRegApellidos);
@@ -167,14 +150,12 @@ public class RegisterActivity extends BaseActivity {
                 public void afterTextChanged(Editable s) {
                     String input = s.toString().trim();
 
-                    // SI ES EL NOMBRE PROPIO, OCULTAMOS ERROR Y NO HACEMOS PETICIÓN
                     if (isEditMode && !nombreUsuarioOriginal.isEmpty() && input.equalsIgnoreCase(nombreUsuarioOriginal)) {
                         textNombreUsuarioError.setVisibility(View.GONE);
                         layoutSugerencias.setVisibility(View.GONE);
                         return;
                     }
 
-                    // Limpiar errores mientras escribe algo nuevo
                     if (textNombreUsuarioError != null) textNombreUsuarioError.setVisibility(View.GONE);
                     if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
 
@@ -218,16 +199,15 @@ public class RegisterActivity extends BaseActivity {
         configurarValidacionDinamica();
     }
 
-    // 🚀 LÓGICA DE ERROR SILENCIOSO (Igual que en LoginActivity)
     private void setSilentError(TextInputLayout layout, boolean active) {
         if (active) {
-            layout.setError(" "); // Activa el estado de error (borde rojo y hint rojo)
-            // El 'indicador' es el contenedor del texto de error (hijo índice 1)
+            layout.setError(" ");
+
             if (layout.getChildCount() > 1) {
-                layout.getChildAt(1).setVisibility(View.GONE); // Lo ocultamos para que no ocupe espacio y deforme el diseño
+                layout.getChildAt(1).setVisibility(View.GONE);
             }
         } else {
-            layout.setError(null); // Quita el error visual por completo
+            layout.setError(null);
         }
     }
 
@@ -239,7 +219,6 @@ public class RegisterActivity extends BaseActivity {
             public void afterTextChanged(Editable s) {
                 if (tvGeneralError != null) tvGeneralError.setVisibility(View.GONE);
 
-                // Si el usuario escribe algo nuevo, quitamos el error rojo de ese campo específico
                 if (editNombre.hasFocus()) setSilentError(tilRegNombre, false);
                 if (editApellidos.hasFocus()) setSilentError(tilRegApellidos, false);
                 if (editRegNombreUsuario.hasFocus()) setSilentError(tilRegNombreUsuario, false);
@@ -386,15 +365,13 @@ public class RegisterActivity extends BaseActivity {
         editRegFechaNac.setClickable(false);
         editRegTelefono.setEnabled(false);
         editRegEmail.setEnabled(false);
-        // BLOQUEO DE CAMPOS (Solo los que no se pueden editar)
-        // Usamos setFocusable(false) en vez de setEnabled(false) para que el color sea negro/nítido
+
         bloquearLectura(editNombre);
         bloquearLectura(editApellidos);
         bloquearLectura(editRegFechaNac);
         bloquearLectura(editRegTelefono);
         bloquearLectura(editRegEmail);
 
-        // LA FOTO SÍ SE PUEDE EDITAR
         if (btnSelectPhoto != null) {
             btnSelectPhoto.setVisibility(View.VISIBLE);
         }
@@ -408,7 +385,6 @@ public class RegisterActivity extends BaseActivity {
 
         if (editRegNombreUsuario != null) editRegNombreUsuario.setEnabled(true);
         editRegPassword.setEnabled(true);
-        // CAMPOS EDITABLES
         if (editRegNombreUsuario != null) habilitarEscritura(editRegNombreUsuario);
         habilitarEscritura(editRegPassword);
 
@@ -423,7 +399,7 @@ public class RegisterActivity extends BaseActivity {
         campo.setFocusableInTouchMode(false);
         campo.setClickable(false);
         campo.setCursorVisible(false);
-        campo.setAlpha(1.0f); // Opacidad total para que la letra no sea gris
+        campo.setAlpha(1.0f);
     }
 
     private void habilitarEscritura(com.google.android.material.textfield.TextInputEditText campo) {
@@ -506,7 +482,6 @@ public class RegisterActivity extends BaseActivity {
             String fechaMostrar = diaF + "/" + mesF + "/" + year;
             editRegFechaNac.setText(fechaMostrar);
 
-            // Limpia el error rojo de la fecha
             setSilentError(tilRegEdad, false);
             if (tvGeneralError != null) tvGeneralError.setVisibility(View.GONE);
         });
@@ -625,7 +600,6 @@ public class RegisterActivity extends BaseActivity {
         return value.trim();
     }
 
-    // 🚀 LÓGICA DE VALIDACIÓN CON LOS BORDES EN ROJO SILENCIOSOS
     private boolean validarCampos(boolean passwordObligatoria) {
         String nombre = editNombre.getText().toString().trim();
         String apellidos = editApellidos.getText().toString().trim();
@@ -634,7 +608,6 @@ public class RegisterActivity extends BaseActivity {
         String telefono = editRegTelefono.getText().toString().trim();
         String password = editRegPassword.getText().toString().trim();
 
-        // 1. Limpiar todos los errores visuales nativos previos
         if (tvGeneralError != null) tvGeneralError.setVisibility(View.GONE);
         setSilentError(tilRegNombre, false);
         setSilentError(tilRegApellidos, false);
@@ -646,7 +619,6 @@ public class RegisterActivity extends BaseActivity {
 
         boolean hasEmptyFields = false;
 
-        // 2. Comprobar vacíos y subrayarlos (borde rojo)
         if (nombre.isEmpty()) { setSilentError(tilRegNombre, true); hasEmptyFields = true; }
         if (apellidos.isEmpty()) { setSilentError(tilRegApellidos, true); hasEmptyFields = true; }
         if (nombreUsuario.isEmpty() && tilRegNombreUsuario != null) { setSilentError(tilRegNombreUsuario, true); hasEmptyFields = true; }
@@ -660,13 +632,11 @@ public class RegisterActivity extends BaseActivity {
             return false;
         }
 
-        // 3. Comprobar Términos y Condiciones
         if (!isEditMode && checkTerminos != null && !checkTerminos.isChecked()) {
             mostrarErrorGeneral("Debes aceptar los términos y condiciones legales.");
             return false;
         }
 
-        // 4. Comprobaciones de reglas de negocio específicas (El primero que falle lanza su borde rojo y la alerta general)
         if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚàèìòùÀÈÌÒÙñÑüÜ\\s]+")) {
             setSilentError(tilRegNombre, true);
             mostrarErrorGeneral("El nombre solo debe contener letras");
@@ -696,7 +666,6 @@ public class RegisterActivity extends BaseActivity {
         }
 
         if (textNombreUsuarioError.getVisibility() == View.VISIBLE) {
-            // COMPROBACIÓN DEFINITIVA AL GUARDAR: Si es el suyo, limpiamos error y permitimos guardar
             if (isEditMode && !nombreUsuarioOriginal.isEmpty() && nombreUsuario.equalsIgnoreCase(nombreUsuarioOriginal)) {
                 textNombreUsuarioError.setVisibility(View.GONE);
                 if (layoutSugerencias != null) layoutSugerencias.setVisibility(View.GONE);
@@ -826,13 +795,11 @@ public class RegisterActivity extends BaseActivity {
         );
     }
 
-    // 🚀 AQUI ESTÁ LA SOLUCIÓN AL BUG DE LA CÁMARA
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && data != null) {
-            // Caso 1: Viene de la galería
             if (requestCode == PICK_IMAGE_REQUEST && data.getData() != null) {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
@@ -842,7 +809,6 @@ public class RegisterActivity extends BaseActivity {
                     e.printStackTrace();
                 }
             }
-            // Caso 2: Viene de la cámara
             else if (requestCode == CAMERA_REQUEST && data.getExtras() != null) {
                 Bitmap bitmap = (Bitmap) data.getExtras().get("data");
                 if (bitmap != null) {
