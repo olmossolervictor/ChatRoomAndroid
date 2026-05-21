@@ -351,7 +351,6 @@ public class HomeActivity extends BaseActivity {
             }
             textNombre.setText(item.getOtherUserName());
 
-            // 🚀 LÓGICA PARA CARGAR LA FOTO DE PERFIL
             if (imgFoto != null) {
                 // Por defecto, ocultamos la foto y mostramos la letra inicial
                 imgFoto.setVisibility(View.GONE);
@@ -489,7 +488,6 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void actualizarBadgeNotificaciones() {
-        // 🚀 CORTAFUEGOS: Si no hay sala, cortamos la petición a la API
         if (listaMisSalas.isEmpty() || !getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("notificaciones", true)) {
             drawerNotifBadge.setVisibility(View.GONE);
             return;
