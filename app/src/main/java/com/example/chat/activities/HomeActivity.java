@@ -28,6 +28,7 @@ import com.example.chat.models.Mensaje;
 import com.example.chat.models.PrivateChatHistoryItem;
 import com.example.chat.models.Sala;
 import com.example.chat.network.RetrofitClient;
+import com.example.chat.utils.PrivateChatClosureStore;
 import com.example.chat.utils.PrivateChatConversationPolicy;
 import com.example.chat.utils.PrivateChatGeofenceStore;
 import com.example.chat.utils.PrivateChatHistoryStore;
@@ -193,8 +194,6 @@ public class HomeActivity extends BaseActivity {
         super.onResume();
         cargarPerfilDrawer();
 
-        // 🚀 OJO AQUÍ: cargarMisSalas ahora es el que dispara notificaciones e historial
-        // cuando responde el servidor, para saber seguro si estamos en una sala o no.
         cargarMisSalas();
         iniciarRefrescoHistorialPrivado();
     }
@@ -277,7 +276,7 @@ public class HomeActivity extends BaseActivity {
                         salaAdapter.notifyDataSetChanged();
                         actualizarVistasSalas();
 
-                        // 🚀 Lanzamos esto solo DESPUÉS de saber si estamos en una sala
+
                         actualizarBadgeNotificaciones();
                         refrescarHistorialPrivado();
                     }
@@ -324,7 +323,7 @@ public class HomeActivity extends BaseActivity {
         if (layoutHistorialPrivadoItems == null || textHistorialPrivadoVacio == null) return;
         layoutHistorialPrivadoItems.removeAllViews();
 
-        // 🚀 CORTAFUEGOS: Si no hay sala, no se procesa ni se muestra el historial
+
         if (listaMisSalas.isEmpty()) {
             textHistorialPrivadoVacio.setVisibility(View.GONE);
             return;
@@ -337,12 +336,20 @@ public class HomeActivity extends BaseActivity {
         }
 
         textHistorialPrivadoVacio.setVisibility(View.GONE);
+        boolean hayHistorialVisible = false;
         for (PrivateChatHistoryItem item : historial) {
+            if (PrivateChatClosureStore.isExpired(this, currentUserId, item.getOtherUserId())) {
+                PrivateChatHistoryStore.removeChat(this, currentUserId, item.getOtherUserId());
+                PrivateChatGeofenceStore.remove(this, currentUserId, item.getOtherUserId());
+                continue;
+            }
+
             View row = LayoutInflater.from(this).inflate(R.layout.item_historial_privado, layoutHistorialPrivadoItems, false);
             TextView textNombre = row.findViewById(R.id.textNombreHistorialPrivado);
             TextView textInicial = row.findViewById(R.id.textInicialHistorialPrivado);
+            ImageView btnEliminarHistorial = row.findViewById(R.id.btnEliminarHistorialPrivado);
 
-            // 🚀 NUEVO: Enlazamos el ImageView de la foto (debe existir en el XML)
+
             ImageView imgFoto = row.findViewById(R.id.imgFotoHistorialPrivado);
 
             String nombreUsuario = item.getOtherUserName();
@@ -351,7 +358,7 @@ public class HomeActivity extends BaseActivity {
             }
             textNombre.setText(item.getOtherUserName());
 
-            // 🚀 LÓGICA PARA CARGAR LA FOTO DE PERFIL
+
             if (imgFoto != null) {
                 // Por defecto, ocultamos la foto y mostramos la letra inicial
                 imgFoto.setVisibility(View.GONE);
@@ -390,8 +397,45 @@ public class HomeActivity extends BaseActivity {
                 if (esClickRapido()) return;
                 abrirChatPrivadoDesdeHistorial(item);
             });
+            row.setOnLongClickListener(v -> {
+                mostrarConfirmacionEliminarHistorialPrivado(item);
+                return true;
+            });
+            if (btnEliminarHistorial != null) {
+                btnEliminarHistorial.setOnClickListener(v -> mostrarConfirmacionEliminarHistorialPrivado(item));
+            }
             layoutHistorialPrivadoItems.addView(row);
+            hayHistorialVisible = true;
         }
+
+        if (!hayHistorialVisible) {
+            textHistorialPrivadoVacio.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void mostrarConfirmacionEliminarHistorialPrivado(PrivateChatHistoryItem item) {
+        if (item == null) return;
+
+        String nombre = item.getOtherUserName() == null || item.getOtherUserName().trim().isEmpty()
+                ? "este usuario"
+                : item.getOtherUserName().trim();
+
+        new AlertDialog.Builder(this)
+                .setTitle("Eliminar historial")
+                .setMessage("Se eliminara el acceso a tu historial privado con " + nombre + ".")
+                .setPositiveButton("ELIMINAR", (dialog, which) -> eliminarHistorialPrivado(item))
+                .setNegativeButton("CANCELAR", null)
+                .show();
+    }
+
+    private void eliminarHistorialPrivado(PrivateChatHistoryItem item) {
+        if (item == null) return;
+
+        PrivateChatHistoryStore.removeChat(this, currentUserId, item.getOtherUserId());
+        PrivateChatGeofenceStore.remove(this, currentUserId, item.getOtherUserId());
+        PrivateChatClosureStore.remove(this, currentUserId, item.getOtherUserId());
+        Toast.makeText(this, "Historial eliminado", Toast.LENGTH_SHORT).show();
+        refrescarHistorialPrivado();
     }
 
     private void abrirChatPrivadoDesdeHistorial(PrivateChatHistoryItem item) {
@@ -489,23 +533,19 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void actualizarBadgeNotificaciones() {
-        // 🚀 CORTAFUEGOS: Si no hay sala, cortamos la petición a la API
+
         if (listaMisSalas.isEmpty() || !getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("notificaciones", true)) {
             drawerNotifBadge.setVisibility(View.GONE);
             return;
         }
 
-        RetrofitClient.getChatApiServices().getNoLeidosPrivados(currentUserId).enqueue(new Callback<ResponseBody>() {
+        RetrofitClient.getChatApiServices().getResumenNotificaciones(currentUserId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     try {
                         JSONArray array = new JSONArray(response.body().string());
-                        int count = 0;
-                        for (int i = 0; i < array.length(); i++) {
-                            JSONObject item = array.optJSONObject(i);
-                            if (item != null && !PrivateChatConversationPolicy.isControlMessage(item.optString("mensaje", ""))) count++;
-                        }
+                        int count = array.length();
                         drawerNotifBadge.setText(String.valueOf(count));
                         drawerNotifBadge.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
                     } catch (Exception e) { drawerNotifBadge.setVisibility(View.GONE); }
@@ -517,7 +557,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void mostrarNotificacionesConSolicitud() {
-        RetrofitClient.getChatApiServices().getNoLeidosPrivados(currentUserId).enqueue(new Callback<ResponseBody>() {
+        RetrofitClient.getChatApiServices().getResumenNotificaciones(currentUserId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (!response.isSuccessful() || response.body() == null) return;
@@ -526,19 +566,19 @@ public class HomeActivity extends BaseActivity {
                     List<NotificacionPrivada> notificaciones = new ArrayList<>();
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject n = array.getJSONObject(i);
-                        if (PrivateChatConversationPolicy.isControlMessage(n.optString("mensaje", ""))) continue;
                         NotificacionPrivada notificacion = new NotificacionPrivada();
-                        notificacion.contenido = n.optString("mensaje", "");
+                        notificacion.contenido = n.optString("contenido", "");
                         String nombreUsuario = n.optString("nombre_usuario", "");
                         notificacion.nombreRemitente = !nombreUsuario.isEmpty() ? nombreUsuario : n.optString("nombre", "Alguien");
-                        notificacion.idRemitente = n.optInt("id_usuario", -1);
-                        notificacion.idMensaje = n.optInt("id", -1);
+                        notificacion.idRemitente = n.optInt("remitente_id", -1);
+                        notificacion.idMensaje = n.optInt("id_mensaje", -1);
+                        notificacion.estado = estadoDesdeServidor(n.optString("estado", "PENDIENTE"));
                         if (notificacion.idRemitente != -1) notificaciones.add(notificacion);
                     }
                     if (notificaciones.isEmpty()) {
                         new AlertDialog.Builder(HomeActivity.this).setTitle("Notificaciones").setMessage("No tienes notificaciones").setPositiveButton("Cerrar", null).show();
                     } else {
-                        cargarEstadosNotificaciones(notificaciones);
+                        mostrarDialogoNotificacionesPrivadas(notificaciones);
                     }
                 } catch (Exception e) { e.printStackTrace(); }
             }
@@ -549,22 +589,10 @@ public class HomeActivity extends BaseActivity {
         });
     }
 
-    private void cargarEstadosNotificaciones(List<NotificacionPrivada> notificaciones) {
-        final int[] pendientes = {notificaciones.size()};
-        for (NotificacionPrivada notificacion : notificaciones) {
-            RetrofitClient.getChatApiServices().getMensajesPrivados(currentUserId, notificacion.idRemitente).enqueue(new Callback<List<Mensaje>>() {
-                @Override
-                public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
-                    notificacion.estado = (response.isSuccessful() && response.body() != null) ? PrivateChatConversationPolicy.resolveState(response.body(), currentUserId) : PrivateChatConversationPolicy.State.PENDING_INCOMING;
-                    if (--pendientes[0] == 0) mostrarDialogoNotificacionesPrivadas(notificaciones);
-                }
-                @Override
-                public void onFailure(Call<List<Mensaje>> call, Throwable t) {
-                    notificacion.estado = PrivateChatConversationPolicy.State.PENDING_INCOMING;
-                    if (--pendientes[0] == 0) mostrarDialogoNotificacionesPrivadas(notificaciones);
-                }
-            });
-        }
+    private PrivateChatConversationPolicy.State estadoDesdeServidor(String estado) {
+        if ("ACEPTADO".equalsIgnoreCase(estado)) return PrivateChatConversationPolicy.State.ACCEPTED;
+        if ("RECHAZADO".equalsIgnoreCase(estado)) return PrivateChatConversationPolicy.State.REJECTED;
+        return PrivateChatConversationPolicy.State.PENDING_INCOMING;
     }
 
     private void mostrarDialogoNotificacionesPrivadas(List<NotificacionPrivada> notificaciones) {
@@ -666,8 +694,9 @@ public class HomeActivity extends BaseActivity {
     private void confirmarAbandonoTotal(String idSala) {
         new AlertDialog.Builder(this)
                 .setTitle("¿Cerrar sesión en la sala?")
-                .setMessage("Se borrarán tus mensajes y chats privados de esta sala. Volverás al estado inicial.")
+                .setMessage("Los chats privados de esta sala quedaran bloqueados y se eliminaran en 30 minutos. Volveras al estado inicial.")
                 .setPositiveButton("SÍ, SALIR", (dialog, which) -> {
+                    marcarChatsPrivadosCerradosPorSala(idSala, crearMensajeAbandonoSala());
                     RetrofitClient.getChatApiServices().salirDeSala(currentUserId, idSala)
                             .enqueue(new Callback<ResponseBody>() {
                                 @Override
@@ -675,8 +704,13 @@ public class HomeActivity extends BaseActivity {
                                     if (response.isSuccessful()) {
                                         List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(HomeActivity.this, currentUserId, idSala);
                                         for (Integer otherId : otrosUsuarios) {
-                                            PrivateChatHistoryStore.removeChat(HomeActivity.this, currentUserId, otherId);
-                                            PrivateChatGeofenceStore.remove(HomeActivity.this, currentUserId, otherId);
+                                            PrivateChatClosureStore.closeForThirtyMinutes(
+                                                    HomeActivity.this,
+                                                    currentUserId,
+                                                    otherId,
+                                                    idSala,
+                                                    crearMensajeAbandonoSala()
+                                            );
                                         }
 
                                         Toast.makeText(HomeActivity.this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
@@ -691,5 +725,22 @@ public class HomeActivity extends BaseActivity {
                 })
                 .setNegativeButton("CANCELAR", null)
                 .show();
+    }
+
+    private void marcarChatsPrivadosCerradosPorSala(String idSala, String motivo) {
+        List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(this, currentUserId, idSala);
+        for (Integer otherId : otrosUsuarios) {
+            if (otherId == null || otherId <= 0) continue;
+            PrivateChatClosureStore.closeForThirtyMinutes(this, currentUserId, otherId, idSala, motivo);
+        }
+    }
+
+    private String crearMensajeAbandonoSala() {
+        SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
+        String nombre = pref.getString("nombre", "");
+        if (nombre == null || nombre.trim().isEmpty()) {
+            nombre = "El usuario";
+        }
+        return nombre.trim() + " ha abandonado la sala principal. No se pueden enviar mas mensajes en este chat privado.";
     }
 }

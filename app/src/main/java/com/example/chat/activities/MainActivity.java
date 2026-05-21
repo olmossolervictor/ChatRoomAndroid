@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Base64;
 import android.view.LayoutInflater;
-import android.view.MenuItem; // <--- IMPORTANTE AÑADIDO
+import android.view.MenuItem;
 import android.view.View;
 import android.graphics.Color;
 import android.widget.Button;
@@ -19,13 +19,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.Toolbar; // <--- IMPORTANTE AÑADIDO
+import androidx.appcompat.widget.Toolbar;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -66,7 +64,6 @@ public class MainActivity extends BaseActivity {
     private boolean isAdmin = false;
     private TextView textTiempoRestante;
     private TextView textSalaTitulo;
-    private TextView textSalaUsuarios;
 
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
@@ -79,13 +76,14 @@ public class MainActivity extends BaseActivity {
     private int currentUserId;
     private String currentSalaId;
 
-    // Datos de geovalla de la sala (0 = sin restricción)
+    // Datos de geovalla de la sala
     private double salaLatitud = 0;
     private double salaLongitud = 0;
     private double salaRadioMetros = 0;
     private String salaNombreMostrado;
-    private int usuariosEnSala = 0;
     private boolean salaFinalizadaPorTiempo = false;
+
+    private boolean isSolicitandoPermiso = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,7 +130,6 @@ public class MainActivity extends BaseActivity {
             return insets;
         });
 
-        // --- AQUÍ ACTIVAMOS LA BARRA CON LA FLECHA NATIVA ---
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -146,7 +143,6 @@ public class MainActivity extends BaseActivity {
         layoutInputMessage = findViewById(R.id.layoutInputMessage);
         textTiempoRestante = findViewById(R.id.textTiempoRestante);
         textSalaTitulo = findViewById(R.id.textSalaTitulo);
-        textSalaUsuarios = findViewById(R.id.textSalaUsuarios);
         salaNombreMostrado = currentSalaId;
         actualizarCabeceraSala();
 
@@ -170,6 +166,7 @@ public class MainActivity extends BaseActivity {
             btnSend.setOnClickListener(v -> {
                 String mensaje = editMessage.getText().toString().trim();
                 if (!mensaje.isEmpty()) {
+                    btnSend.setEnabled(false);
                     obtenerUbicacionYEnviar(mensaje);
                 }
             });
@@ -177,14 +174,41 @@ public class MainActivity extends BaseActivity {
 
         unirseASalaEnServidor(currentSalaId);
         cargarInfoCabeceraSala();
-        obtenerMensajes();
         iniciarAutoRefresco();
         solicitarPermisoUbicacionSiNecesario();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
+        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (v instanceof EditText) {
+                View bottomContainer = findViewById(R.id.layoutInputMessageContainer);
+
+                if (bottomContainer != null) {
+                    android.graphics.Rect containerRect = new android.graphics.Rect();
+                    bottomContainer.getGlobalVisibleRect(containerRect);
+
+                    if (!containerRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
+                        v.clearFocus();
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        }
+                    }
+                }
+            }
+        }
+        if (getWindow().superDispatchTouchEvent(ev)) {
+            return true;
+        }
+        return onTouchEvent(ev);
     }
 
     private void solicitarPermisoUbicacionSiNecesario() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
+            isSolicitandoPermiso = true;
             ActivityCompat.requestPermissions(
                     this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -193,37 +217,13 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void salirDeSalaManualmente() {
-        if (handler != null && refreshRunnable != null) {
-            handler.removeCallbacks(refreshRunnable);
-        }
-
-        Toast.makeText(this, "Saliendo y borrando datos...", Toast.LENGTH_SHORT).show();
-
-        RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        finish();
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        finish();
-                    }
-                });
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            isSolicitandoPermiso = false;
             if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                if (salaLatitud != 0 || salaLongitud != 0) {
-                    Toast.makeText(this,
-                            "Sin permiso de ubicación no se puede verificar si estás dentro del área de la sala",
-                            Toast.LENGTH_LONG).show();
-                }
+                expulsarUsuario("Permiso de ubicación denegado. Saliendo de la sala...");
             }
         }
     }
@@ -233,7 +233,6 @@ public class MainActivity extends BaseActivity {
             @Override
             public void run() {
                 if (salaFinalizadaPorTiempo) return;
-                obtenerMensajes();
                 verificarTiempoSesion();
                 verificarUbicacion();
                 handler.postDelayed(this, 3000);
@@ -244,7 +243,7 @@ public class MainActivity extends BaseActivity {
 
     private void verificarTiempoSesion() {
         RetrofitClient.getChatApiServices()
-                .verificarSesionSala(currentUserId, currentSalaId)
+                .verificarSesionSala(currentUserId, currentSalaId, null, null)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -311,11 +310,17 @@ public class MainActivity extends BaseActivity {
     }
 
     private void verificarUbicacion() {
-        if (salaLatitud == 0 && salaLongitud == 0) return;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) return;
+        if (isSolicitandoPermiso) return;
 
-        double radioEfectivo = salaRadioMetros > 0 ? salaRadioMetros : 100.0;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            expulsarUsuario("Permiso de ubicacion revocado. Saliendo de la sala...");
+            return;
+        }
+
+        if (salaLatitud == 0 && salaLongitud == 0) {
+            obtenerMensajes();
+            return;
+        }
 
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
@@ -325,19 +330,39 @@ public class MainActivity extends BaseActivity {
         fusedLocationClient.getCurrentLocation(request, null)
                 .addOnSuccessListener(this, location -> {
                     if (location == null) return;
-
-                    float[] resultado = new float[1];
-                    Location.distanceBetween(
-                            location.getLatitude(), location.getLongitude(),
-                            salaLatitud, salaLongitud,
-                            resultado
-                    );
-
-                    float distanciaMetros = resultado[0];
-                    if (distanciaMetros > radioEfectivo) {
-                        expulsarUsuario("Has salido del área de la sala");
-                    }
+                    verificarUbicacionEnServidor(location);
                 });
+    }
+
+    private void verificarUbicacionEnServidor(Location location) {
+        RetrofitClient.getChatApiServices()
+                .verificarSesionSala(currentUserId, currentSalaId, location.getLatitude(), location.getLongitude())
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            obtenerMensajes();
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
+    }
+
+    private void manejarExpulsionServidor(Response<?> response) {
+        String motivo = "Has sido expulsado de la sala";
+        try {
+            String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+            if (!errorBody.isEmpty()) {
+                JSONObject json = new JSONObject(errorBody);
+                motivo = json.optString("motivo", motivo);
+            }
+        } catch (Exception ignored) {
+        }
+        expulsarUsuario(motivo);
     }
 
     private void expulsarUsuario(String motivo) {
@@ -372,19 +397,20 @@ public class MainActivity extends BaseActivity {
     private void obtenerMensajes() {
         if (salaFinalizadaPorTiempo) return;
         RetrofitClient.getChatApiServices()
-                .getMensajesGrupal(currentSalaId)
+                .getMensajesGrupal(currentSalaId, currentUserId)
                 .enqueue(new Callback<List<Mensaje>>() {
                     @Override
                     public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            int index = listMessages.getFirstVisiblePosition();
-                            View v = listMessages.getChildAt(0);
-                            int top = (v == null) ? 0 : (v.getTop() - listMessages.getPaddingTop());
 
-                            boolean estabaAbajoDelTodo = false;
-                            if (listMessages.getLastVisiblePosition() >= adapter.getCount() - 1) {
-                                estabaAbajoDelTodo = true;
-                            }
+                            int currentFirstVisible = listMessages.getFirstVisiblePosition();
+                            View v = listMessages.getChildAt(0);
+                            int currentTop = (v == null) ? 0 : (v.getTop() - listMessages.getPaddingTop());
+
+                            int currentLastVisible = listMessages.getLastVisiblePosition();
+                            int currentCount = adapter.getCount();
+
+                            boolean estabaAbajoDelTodo = (currentCount == 0) || (currentLastVisible >= currentCount - 1);
 
                             listaMensajes.clear();
                             listaMensajes.addAll(response.body());
@@ -393,8 +419,11 @@ public class MainActivity extends BaseActivity {
                             if (estabaAbajoDelTodo) {
                                 listMessages.setSelection(adapter.getCount() - 1);
                             } else {
-                                listMessages.setSelectionFromTop(index, top);
+                                listMessages.setSelectionFromTop(currentFirstVisible, currentTop);
                             }
+
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
                         }
                     }
 
@@ -404,34 +433,34 @@ public class MainActivity extends BaseActivity {
     }
 
     private void obtenerUbicacionYEnviar(String mensaje) {
-        enviarMensajeAlServidor(mensaje);
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
-        // Lógica limpia para ocultar el teclado al tocar fuera
-        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-            View v = getCurrentFocus();
-            if (v instanceof EditText) {
-                android.graphics.Rect outRect = new android.graphics.Rect();
-                v.getGlobalVisibleRect(outRect);
-                if (!outRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
-                    v.clearFocus();
-                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-                    if (imm != null) {
-                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                    }
-                }
-            }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Se requiere ubicacion para enviar en esta sala", Toast.LENGTH_SHORT).show();
+            btnSend.setEnabled(true);
+            return;
         }
-        return super.dispatchTouchEvent(ev);
+
+        CurrentLocationRequest request = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setMaxUpdateAgeMillis(5000)
+                .build();
+
+        fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener(this, location -> {
+                    if (location == null) {
+                        enviarMensajeAlServidor(mensaje, null, null);
+                    } else {
+                        enviarMensajeAlServidor(mensaje, location.getLatitude(), location.getLongitude());
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    enviarMensajeAlServidor(mensaje, null, null);
+                });
     }
 
-    private void enviarMensajeAlServidor(String mensajeLimpio) {
+    private void enviarMensajeAlServidor(String mensajeLimpio, Double latitud, Double longitud) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
-        btnSend.setEnabled(false);
 
-        api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio)
+        api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio, latitud, longitud)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -440,15 +469,17 @@ public class MainActivity extends BaseActivity {
                         if (response.isSuccessful()) {
                             editMessage.setText("");
                             obtenerMensajes();
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
                         } else {
-                            Toast.makeText(MainActivity.this, "Error " + response.code() + " del servidor", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Error " + response.code(), Toast.LENGTH_LONG).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         btnSend.setEnabled(true);
-                        Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -631,20 +662,6 @@ public class MainActivity extends BaseActivity {
             salaNombreMostrado = nombre;
         }
 
-        int usuarios = extraerPrimerEntero(json,
-                "activos_en_sala",
-                "usuarios_activos",
-                "usuarios_activos_sala",
-                "activos",
-                "usuarios_en_sala",
-                "personas_en_sala",
-                "total_usuarios",
-                "miembros",
-                "integrantes");
-        if (usuarios >= 0) {
-            usuariosEnSala = usuarios;
-        }
-
         double latitud = extraerPrimerDouble(json,
                 "latitud", "latitude", "sala_latitud", "lat");
         if (!Double.isNaN(latitud)) {
@@ -673,29 +690,6 @@ public class MainActivity extends BaseActivity {
                     : salaNombreMostrado;
             textSalaTitulo.setText(titulo);
         }
-
-        if (textSalaUsuarios != null) {
-            textSalaUsuarios.setText("(" + Math.max(usuariosEnSala, 0) + ") activos en esta sala");
-            textSalaUsuarios.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private int extraerPrimerEntero(JSONObject json, String... keys) {
-        for (String key : keys) {
-            if (!json.has(key)) continue;
-            try {
-                return json.getInt(key);
-            } catch (Exception ignored) {
-            }
-            try {
-                String value = json.getString(key);
-                if (value != null && !value.trim().isEmpty()) {
-                    return Integer.parseInt(value.trim());
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return -1;
     }
 
     private String extraerPrimerString(JSONObject json, String... keys) {
@@ -739,10 +733,6 @@ public class MainActivity extends BaseActivity {
             adapter.notifyDataSetChanged();
         }
         textTiempoRestante.setVisibility(View.GONE);
-        if (textSalaUsuarios != null) {
-            textSalaUsuarios.setText("(0) activos en esta sala");
-            textSalaUsuarios.setVisibility(View.VISIBLE);
-        }
 
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
                 .enqueue(new Callback<ResponseBody>() {
@@ -903,11 +893,10 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    // --- AQUÍ ESTÁ EL MÉTODO DE LA FLECHA ---
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish(); // Esto SÓLO te devuelve al Home, NO cierra sesión en la sala
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);

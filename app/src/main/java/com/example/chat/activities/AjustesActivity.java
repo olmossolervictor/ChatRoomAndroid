@@ -33,7 +33,6 @@ public class AjustesActivity extends BaseActivity {
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
-        // 🚀 Nuevo Toolbar para ir atrás
         androidx.appcompat.widget.Toolbar toolbarAjustes = findViewById(R.id.toolbarAjustes);
         toolbarAjustes.setNavigationOnClickListener(v -> finish());
 
@@ -42,7 +41,6 @@ public class AjustesActivity extends BaseActivity {
         radioTema = findViewById(R.id.radioTema);
         radioTamanoFuente = findViewById(R.id.radioTamanoFuente);
 
-        // --- Cargar valores guardados (Diseño) ---
         int modoNoche = prefs.getInt("modo_noche", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         if (modoNoche == AppCompatDelegate.MODE_NIGHT_YES) radioTema.check(R.id.radioTemaOscuro);
         else if (modoNoche == AppCompatDelegate.MODE_NIGHT_NO) radioTema.check(R.id.radioTemaClaro);
@@ -54,7 +52,6 @@ public class AjustesActivity extends BaseActivity {
         else if (tamano == 18) radioTamanoFuente.check(R.id.radioFuenteGrande);
         else radioTamanoFuente.check(R.id.radioFuenteNormal);
 
-        // --- Listeners de Diseño ---
         radioTema.setOnCheckedChangeListener((group, checkedId) -> {
             int mode;
             if (checkedId == R.id.radioTemaOscuro) mode = AppCompatDelegate.MODE_NIGHT_YES;

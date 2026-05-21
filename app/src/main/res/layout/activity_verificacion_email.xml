@@ -3,182 +3,193 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/bg_main">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center_horizontal">
+        android:padding="24dp">
 
-        <!-- Título -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:fontFamily="@font/poppins_bold"
             android:text="@string/verificacion_titulo"
+            android:textColor="@color/text_high"
             android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="24dp" />
+            android:textStyle="bold" />
 
-        <!-- Subtítulo con email -->
         <TextView
             android:id="@+id/textVerificacionEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="#666666"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:layout_marginBottom="32dp" />
+            android:textColor="@color/text_medium"
+            android:textSize="14sp" />
 
-        <!-- Campos de dígitos -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_horizontal"
             android:layout_marginBottom="32dp"
-            android:spacing="8dp">
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/digit1"
+                style="@style/DigitFieldStyle"
                 android:layout_width="48dp"
                 android:layout_height="56dp"
+                android:layout_marginEnd="4dp"
+                android:gravity="center"
+                android:importantForAutofill="no"
                 android:inputType="number"
                 android:maxLength="1"
-                android:gravity="center"
+                android:textColor="@color/text_high"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginEnd="4dp"
-                android:importantForAutofill="no"
-                style="@style/DigitFieldStyle" />
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/digit2"
+                style="@style/DigitFieldStyle"
                 android:layout_width="48dp"
                 android:layout_height="56dp"
+                android:layout_marginEnd="4dp"
+                android:gravity="center"
                 android:inputType="number"
                 android:maxLength="1"
-                android:gravity="center"
+                android:textColor="@color/text_high"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginEnd="4dp"
-                style="@style/DigitFieldStyle" />
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/digit3"
+                style="@style/DigitFieldStyle"
                 android:layout_width="48dp"
                 android:layout_height="56dp"
+                android:layout_marginEnd="4dp"
+                android:gravity="center"
                 android:inputType="number"
                 android:maxLength="1"
-                android:gravity="center"
+                android:textColor="@color/text_high"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginEnd="4dp"
-                style="@style/DigitFieldStyle" />
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/digit4"
+                style="@style/DigitFieldStyle"
                 android:layout_width="48dp"
                 android:layout_height="56dp"
+                android:layout_marginEnd="4dp"
+                android:gravity="center"
                 android:inputType="number"
                 android:maxLength="1"
-                android:gravity="center"
+                android:textColor="@color/text_high"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginEnd="4dp"
-                style="@style/DigitFieldStyle" />
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/digit5"
+                style="@style/DigitFieldStyle"
                 android:layout_width="48dp"
                 android:layout_height="56dp"
+                android:layout_marginEnd="4dp"
+                android:gravity="center"
                 android:inputType="number"
                 android:maxLength="1"
-                android:gravity="center"
+                android:textColor="@color/text_high"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginEnd="4dp"
-                style="@style/DigitFieldStyle" />
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/digit6"
+                style="@style/DigitFieldStyle"
                 android:layout_width="48dp"
                 android:layout_height="56dp"
+                android:gravity="center"
                 android:inputType="number"
                 android:maxLength="1"
-                android:gravity="center"
+                android:textColor="@color/text_high"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                style="@style/DigitFieldStyle" />
-
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Botón verificar código -->
+        <TextView
+            android:id="@+id/tvGeneralError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginHorizontal="2dp"
+            android:background="@drawable/bg_error_message"
+            android:textColor="@color/error_main"
+            android:textSize="12sp"
+            android:fontFamily="@font/poppins_medium"
+            android:lineSpacingExtra="2dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="El código introducido es incorrecto" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnVerificarCodigo"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="@string/verificar_codigo"
             android:layout_marginBottom="16dp"
-            app:cornerRadius="8dp" />
+            android:text="@string/verificar_codigo"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/button_primary_tint"
+            app:cornerRadius="16dp" />
 
-        <!-- Separador "o" -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_marginVertical="16dp"
             android:gravity="center"
-            android:layout_marginVertical="16dp">
+            android:orientation="horizontal">
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#CCCCCC" />
+                android:background="@color/border_subtle" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
                 android:text="o"
-                android:textColor="#666666"
-                android:layout_marginHorizontal="16dp" />
+                android:textColor="@color/text_medium" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#CCCCCC" />
-
+                android:background="@color/border_subtle" />
         </LinearLayout>
 
-        <!-- Botón verificar con Google -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnVerificarGoogle"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="@string/verificar_google"
             android:layout_marginBottom="24dp"
-            app:cornerRadius="8dp"
-            app:backgroundTint="#4285F4" />
+            android:text="@string/verificar_google"
+            android:textColor="@color/text_high"
+            app:backgroundTint="@color/surface_card"
+            app:cornerRadius="16dp"
+            app:strokeColor="@color/border_subtle"
+            app:strokeWidth="1dp" />
 
-        <!-- Reenviar código -->
         <TextView
             android:id="@+id/textReenviarCodigo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/reenviar_codigo"
-            android:textColor="#2196F3"
-            android:textSize="14sp"
+            android:gravity="center"
             android:padding="8dp"
-            android:gravity="center" />
-
+            android:text="@string/reenviar_codigo"
+            android:textColor="@color/primary"
+            android:textSize="14sp" />
     </LinearLayout>
-
 </ScrollView>

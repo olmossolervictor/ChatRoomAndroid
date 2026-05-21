@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -38,17 +39,10 @@ import retrofit2.Response;
 public class VerificacionEmailActivity extends BaseActivity {
 
     private String verificacionEmail = "";
-    private String verificacionNombreUsuario = "";
-    private String verificacionNombre = "";
-    private String verificacionApellidos = "";
-    private String verificacionFecha = "";
-    private String verificacionTelefono = "";
-    private String verificacionPassword = "";
-    private String verificacionFoto = "";
     private EditText[] digitFields = new EditText[6];
     private Button btnVerificarCodigo, btnVerificarGoogle;
     private TextView textEmail, textReenviarCodigo;
-
+    private TextView tvGeneralError;
     private ChatApiServices api;
     private CredentialManager credentialManager;
     private Executor mainExecutor;
@@ -64,24 +58,15 @@ public class VerificacionEmailActivity extends BaseActivity {
             finish();
             return;
         }
-        verificacionNombreUsuario = getIntent().getStringExtra("VERIFICACION_NOMBRE_USUARIO");
-        verificacionNombre = getIntent().getStringExtra("VERIFICACION_NOMBRE");
-        verificacionApellidos = getIntent().getStringExtra("VERIFICACION_APELLIDOS");
-        verificacionFecha = getIntent().getStringExtra("VERIFICACION_FECHA");
-        verificacionTelefono = getIntent().getStringExtra("VERIFICACION_TELEFONO");
-        verificacionPassword = getIntent().getStringExtra("VERIFICACION_PASSWORD");
-        verificacionFoto = getIntent().getStringExtra("VERIFICACION_FOTO");
-        if (verificacionFoto == null) verificacionFoto = "";
-
         api = RetrofitClient.getChatApiServices();
         credentialManager = CredentialManager.create(this);
         mainExecutor = ContextCompat.getMainExecutor(this);
 
-        // Inicializar vistas
         textEmail = findViewById(R.id.textVerificacionEmail);
         textEmail.setText(String.format(getString(R.string.verificacion_subtitulo), verificacionEmail));
 
-        // Campos de dígitos
+        tvGeneralError = findViewById(R.id.tvGeneralError);
+
         digitFields[0] = findViewById(R.id.digit1);
         digitFields[1] = findViewById(R.id.digit2);
         digitFields[2] = findViewById(R.id.digit3);
@@ -102,12 +87,24 @@ public class VerificacionEmailActivity extends BaseActivity {
         textReenviarCodigo.setOnClickListener(v -> reenviarCodigo());
     }
 
+    private void mostrarErrorGeneral(String mensaje) {
+        if (tvGeneralError != null) {
+            tvGeneralError.setText(mensaje);
+            tvGeneralError.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void limpiarErrorGeneral() {
+        if (tvGeneralError != null && tvGeneralError.getVisibility() == View.VISIBLE) {
+            tvGeneralError.setVisibility(View.GONE);
+        }
+    }
+
     private void configurarDigitFields() {
         for (int i = 0; i < 6; i++) {
             final int index = i;
             EditText field = digitFields[i];
 
-            // Deshabilitar autocorrect y predictive text
             field.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
             field.setAutofillHints("");
 
@@ -117,6 +114,7 @@ public class VerificacionEmailActivity extends BaseActivity {
                     if (currentField.getText().length() == 0 && index > 0) {
                         digitFields[index - 1].requestFocus();
                         digitFields[index - 1].setText("");
+                        limpiarErrorGeneral();
                     }
                     return false;
                 }
@@ -129,11 +127,11 @@ public class VerificacionEmailActivity extends BaseActivity {
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    limpiarErrorGeneral();
+
                     if (s.length() == 1 && index < 5) {
-                        // Auto-avance al siguiente dígito
                         digitFields[index + 1].requestFocus();
                     } else if (s.length() == 0 && before == 1 && index > 0) {
-                        // Si se borra, retrocede
                         digitFields[index - 1].requestFocus();
                     }
                 }
@@ -154,42 +152,35 @@ public class VerificacionEmailActivity extends BaseActivity {
 
     private void verificarCodigoIngresado() {
         String codigo = obtenerCodigoCompleto();
+
         if (codigo.length() != 6) {
-            Toast.makeText(this, "Ingresa todos los 6 dígitos", Toast.LENGTH_SHORT).show();
+            mostrarErrorGeneral("Por favor, rellena todos los huecos del código.");
             return;
         }
 
-        // Validar que todos sean números
         if (!codigo.matches("\\d{6}")) {
-            Toast.makeText(this, "El código debe contener solo números", Toast.LENGTH_SHORT).show();
+            mostrarErrorGeneral("El código debe contener solo números.");
             return;
         }
 
-        api.verificarCodigo(verificacionEmail, codigo, verificacionNombreUsuario,
-                verificacionNombre, verificacionApellidos, verificacionFecha,
-                verificacionTelefono, verificacionPassword, verificacionFoto)
+        api.verificarCodigo(verificacionEmail, codigo)
                 .enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.verificacion_exitosa, Snackbar.LENGTH_LONG).show();
-                    irALogin();
-                } else {
-                    try {
-                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
-                        Toast.makeText(VerificacionEmailActivity.this, "Error: " + errorBody, Toast.LENGTH_SHORT).show();
-                    } catch (Exception ignored) {
-                        Toast.makeText(VerificacionEmailActivity.this, R.string.codigo_incorrecto, Toast.LENGTH_SHORT).show();
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            Snackbar.make(findViewById(android.R.id.content), R.string.verificacion_exitosa, Snackbar.LENGTH_LONG).show();
+                            irALogin();
+                        } else {
+                            mostrarErrorGeneral("El código introducido es incorrecto o ha expirado.");
+                            limpiarCodigo();
+                        }
                     }
-                    limpiarCodigo();
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(VerificacionEmailActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Toast.makeText(VerificacionEmailActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void limpiarCodigo() {
@@ -248,13 +239,13 @@ public class VerificacionEmailActivity extends BaseActivity {
     private void procesarCredencialGoogle(GetCredentialResponse result) {
         Credential credential = result.getCredential();
         if (!(credential instanceof CustomCredential)) {
-            Toast.makeText(this, "Credencial de Google inválida", Toast.LENGTH_SHORT).show();
+            mostrarErrorGeneral("Credencial de Google inválida");
             return;
         }
 
         CustomCredential customCredential = (CustomCredential) credential;
         if (!GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(customCredential.getType())) {
-            Toast.makeText(this, "Tipo de credencial no soportado", Toast.LENGTH_SHORT).show();
+            mostrarErrorGeneral("Tipo de credencial no soportado");
             return;
         }
 
@@ -269,7 +260,7 @@ public class VerificacionEmailActivity extends BaseActivity {
                     } else {
                         try {
                             String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
-                            Toast.makeText(VerificacionEmailActivity.this, "Verificación fallida: " + errorBody, Toast.LENGTH_SHORT).show();
+                            mostrarErrorGeneral("Verificación fallida. Inténtalo de nuevo.");
                         } catch (Exception ignored) {}
                     }
                 }
@@ -291,8 +282,9 @@ public class VerificacionEmailActivity extends BaseActivity {
                 if (response.isSuccessful()) {
                     Toast.makeText(VerificacionEmailActivity.this, "Te hemos reenviado un nuevo código", Toast.LENGTH_LONG).show();
                     limpiarCodigo();
+                    limpiarErrorGeneral();
                 } else {
-                    Toast.makeText(VerificacionEmailActivity.this, "Error al reenviar código", Toast.LENGTH_SHORT).show();
+                    mostrarErrorGeneral("Error al reenviar código. Inténtalo más tarde.");
                 }
             }
 

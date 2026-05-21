@@ -22,7 +22,14 @@ public interface ChatApiServices {
     @FormUrlEncoded
     @POST("usuarios/iniciar-registro")
     Call<ResponseBody> iniciarRegistro(
-            @Field("email") String email
+            @Field("email") String email,
+            @Field("nombre_usuario") String nombreUsuario,
+            @Field("nombre") String nombre,
+            @Field("apellidos") String apellidos,
+            @Field("fecha_nacimiento") String fechaNacimiento,
+            @Field("telefono") String telefono,
+            @Field("password") String password,
+            @Field("foto") String foto
     );
 
     @FormUrlEncoded
@@ -91,7 +98,8 @@ public interface ChatApiServices {
 
     @GET("chat/mensajes/{id_sala}")
     Call<List<Mensaje>> getMensajesGrupal(
-            @Path("id_sala") String idSala
+            @Path("id_sala") String idSala,
+            @Query("id_usuario") int idUsuario
     );
 
     @FormUrlEncoded
@@ -99,13 +107,17 @@ public interface ChatApiServices {
     Call<ResponseBody> enviarMensajeGrupal(
             @Field("id_sala") String idSala,
             @Field("id_usuario") int idUsuario,
-            @Field("mensaje") String mensaje
+            @Field("mensaje") String mensaje,
+            @Field("latitud") Double latitud,
+            @Field("longitud") Double longitud
     );
 
     @GET("chat/verificar-sesion")
     Call<ResponseBody> verificarSesionSala(
             @Query("id_usuario") int idUsuario,
-            @Query("id_sala") String idSala
+            @Query("id_sala") String idSala,
+            @Query("latitud") Double latitud,
+            @Query("longitud") Double longitud
     );
 
     @GET("usuarios/{id_usuario}/rol")
@@ -124,13 +136,14 @@ public interface ChatApiServices {
     );
 
     @GET("usuarios/buscar")
-    Call<ResponseBody> buscarUsuarioPorEmail(
-            @Query("email") String email
+    Call<ResponseBody> buscarUsuarios(
+            @Query("query") String query
     );
 
     @FormUrlEncoded
     @POST("usuarios/cambiar-rol")
     Call<ResponseBody> cambiarRolUsuario(
+            @Field("id_usuario_admin") int idUsuarioAdmin,
             @Field("id_usuario") int idUsuario,
             @Field("nuevo_rol") String nuevoRol
     );
@@ -250,14 +263,7 @@ public interface ChatApiServices {
     @POST("usuarios/verificar-codigo")
     Call<ResponseBody> verificarCodigo(
             @Field("email") String email,
-            @Field("code") String code,
-            @Field("nombre_usuario") String nombreUsuario,
-            @Field("nombre") String nombre,
-            @Field("apellidos") String apellidos,
-            @Field("fecha_nacimiento") String fechaNacimiento,
-            @Field("telefono") String telefono,
-            @Field("password") String password,
-            @Field("foto") String foto
+            @Field("code") String code
     );
 
 
@@ -282,6 +288,11 @@ public interface ChatApiServices {
 
     @GET("chat/privado/no-leidos")
     Call<ResponseBody> getNoLeidosPrivados(
+            @Query("id_usuario") int idUsuario
+    );
+
+    @GET("chat/privado/resumen-notificaciones")
+    Call<ResponseBody> getResumenNotificaciones(
             @Query("id_usuario") int idUsuario
     );
 

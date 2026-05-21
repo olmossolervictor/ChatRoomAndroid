@@ -29,14 +29,14 @@
             android:textColor="@color/text_medium"
             android:fontFamily="@font/poppins_bold"
             android:textSize="12sp"
-            android:letterSpacing="0.1" />
+            android:letterSpacing="0" />
     </LinearLayout>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardHistorial"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="24dp"
+        app:cardCornerRadius="18dp"
         app:cardElevation="0dp"
         app:strokeWidth="1dp"
         app:strokeColor="@color/border_subtle"

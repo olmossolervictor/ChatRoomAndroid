@@ -54,8 +54,8 @@
                 android:fontFamily="@font/poppins_bold"
                 android:text="@string/reg_title"
                 android:textColor="@color/text_high"
-                android:textSize="32sp"
-                android:letterSpacing="-0.04" />
+                android:textSize="30sp"
+                android:letterSpacing="0" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -76,17 +76,17 @@
                     android:layout_width="120dp"
                     android:layout_height="120dp"
                     android:layout_centerInParent="true"
-                    app:cardCornerRadius="42dp"
-                    app:cardElevation="6dp"
-                    app:strokeWidth="3dp"
-                    app:strokeColor="@color/white">
+                    app:cardCornerRadius="36dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_subtle">
 
                     <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/imgUser"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:padding="8dp"
                         android:src="@drawable/defecto"
-                        android:padding="2dp"
                         app:civ_circle_background_color="@color/bg_secondary" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -98,9 +98,9 @@
                     android:layout_alignParentEnd="true"
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="8dp"
-                    app:cardBackgroundColor="@color/primary"
+                    app:cardBackgroundColor="@color/button_primary"
                     app:cardCornerRadius="22dp"
-                    app:cardElevation="8dp"
+                    app:cardElevation="0dp"
                     app:strokeWidth="2dp"
                     app:strokeColor="@color/white">
 
@@ -126,15 +126,19 @@
                     android:layout_marginBottom="16dp">
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilRegNombre"
                         style="@style/Widget.App.TextInputLayout"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        android:hint="@string/reg_nombre_hint">
+                        android:hint="@string/reg_nombre_hint"
+                        app:errorIconDrawable="@null"
+                        app:errorIconTint="@android:color/transparent">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editRegNombre"
+                            style="@style/Widget.App.TextInputEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName|textCapWords"
@@ -143,14 +147,18 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilRegApellidos"
                         style="@style/Widget.App.TextInputLayout"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="@string/reg_apellidos_hint">
+                        android:hint="@string/reg_apellidos_hint"
+                        app:errorIconDrawable="@null"
+                        app:errorIconTint="@android:color/transparent">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editRegApellidos"
+                            style="@style/Widget.App.TextInputEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName|textCapWords"
@@ -160,16 +168,20 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilRegEdad"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:hint="@string/reg_fecha_nac_hint"
                     app:startIconDrawable="@drawable/icon_calendar_pequeno"
-                    app:startIconTint="@color/text_high">
+                    app:startIconTint="@color/text_low"
+                    app:errorIconDrawable="@null"
+                    app:errorIconTint="@android:color/transparent">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editRegEdad"
+                        style="@style/Widget.App.TextInputEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:focusable="false"
@@ -180,17 +192,20 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutRegNombreUsuario"
+                    android:id="@+id/tilRegNombreUsuario"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:hint="@string/reg_username_hint"
                     app:startIconDrawable="@drawable/icon_user_pequeno"
-                    app:startIconTint="@color/text_high">
+                    app:startIconTint="@color/text_low"
+                    app:errorIconDrawable="@null"
+                    app:errorIconTint="@android:color/transparent">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editRegNombreUsuario"
+                        style="@style/Widget.App.TextInputEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="text"
@@ -200,15 +215,17 @@
 
                 <TextView
                     android:id="@+id/textNombreUsuarioError"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/reg_error_username_exists"
+                    android:background="@drawable/bg_error_message"
                     android:textColor="@color/error_main"
                     android:textSize="12sp"
                     android:visibility="gone"
                     android:layout_marginBottom="12dp"
-                    android:layout_marginStart="16dp"
-                    android:fontFamily="@font/poppins_bold" />
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:fontFamily="@font/poppins_medium" />
 
                 <LinearLayout
                     android:id="@+id/layoutSugerencias"
@@ -241,16 +258,20 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilRegTelefono"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:hint="@string/reg_telefono_hint"
                     app:startIconDrawable="@drawable/icon_phone_pequeno"
-                    app:startIconTint="@color/text_high">
+                    app:startIconTint="@color/text_low"
+                    app:errorIconDrawable="@null"
+                    app:errorIconTint="@android:color/transparent">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editRegTelefono"
+                        style="@style/Widget.App.TextInputEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="phone"
@@ -259,17 +280,20 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/layoutRegEmail"
+                    android:id="@+id/tilRegEmail"
                     style="@style/Widget.App.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:hint="@string/reg_email_hint"
                     app:startIconDrawable="@drawable/icon_email_pequeno"
-                    app:startIconTint="@color/text_high">
+                    app:startIconTint="@color/text_low"
+                    app:errorIconDrawable="@null"
+                    app:errorIconTint="@android:color/transparent">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editRegEmail"
+                        style="@style/Widget.App.TextInputEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress"
@@ -279,15 +303,17 @@
 
                 <TextView
                     android:id="@+id/textEmailError"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/reg_error_email_exists"
+                    android:background="@drawable/bg_error_message"
                     android:textColor="@color/error_main"
                     android:textSize="12sp"
                     android:visibility="gone"
                     android:layout_marginBottom="12dp"
-                    android:layout_marginStart="16dp"
-                    android:fontFamily="@font/poppins_bold" />
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:fontFamily="@font/poppins_medium" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilRegPassword"
@@ -298,12 +324,15 @@
                     android:hint="@string/reg_password_hint"
                     app:endIconMode="password_toggle"
                     app:endIconDrawable="@drawable/selector_password_toggle"
-                    app:endIconTint="@color/text_high"
+                    app:endIconTint="@color/text_low"
                     app:startIconDrawable="@drawable/icon_password_pequeno"
-                    app:startIconTint="@color/text_high">
+                    app:startIconTint="@color/text_low"
+                    app:errorIconDrawable="@null"
+                    app:errorIconTint="@android:color/transparent">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editRegPassword"
+                        style="@style/Widget.App.TextInputEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@null"
@@ -319,7 +348,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="32dp"
+                    android:layout_marginBottom="12dp"
                     android:paddingHorizontal="4dp">
 
                     <CheckBox
@@ -339,6 +368,21 @@
                         android:fontFamily="@font/poppins_medium" />
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/tvGeneralError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_error_message"
+                    android:textColor="@color/error_main"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:lineSpacingExtra="2dp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:text="Mensaje de error general aquí" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegister"
                     android:layout_width="match_parent"
@@ -348,12 +392,13 @@
                     android:textSize="16sp"
                     android:fontFamily="@font/poppins_bold"
                     app:cornerRadius="16dp"
-                    android:elevation="4dp"
+                    android:elevation="0dp"
                     android:stateListAnimator="@null" />
 
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/layoutYaTienesCuenta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"

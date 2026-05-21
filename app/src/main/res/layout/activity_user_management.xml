@@ -1,156 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:background="@color/bg_main"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:background="@color/bg_main"
+        app:elevation="0dp">
 
-        <TextView
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarUserManagement"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Gestión de Usuarios"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="24dp"/>
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIconTint="@color/text_high"
+            app:title="Gestión de Usuarios"
+            app:titleTextColor="@color/text_high" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-        <!-- Buscador -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:orientation="vertical">
 
-            <EditText
-                android:id="@+id/editBuscarEmail"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Buscar por correo electrónico"
-                android:inputType="textEmailAddress"
-                android:importantForAutofill="no"/>
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnBuscar"
-                android:layout_width="wrap_content"
+                <EditText
+                    android:id="@+id/editBuscarEmail"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_input"
+                    android:hint="Email, nombre o usuario..."
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:textColor="@color/text_high"
+                    android:textColorHint="@color/text_low" />
+
+                <Button
+                    android:id="@+id/btnBuscar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/button_primary"
+                    android:text="Buscar"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/textNoEncontrado"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Buscar"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginBottom="16dp"
+                android:gravity="center"
+                android:text="No se encontró ningún usuario"
+                android:textColor="@color/text_medium"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/layoutListaResultados"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="RESULTADOS ENCONTRADOS"
+                    android:textColor="@color/text_medium"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutUserInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="DATOS DEL USUARIO SELECCIONADO"
+                    android:textColor="@color/text_medium"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textNombreUsuarioUser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:textColor="@color/text_high"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textNombreUser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/textApellidosUser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/textEmailUser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/textTelefonoUser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/textFechaNacUser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:textColor="@color/text_high"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/textRolActual"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:textColor="@color/text_high"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnHacerAdmin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:backgroundTint="@color/secondary"
+                    android:text="Asignar rol ADMIN"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/btnHacerUsuario"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/success_main"
+                    android:text="Asignar rol USUARIO"
+                    android:textColor="@color/white" />
+            </LinearLayout>
         </LinearLayout>
-
-        <!-- Mensaje no encontrado -->
-        <TextView
-            android:id="@+id/textNoEncontrado"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="No se encontró ningún usuario con ese correo"
-            android:textColor="#888888"
-            android:gravity="center"
-            android:visibility="gone"
-            android:layout_marginBottom="16dp"/>
-
-        <!-- Lista de resultados (si hay varios) -->
-        <LinearLayout
-            android:id="@+id/layoutListaResultados"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="RESULTADOS ENCONTRADOS"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="#888888"
-                android:layout_marginBottom="8dp"/>
-            <!-- Aquí se añadirán los items dinámicamente -->
-        </LinearLayout>
-
-        <!-- Tarjeta con datos del usuario -->
-        <LinearLayout
-            android:id="@+id/layoutUserInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="#F5F5F5"
-            android:padding="16dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="DATOS DEL USUARIO SELECCIONADO"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="#888888"
-                android:layout_marginBottom="12dp"/>
-
-            <TextView
-                android:id="@+id/textNombreUser"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:id="@+id/textApellidosUser"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:id="@+id/textEmailUser"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:id="@+id/textTelefonoUser"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="6dp"/>
-
-            <TextView
-                android:id="@+id/textFechaNacUser"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:layout_marginBottom="12dp"/>
-
-            <TextView
-                android:id="@+id/textRolActual"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- Botones de cambio de rol -->
-            <Button
-                android:id="@+id/btnHacerAdmin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Asignar rol ADMIN"
-                android:backgroundTint="#1565C0"
-                android:layout_marginBottom="8dp"/>
-
-            <Button
-                android:id="@+id/btnHacerUsuario"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Asignar rol USUARIO"
-                android:backgroundTint="#2E7D32"/>
-
-        </LinearLayout>
-
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</LinearLayout>
