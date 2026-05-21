@@ -54,7 +54,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="12dp"
             app:layout_constraintStart_toEndOf="@id/avatarContainer"
-            app:layout_constraintEnd_toStartOf="@id/chevron"
+            app:layout_constraintEnd_toStartOf="@id/btnEliminarHistorialPrivado"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
@@ -79,12 +79,17 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/chevron"
-            android:layout_width="25dp"
-            android:layout_height="29dp"
-            android:src="@drawable/icon_sala"
+            android:id="@+id/btnEliminarHistorialPrivado"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/icon_delete"
+            android:contentDescription="Eliminar historial"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
             app:tint="@color/text_low"
-            android:alpha="0.5"
+            android:alpha="0.75"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"

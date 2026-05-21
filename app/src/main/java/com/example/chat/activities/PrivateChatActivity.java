@@ -24,7 +24,9 @@ import androidx.core.app.ActivityCompat;
 import com.example.chat.R;
 import com.example.chat.adapters.MensajeAdapter;
 import com.example.chat.models.Mensaje;
+import com.example.chat.models.Sala;
 import com.example.chat.network.RetrofitClient;
+import com.example.chat.utils.PrivateChatClosureStore;
 import com.example.chat.utils.PrivateChatConversationPolicy;
 import com.example.chat.utils.PrivateChatGeofenceStore;
 import com.example.chat.utils.PrivateChatHistoryStore;
@@ -57,6 +59,7 @@ public class PrivateChatActivity extends BaseActivity {
     private List<Mensaje> listaMensajes = new ArrayList<>();
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
+    private Runnable closedExpirationRunnable;
     private FusedLocationProviderClient fusedLocationClient;
 
     private int currentUserId;
@@ -67,7 +70,9 @@ public class PrivateChatActivity extends BaseActivity {
     private double salaLongitud = 0;
     private double salaRadioMetros = 0;
     private long ultimoCheckGeofence = 0L;
+    private long ultimoCheckParticipacionSala = 0L;
     private boolean chatCerradoPorGeofence = false;
+    private boolean checkParticipacionEnCurso = false;
 
     private boolean isSolicitandoPermiso = false;
 
@@ -158,6 +163,11 @@ public class PrivateChatActivity extends BaseActivity {
         btnAcceptPrivateRequest.setOnClickListener(v -> responderSolicitudConversacion(true));
         btnRejectPrivateRequest.setOnClickListener(v -> responderSolicitudConversacion(false));
 
+        if (aplicarCierreGuardadoSiExiste()) {
+            obtenerMensajesPrivados();
+            return;
+        }
+
         obtenerMensajesPrivados();
         cargarInfoGeofenceSiHaceFalta();
         verificarUbicacionPrivada(true);
@@ -233,6 +243,7 @@ public class PrivateChatActivity extends BaseActivity {
             public void run() {
                 obtenerMensajesPrivados();
                 comprobarSiElOtroEscribe();
+                verificarParticipacionSalaPrivada(false, null);
                 verificarUbicacionPrivada(false);
                 handler.postDelayed(this, 3000);
             }
@@ -305,7 +316,10 @@ public class PrivateChatActivity extends BaseActivity {
                         try {
                             JSONObject json = new JSONObject(response.body().string());
                             if (json.optBoolean("eliminado", false)) {
-                                cerrarChatPrivadoPorGeofence("Este chat privado ya no está disponible.");
+                                bloquearChatPrivadoTemporalmente(remplazarSiVacio(
+                                        extraerMotivoCierre(json),
+                                        "Este chat privado ya no esta disponible."
+                                ), System.currentTimeMillis() + 30L * 60L * 1000L, true);
                                 return;
                             }
 
@@ -341,6 +355,7 @@ public class PrivateChatActivity extends BaseActivity {
                                 );
                                 verificarUbicacionPrivada(true);
                             }
+                            verificarParticipacionSalaPrivada(true, null);
                         } catch (Exception ignored) {
                         }
                     }
@@ -376,12 +391,152 @@ public class PrivateChatActivity extends BaseActivity {
                 && tieneCoordenadasPrivadas();
     }
 
+    private boolean tieneSalaOrigenPrivada() {
+        return idSalaOrigen != null && !idSalaOrigen.trim().isEmpty();
+    }
+
+    private boolean aplicarCierreGuardadoSiExiste() {
+        PrivateChatClosureStore.Closure closure = PrivateChatClosureStore.getActiveClosure(this, currentUserId, otherUserId);
+        if (closure == null) {
+            return false;
+        }
+
+        if (!tieneSalaOrigenPrivada() && closure.getSalaOrigenId() != null && !closure.getSalaOrigenId().trim().isEmpty()) {
+            idSalaOrigen = closure.getSalaOrigenId();
+        }
+
+        bloquearChatPrivadoTemporalmente(
+                remplazarSiVacio(closure.getMessage(), mensajeCierrePorAbandono(nombreOtroUsuarioSeguro())),
+                closure.getExpiresAtMs(),
+                false
+        );
+        return true;
+    }
+
     private boolean tieneCoordenadasPrivadas() {
         return salaLatitud != 0 || salaLongitud != 0;
     }
 
     private double getRadioPrivadoEfectivo() {
         return salaRadioMetros > 0 ? salaRadioMetros : 100.0;
+    }
+
+    private void verificarParticipacionSalaPrivada(boolean force, Runnable accionSiActiva) {
+        if (chatCerradoPorGeofence) {
+            return;
+        }
+
+        if (!tieneSalaOrigenPrivada()) {
+            if (accionSiActiva != null) accionSiActiva.run();
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (!force && now - ultimoCheckParticipacionSala < 3_000L) {
+            if (accionSiActiva != null) accionSiActiva.run();
+            return;
+        }
+
+        if (checkParticipacionEnCurso && accionSiActiva == null) {
+            return;
+        }
+
+        checkParticipacionEnCurso = true;
+        ultimoCheckParticipacionSala = now;
+
+        RetrofitClient.getChatApiServices()
+                .getMisSalas(currentUserId)
+                .enqueue(new Callback<List<Sala>>() {
+                    @Override
+                    public void onResponse(Call<List<Sala>> call, Response<List<Sala>> response) {
+                        boolean currentUserEnSala = response.isSuccessful()
+                                && usuarioPermaneceEnSala(response.body());
+                        verificarOtroUsuarioEnSala(currentUserEnSala, accionSiActiva);
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Sala>> call, Throwable t) {
+                        checkParticipacionEnCurso = false;
+                        if (accionSiActiva != null) {
+                            Toast.makeText(PrivateChatActivity.this, "No se pudo verificar la sala. Intentalo de nuevo.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    private void verificarOtroUsuarioEnSala(boolean currentUserEnSala, Runnable accionSiActiva) {
+        RetrofitClient.getChatApiServices()
+                .getMisSalas(otherUserId)
+                .enqueue(new Callback<List<Sala>>() {
+                    @Override
+                    public void onResponse(Call<List<Sala>> call, Response<List<Sala>> response) {
+                        checkParticipacionEnCurso = false;
+                        boolean otherUserEnSala = response.isSuccessful()
+                                && usuarioPermaneceEnSala(response.body());
+
+                        if (!currentUserEnSala || !otherUserEnSala) {
+                            String mensaje = currentUserEnSala
+                                    ? mensajeCierrePorAbandono(nombreOtroUsuarioSeguro())
+                                    : mensajeCierrePorAbandono("Has");
+                            cerrarChatPrivadoPorSalidaSala(mensaje);
+                            return;
+                        }
+
+                        if (accionSiActiva != null) {
+                            accionSiActiva.run();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Sala>> call, Throwable t) {
+                        checkParticipacionEnCurso = false;
+                        if (accionSiActiva != null) {
+                            Toast.makeText(PrivateChatActivity.this, "No se pudo verificar la sala. Intentalo de nuevo.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    private boolean usuarioPermaneceEnSala(List<Sala> salas) {
+        if (salas == null || idSalaOrigen == null) return false;
+
+        String salaEsperada = idSalaOrigen.trim();
+        for (Sala sala : salas) {
+            if (sala == null || !salaActiva(sala)) continue;
+
+            String idSala = sala.getIdSala();
+            String nombreSala = sala.getNombre();
+            if (salaEsperada.equalsIgnoreCase(idSala != null ? idSala.trim() : "")
+                    || salaEsperada.equalsIgnoreCase(nombreSala != null ? nombreSala.trim() : "")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean salaActiva(Sala sala) {
+        String estado = sala.getEstado();
+        if ("finalizada".equalsIgnoreCase(estado)
+                || "expirada".equalsIgnoreCase(estado)
+                || "cerrada".equalsIgnoreCase(estado)
+                || "inactiva".equalsIgnoreCase(estado)) {
+            return false;
+        }
+        long minutosRestantes = sala.getMinutosRestantes();
+        return minutosRestantes == -1 || minutosRestantes > 0;
+    }
+
+    private String nombreOtroUsuarioSeguro() {
+        return otherUserName == null || otherUserName.trim().isEmpty()
+                ? "El usuario"
+                : otherUserName.trim();
+    }
+
+    private String mensajeCierrePorAbandono(String nombre) {
+        if ("Has".equals(nombre)) {
+            return "Has abandonado la sala principal. No se pueden enviar mas mensajes en este chat privado.";
+        }
+        return nombre + " ha abandonado la sala principal. No se pueden enviar mas mensajes en este chat privado.";
     }
 
     private void ejecutarConUbicacionValida(Runnable accionSiValida) {
@@ -430,12 +585,76 @@ public class PrivateChatActivity extends BaseActivity {
     }
 
     private void cerrarChatPrivadoPorGeofence(String mensaje) {
+        cerrarChatPrivado(mensaje, true);
+    }
+
+    private void cerrarChatPrivadoPorSalidaSala(String mensaje) {
+        bloquearChatPrivadoTemporalmente(mensaje, System.currentTimeMillis() + 30L * 60L * 1000L, true);
+    }
+
+    private void bloquearChatPrivadoTemporalmente(String mensaje, long expiresAtMs, boolean guardarCierre) {
+        chatCerradoPorGeofence = true;
+        checkParticipacionEnCurso = false;
+
+        if (refreshRunnable != null) {
+            handler.removeCallbacks(refreshRunnable);
+        }
+        if (layoutTyping != null) {
+            layoutTyping.setVisibility(View.GONE);
+        }
+        if (layoutSolicitudPrivada != null) {
+            layoutSolicitudPrivada.setVisibility(View.VISIBLE);
+        }
+        if (layoutBotonesSolicitudPrivada != null) {
+            layoutBotonesSolicitudPrivada.setVisibility(View.GONE);
+        }
+        if (textEstadoConversacionPrivada != null) {
+            textEstadoConversacionPrivada.setText(mensaje + "\nEste chat se eliminara en 30 minutos.");
+        }
+        if (editMessagePrivate != null) {
+            editMessagePrivate.setText("");
+        }
+        setInputPrivadoEnabled(false, "Chat cerrado");
+
+        if (guardarCierre) {
+            PrivateChatClosureStore.closeForThirtyMinutes(
+                    this,
+                    currentUserId,
+                    otherUserId,
+                    idSalaOrigen,
+                    mensaje
+            );
+            PrivateChatHistoryStore.touchChat(this, currentUserId, otherUserId, otherUserName);
+        }
+
+        programarEliminacionChatCerrado(expiresAtMs);
+    }
+
+    private void programarEliminacionChatCerrado(long expiresAtMs) {
+        if (closedExpirationRunnable != null) {
+            handler.removeCallbacks(closedExpirationRunnable);
+        }
+
+        long delay = Math.max(1_000L, expiresAtMs - System.currentTimeMillis());
+        closedExpirationRunnable = () -> {
+            PrivateChatClosureStore.remove(PrivateChatActivity.this, currentUserId, otherUserId);
+            PrivateChatHistoryStore.removeChat(PrivateChatActivity.this, currentUserId, otherUserId);
+            PrivateChatGeofenceStore.remove(PrivateChatActivity.this, currentUserId, otherUserId);
+            Toast.makeText(PrivateChatActivity.this, "Chat privado eliminado", Toast.LENGTH_SHORT).show();
+            finish();
+        };
+        handler.postDelayed(closedExpirationRunnable, delay);
+    }
+
+    private void cerrarChatPrivado(String mensaje, boolean notificarServidor) {
         if (chatCerradoPorGeofence) {
             return;
         }
         chatCerradoPorGeofence = true;
 
-        handler.removeCallbacks(refreshRunnable);
+        if (refreshRunnable != null) {
+            handler.removeCallbacks(refreshRunnable);
+        }
         List<Integer> usuariosDeLaSala = PrivateChatGeofenceStore.getOtherUserIdsForSala(this, currentUserId, idSalaOrigen);
         for (Integer usuarioId : usuariosDeLaSala) {
             if (usuarioId == null || usuarioId <= 0) continue;
@@ -445,21 +664,61 @@ public class PrivateChatActivity extends BaseActivity {
         PrivateChatHistoryStore.removeChat(this, currentUserId, otherUserId);
         PrivateChatGeofenceStore.remove(this, currentUserId, otherUserId);
 
-        RetrofitClient.getChatApiServices()
-                .eliminarChatPrivado(currentUserId, otherUserId, idSalaOrigen, mensaje)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
-                    @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                });
-        RetrofitClient.getChatApiServices()
-                .eliminarChatsPrivadosDeSala(currentUserId, idSalaOrigen, mensaje)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
-                    @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                });
+        if (notificarServidor) {
+            RetrofitClient.getChatApiServices()
+                    .eliminarChatPrivado(currentUserId, otherUserId, idSalaOrigen, mensaje)
+                    .enqueue(new Callback<ResponseBody>() {
+                        @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                        @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                    });
+            RetrofitClient.getChatApiServices()
+                    .eliminarChatsPrivadosDeSala(currentUserId, idSalaOrigen, mensaje)
+                    .enqueue(new Callback<ResponseBody>() {
+                        @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
+                        @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                    });
+        }
 
         Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
         finish();
+    }
+
+    private String extraerMotivoCierre(Response<?> response, String fallback) {
+        try {
+            String raw = response.errorBody() != null ? response.errorBody().string() : "";
+            if (raw == null || raw.trim().isEmpty()) {
+                return fallback;
+            }
+
+            String value = raw.trim();
+            if (value.startsWith("{")) {
+                return remplazarSiVacio(extraerMotivoCierre(new JSONObject(value)), fallback);
+            }
+            return value.length() <= 160 ? value : fallback;
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+    private String extraerMotivoCierre(JSONObject json) {
+        if (json == null) return "";
+        return extraerPrimerString(json, "motivo", "message", "mensaje", "detalle", "reason");
+    }
+
+    private String extraerPrimerString(JSONObject json, String... keys) {
+        for (String key : keys) {
+            String value = json.optString(key, "").trim();
+            if (!value.isEmpty() && !"null".equalsIgnoreCase(value)) {
+                return value;
+            }
+        }
+        return "";
+    }
+
+    private String remplazarSiVacio(String value, String fallback) {
+        return value == null || value.trim().isEmpty() || "null".equalsIgnoreCase(value.trim())
+                ? fallback
+                : value.trim();
     }
 
     @Override
@@ -503,7 +762,11 @@ public class PrivateChatActivity extends BaseActivity {
                             adapter.notifyDataSetChanged();
                             aplicarEstadoConversacion();
                         } else if (response.code() == 410) {
-                            cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
+                            bloquearChatPrivadoTemporalmente(
+                                    extraerMotivoCierre(response, "Este chat privado ha sido cerrado."),
+                                    System.currentTimeMillis() + 30L * 60L * 1000L,
+                                    true
+                            );
                         }
                     }
                     @Override
@@ -514,16 +777,27 @@ public class PrivateChatActivity extends BaseActivity {
     private void enviarMensajePrivado() {
         String mensaje = editMessagePrivate.getText().toString().trim();
         if (mensaje.isEmpty()) return;
-        if (chatCerradoPorGeofence) return;
+        if (chatCerradoPorGeofence) {
+            Toast.makeText(this, "Este chat privado esta cerrado", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (!PrivateChatConversationPolicy.canSendMessage(conversationState)) {
             Toast.makeText(this, "Tienes que esperar a que se acepte la conversación", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        ejecutarConUbicacionValida(() -> enviarMensajePrivadoValidado(mensaje));
+        if (!tieneSalaOrigenPrivada() && necesitaInfoGeofenceRemota()) {
+            cargarInfoGeofenceSiHaceFalta();
+            Toast.makeText(this, "Verificando que el chat sigue activo...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        verificarParticipacionSalaPrivada(true,
+                () -> ejecutarConUbicacionValida(() -> enviarMensajePrivadoValidado(mensaje)));
     }
 
     private void enviarMensajePrivadoValidado(String mensaje) {
+        if (chatCerradoPorGeofence) return;
         Call<ResponseBody> call = tieneGeofencePrivada()
                 ? RetrofitClient.getChatApiServices()
                 .enviarMensajePrivadoDesdeSala(currentUserId, otherUserId, currentUserId, mensaje, idSalaOrigen)
@@ -543,7 +817,11 @@ public class PrivateChatActivity extends BaseActivity {
                     );
                     obtenerMensajesPrivados();
                 } else if (response.code() == 410) {
-                    cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
+                    bloquearChatPrivadoTemporalmente(
+                            extraerMotivoCierre(response, "Este chat privado ha sido cerrado."),
+                            System.currentTimeMillis() + 30L * 60L * 1000L,
+                            true
+                    );
                 }
             }
             @Override
@@ -554,6 +832,10 @@ public class PrivateChatActivity extends BaseActivity {
     }
 
     private void aplicarEstadoConversacion() {
+        if (chatCerradoPorGeofence) {
+            return;
+        }
+
         conversationState = PrivateChatConversationPolicy.resolveState(listaMensajes, currentUserId);
 
         switch (conversationState) {
@@ -618,7 +900,11 @@ public class PrivateChatActivity extends BaseActivity {
                     marcarMensajesEntrantesLeidos();
                     obtenerMensajesPrivados();
                 } else if (response.code() == 410) {
-                    cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
+                    bloquearChatPrivadoTemporalmente(
+                            extraerMotivoCierre(response, "Este chat privado ha sido cerrado."),
+                            System.currentTimeMillis() + 30L * 60L * 1000L,
+                            true
+                    );
                 } else {
                     Toast.makeText(PrivateChatActivity.this, "No se pudo responder la solicitud", Toast.LENGTH_SHORT).show();
                 }
@@ -710,7 +996,12 @@ public class PrivateChatActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        handler.removeCallbacks(refreshRunnable);
+        if (refreshRunnable != null) {
+            handler.removeCallbacks(refreshRunnable);
+        }
+        if (closedExpirationRunnable != null) {
+            handler.removeCallbacks(closedExpirationRunnable);
+        }
     }
 
     @Override
