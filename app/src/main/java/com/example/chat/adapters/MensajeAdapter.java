@@ -35,8 +35,6 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
     public void setOnNombreClickListener(OnNombreClickListener listener) {
         this.listener = listener;
     }
-    // --------------------------------------------------------
-
     public MensajeAdapter(@NonNull Context context, @NonNull List<Mensaje> objects) {
         super(context, 0, objects);
         SharedPreferences pref = context.getSharedPreferences("ChatPrefs", Context.MODE_PRIVATE);
@@ -80,25 +78,36 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
             textFecha.setVisibility(View.VISIBLE);
             textMensaje.setGravity(Gravity.START);
 
-            // --- NUEVO: DETECTAR CLIC SOLO EN EL NOMBRE ---
             textNombre.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onNombreClick(mensaje);
                 }
             });
-            // ----------------------------------------------
 
             textMensaje.setText(mensaje.getMensaje());
 
             String fechaCompleta = mensaje.getFechaHora();
+
             if (fechaCompleta != null) {
                 try {
-                    java.text.SimpleDateFormat sdfOriginal = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
+
+                    java.text.SimpleDateFormat sdfOriginal =
+                            new java.text.SimpleDateFormat(
+                                    "yyyy-MM-dd HH:mm:ss",
+                                    java.util.Locale.getDefault()
+                            );
+
                     java.util.Date date = sdfOriginal.parse(fechaCompleta);
 
-                    java.text.SimpleDateFormat sdfNuevo = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
-                    textFecha.setText(sdfNuevo.format(date));
-
+                    java.util.Calendar calendar = java.util.Calendar.getInstance();
+                    calendar.setTime(date);
+                    calendar.add(java.util.Calendar.HOUR_OF_DAY, 2);
+                    java.text.SimpleDateFormat sdfNuevo =
+                            new java.text.SimpleDateFormat(
+                                    "HH:mm",
+                                    java.util.Locale.getDefault()
+                            );
+                    textFecha.setText(sdfNuevo.format(calendar.getTime()));
                 } catch (Exception e) {
                     if (fechaCompleta.length() >= 16) {
                         textFecha.setText(fechaCompleta.substring(11, 16));
@@ -106,10 +115,7 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
                         textFecha.setText(fechaCompleta);
                     }
                 }
-            } else {
-                textFecha.setText("");
             }
-            // ---------------------------------
 
             textMensaje.setTextSize(tamanoFuente);
 

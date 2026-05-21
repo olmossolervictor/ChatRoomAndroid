@@ -185,7 +185,6 @@ public class ScannerActivity extends AppCompatActivity {
                     for (Barcode barcode : barcodes) {
                         String rawValue = barcode.getRawValue();
                         if (rawValue != null && !rawValue.isEmpty()) {
-                            // Bloqueamos para que no lea más códigos mientras procesa este
                             if (procesando.compareAndSet(false, true)) {
                                 String idSala = rawValue.trim().toUpperCase();
                                 Log.d(TAG, "QR detectado: " + idSala);
@@ -267,7 +266,7 @@ public class ScannerActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
             Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
             procesando.set(false);
-            activarAnalizador(); // Reactivamos el escáner si hubo un error (ej: sala incorrecta)
+            activarAnalizador();
         });
     }
 

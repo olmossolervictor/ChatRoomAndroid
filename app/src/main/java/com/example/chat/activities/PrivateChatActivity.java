@@ -225,10 +225,6 @@ public class PrivateChatActivity extends BaseActivity {
         };
         handler.postDelayed(refreshRunnable, 3000);
     }
-
-
-
-
     private void cargarInfoGeofenceSiHaceFalta() {
         if (!necesitaInfoGeofenceRemota()) {
             return;

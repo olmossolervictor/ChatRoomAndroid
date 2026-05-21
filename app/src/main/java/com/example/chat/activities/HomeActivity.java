@@ -52,18 +52,14 @@ public class HomeActivity extends BaseActivity {
 
     private static final String TAG = "HomeActivity";
     private static final int SCAN_QR_REQUEST_CODE = 2000;
-
-    // Solo quedan las vistas que se modifican en otros métodos
     private com.google.android.material.button.MaterialButton drawerGestionUsuarios;
     private com.google.android.material.button.MaterialButton btnAbandonarGlobal;
-
     private LinearLayout layoutConSalas, layoutSinSalas;
     private ImageView imgDrawerFoto;
     private TextView textDrawerNombre;
 
     private RelativeLayout drawerNotificaciones;
     private TextView drawerNotifBadge;
-
     private SalaAdapter salaAdapter;
     private List<Sala> listaMisSalas = new ArrayList<>();
     private int currentUserId;
@@ -251,7 +247,6 @@ public class HomeActivity extends BaseActivity {
                     }
                 });
     }
-
     private void cargarMisSalas() {
         RetrofitClient.getChatApiServices().getMisSalas(currentUserId)
                 .enqueue(new Callback<List<Sala>>() {

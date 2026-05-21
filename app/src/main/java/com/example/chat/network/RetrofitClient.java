@@ -14,11 +14,9 @@ public class RetrofitClient {
 
     public static ChatApiServices getChatApiServices() {
         if (retrofit == null) {
-            // Configurar logging
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-            // Configurar OkHttpClient con timeouts aumentados
             OkHttpClient client = new OkHttpClient.Builder()
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)

@@ -6,7 +6,7 @@ public class Sala {
     private double latitud;
     private double longitud;
     private double radio_metros;
-    private int tiempo_maximo; // en minutos
+    private int tiempo_maximo;
     private String estado;
     private long minutos_restantes = -1;
 

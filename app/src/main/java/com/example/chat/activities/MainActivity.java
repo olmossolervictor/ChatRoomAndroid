@@ -739,11 +739,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
-        final String[] tiposDenuncia = {
-                "Información falsa",
-                "Comentario obsceno",
-                "Otro"
-        };
+        final String[] tiposDenuncia = {"Información falsa", "Comentario obsceno", "Otro"};
         final String[] tipoDenunciaSeleccionado = {""};
         final EditText[] editRazon = {null};
 
@@ -759,6 +755,7 @@ public class MainActivity extends BaseActivity {
                 this, android.R.layout.simple_spinner_item, tiposDenuncia);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipo.setAdapter(adapter);
+
         spinnerTipo.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
@@ -767,11 +764,20 @@ public class MainActivity extends BaseActivity {
                     if (editRazon[0] == null) {
                         editRazon[0] = new EditText(MainActivity.this);
                         editRazon[0].setHint("Explica la razón de tu denuncia");
-                        editRazon[0].setVisibility(View.VISIBLE);
                         layoutDenuncia.addView(editRazon[0]);
-                    } else {
-                        editRazon[0].setVisibility(View.VISIBLE);
                     }
+                    editRazon[0].setVisibility(View.VISIBLE);
+
+                    editRazon[0].requestFocus();
+                    editRazon[0].post(new Runnable() {
+                        @Override
+                        public void run() {
+                            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                            if (imm != null) {
+                                imm.showSoftInput(editRazon[0], android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                            }
+                        }
+                    });
                 } else {
                     if (editRazon[0] != null) {
                         editRazon[0].setVisibility(View.GONE);
@@ -785,20 +791,16 @@ public class MainActivity extends BaseActivity {
         layoutDenuncia.addView(spinnerTipo);
 
         builder.setView(layoutDenuncia);
-        builder.setPositiveButton("Enviar", (dialog, which) -> {
-            if (tipoDenunciaSeleccionado[0].isEmpty()) {
-                Toast.makeText(MainActivity.this, "Selecciona un tipo de denuncia", Toast.LENGTH_SHORT).show();
-                return;
-            }
 
-            String razon = "";
-            if (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) {
-                razon = editRazon[0].getText().toString().trim();
-            }
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
+        builder.setPositiveButton("Enviar", (d, which) -> {
+            if (tipoDenunciaSeleccionado[0].isEmpty()) return;
+            String razon = (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) ? editRazon[0].getText().toString().trim() : "";
             enviarDenuncia(idUsuarioDenunciado, tipoDenunciaSeleccionado[0], razon);
         });
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton("Cancelar", (d, which) -> d.dismiss());
         builder.show();
     }
 
