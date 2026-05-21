@@ -69,7 +69,6 @@
             android:orientation="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-            <!-- Hero Section con bienvenida -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -103,7 +102,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <!-- CONTENEDOR DE SALAS -->
                 <LinearLayout
                     android:id="@+id/layoutConSalas"
                     android:layout_width="match_parent"
@@ -123,7 +121,6 @@
                         android:paddingHorizontal="20dp"
                         tools:listitem="@layout/item_sala" />
 
-                    <!-- Botón de Acción Principal (Scan) -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnScanQRHomeAbajo"
                         android:layout_width="match_parent"
@@ -145,7 +142,6 @@
                         app:iconTint="@color/white" />
                 </LinearLayout>
 
-                <!-- ESTADO VACÍO PROFESIONAL -->
                 <LinearLayout
                     android:id="@+id/layoutSinSalas"
                     android:layout_width="match_parent"
@@ -208,7 +204,6 @@
         </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- SIDEBAR (DRAWER) REFINADO -->
     <LinearLayout
         android:layout_width="310dp"
         android:layout_height="match_parent"
@@ -219,7 +214,6 @@
         android:focusable="true"
         android:orientation="vertical">
 
-        <!-- Header de Perfil con Estilo -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -304,7 +298,6 @@
                     android:clickable="true"
                     android:focusable="true">
 
-                    <!-- COPIA EXACTA DE "MI CUENTA" (Pero desactivamos su clic individual) -->
                     <com.google.android.material.button.MaterialButton
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="match_parent"
@@ -322,7 +315,6 @@
                         android:focusable="false"
                         android:duplicateParentState="true" />
 
-                    <!-- EL BADGE ROJO (Pegado a la derecha) -->
                     <TextView
                         android:id="@+id/drawerNotifBadge"
                         android:layout_width="22dp"
@@ -392,7 +384,6 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- Sección de Logout -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

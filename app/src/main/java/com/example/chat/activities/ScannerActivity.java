@@ -51,14 +51,11 @@ public class ScannerActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_CODE = 1001;
     private static final String TAG = "ScannerActivity";
-
     private PreviewView previewView;
     private ProgressBar progressBar;
     private ExecutorService cameraExecutor;
     private ImageAnalysis imageAnalysisRef;
     private ProcessCameraProvider cameraProviderRef;
-
-    // Instancia única del scanner reutilizada para reactivar sin conflictos
     private final BarcodeScanner barcodeScanner = BarcodeScanning.getClient(
             new BarcodeScannerOptions.Builder()
                     .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
@@ -120,7 +117,6 @@ public class ScannerActivity extends AppCompatActivity {
     }
 
     private void startCamera() {
-        // Delay para que la instancia anterior de la cámara se libere completamente
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
             if (isDestroyed() || isFinishing()) return;
             ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(this);
@@ -149,7 +145,6 @@ public class ScannerActivity extends AppCompatActivity {
 
         cameraProvider.unbindAll();
 
-        // Intentar primero cámara trasera, luego frontal, luego cualquiera disponible
         CameraSelector cameraSelector;
         if (!cameraProvider.getAvailableCameraInfos().isEmpty()) {
             boolean tieneTraser = false;
@@ -158,7 +153,6 @@ public class ScannerActivity extends AppCompatActivity {
                     ? CameraSelector.DEFAULT_BACK_CAMERA
                     : CameraSelector.DEFAULT_FRONT_CAMERA;
         } else {
-            // Emulador u otros dispositivos sin cámara estándar: intentar con filtro abierto
             cameraSelector = new CameraSelector.Builder()
                     .addCameraFilter(list -> new ArrayList<>(list))
                     .build();
@@ -172,13 +166,11 @@ public class ScannerActivity extends AppCompatActivity {
         }
     }
 
-    /** Asigna (o reasigna) el analizador de QR al ImageAnalysis existente. */
     private void activarAnalizador() {
         imageAnalysisRef.setAnalyzer(cameraExecutor, this::analizarFrame);
     }
 
     private void analizarFrame(@NonNull ImageProxy imageProxy) {
-        // Descartar frames si ya hay un QR en proceso
         if (procesando.get()) {
             imageProxy.close();
             return;
@@ -278,7 +270,7 @@ public class ScannerActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
             Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
             procesando.set(false);
-            activarAnalizador(); // Reactiva para reintentar
+            activarAnalizador();
         });
     }
 

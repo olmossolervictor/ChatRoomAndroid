@@ -68,10 +68,7 @@ public class PrivateChatActivity extends BaseActivity {
     private double salaRadioMetros = 0;
     private long ultimoCheckGeofence = 0L;
     private boolean chatCerradoPorGeofence = false;
-
     private boolean isSolicitandoPermiso = false;
-
-    // VARIABLES PARA LA ANIMACIÓN
     private long ultimoAvisoEscribiendo = 0;
     private LinearLayout layoutTyping;
     private View layoutSolicitudPrivada;
@@ -164,7 +161,6 @@ public class PrivateChatActivity extends BaseActivity {
         iniciarAutoRefresco();
     }
 
-    // 🔥 EL BYPASS DEFINITIVO CONTRA BASEACTIVITY 🔥
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
@@ -187,7 +183,6 @@ public class PrivateChatActivity extends BaseActivity {
             }
         }
 
-        // Llamada directa al sistema operativo, evitando el BaseActivity
         if (getWindow().superDispatchTouchEvent(ev)) {
             return true;
         }

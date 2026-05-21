@@ -48,9 +48,17 @@ public final class PrivateChatConversationPolicy {
 
         Mensaje firstNormalMessage = null;
         State lastControlState = null;
+        State serverState = null;
 
         for (Mensaje message : messages) {
             if (message == null) continue;
+
+            String estado = message.getEstado();
+            if ("ACEPTADO".equalsIgnoreCase(estado)) {
+                serverState = State.ACCEPTED;
+            } else if ("RECHAZADO".equalsIgnoreCase(estado)) {
+                serverState = State.REJECTED;
+            }
 
             String text = message.getMensaje();
             if (isAcceptedControl(text)) {
@@ -68,6 +76,9 @@ public final class PrivateChatConversationPolicy {
 
         if (lastControlState != null) {
             return lastControlState;
+        }
+        if (serverState != null) {
+            return serverState;
         }
 
         if (firstNormalMessage == null) {

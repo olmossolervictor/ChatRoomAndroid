@@ -29,16 +29,17 @@ public class UserManagementActivity extends AppCompatActivity {
     private EditText editBuscarEmail;
     private Button btnBuscar;
     private LinearLayout layoutUserInfo, layoutListaResultados;
-    private TextView textNombreUsuarioUser, textNombreUser, textApellidosUser, textEmailUser,
-            textTelefonoUser, textFechaNacUser, textRolActual, textNoEncontrado;
+    private TextView textNombreUsuarioUser, textNombreUser, textApellidosUser, textEmailUser, textTelefonoUser, textFechaNacUser, textRolActual, textNoEncontrado;
     private Button btnHacerAdmin, btnHacerUsuario;
 
     private int foundUserId = -1;
+    private int currentUserId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_management);
+        currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE).getInt("id_usuario", -1);
 
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbarUserManagement);
         toolbar.setNavigationOnClickListener(v -> finish());
@@ -47,8 +48,7 @@ public class UserManagementActivity extends AppCompatActivity {
         btnBuscar = findViewById(R.id.btnBuscar);
         layoutUserInfo = findViewById(R.id.layoutUserInfo);
         layoutListaResultados = findViewById(R.id.layoutListaResultados);
-        
-        // Inicializar TextViews
+
         textNombreUsuarioUser = findViewById(R.id.textNombreUsuarioUser);
         textNombreUser = findViewById(R.id.textNombreUser);
         textApellidosUser = findViewById(R.id.textApellidosUser);
@@ -88,7 +88,7 @@ public class UserManagementActivity extends AppCompatActivity {
 
         layoutUserInfo.setVisibility(View.GONE);
         layoutListaResultados.setVisibility(View.GONE);
-        layoutListaResultados.removeAllViews(); // Limpiar resultados anteriores
+        layoutListaResultados.removeAllViews();
         textNoEncontrado.setVisibility(View.GONE);
         foundUserId = -1;
 
@@ -105,11 +105,9 @@ public class UserManagementActivity extends AppCompatActivity {
                                 if (jsonArray.length() == 0) {
                                     textNoEncontrado.setVisibility(View.VISIBLE);
                                 } else if (jsonArray.length() == 1) {
-                                    // Solo hay uno, lo mostramos directamente
                                     JSONObject jsonUsuario = jsonArray.getJSONObject(0);
                                     mostrarUsuario(jsonUsuario);
                                 } else {
-                                    // Hay varios, mostramos la lista para que elija
                                     procesarMultiplesResultados(jsonArray);
                                 }
                             } catch (Exception e) {
@@ -144,7 +142,6 @@ public class UserManagementActivity extends AppCompatActivity {
                 String username = user.optString("nombre_usuario", "Sin usuario");
                 String email = user.optString("email", "");
 
-                // Crear una vista para cada usuario
                 TextView item = new TextView(this);
                 item.setText(nombre + " (@" + username + ")\n" + email);
                 item.setPadding(24, 24, 24, 24);
@@ -166,7 +163,6 @@ public class UserManagementActivity extends AppCompatActivity {
 
                 layoutListaResultados.addView(item);
 
-                // Línea divisoria simple
                 View divider = new View(this);
                 divider.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
                 divider.setBackgroundColor(Color.LTGRAY);
@@ -182,7 +178,6 @@ public class UserManagementActivity extends AppCompatActivity {
         try {
             foundUserId = json.optInt("id_usuario", -1);
 
-            // Mostrar el nombre de usuario
             String username = json.optString("nombre_usuario", "-");
             textNombreUsuarioUser.setText("Usuario: @" + username);
             textNombreUsuarioUser.setVisibility(View.VISIBLE);
@@ -196,7 +191,6 @@ public class UserManagementActivity extends AppCompatActivity {
             String rol = json.optString("rol", "usuario");
             textRolActual.setText("Rol actual: " + rol.toUpperCase());
 
-            // Mostrar solo el botón que tiene sentido
             btnHacerAdmin.setVisibility("admin".equals(rol) ? View.GONE : View.VISIBLE);
             btnHacerUsuario.setVisibility("usuario".equals(rol) ? View.GONE : View.VISIBLE);
 
@@ -210,7 +204,7 @@ public class UserManagementActivity extends AppCompatActivity {
         if (foundUserId == -1) return;
 
         RetrofitClient.getChatApiServices()
-                .cambiarRolUsuario(foundUserId, nuevoRol)
+                .cambiarRolUsuario(currentUserId, foundUserId, nuevoRol)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

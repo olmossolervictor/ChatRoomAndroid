@@ -76,7 +76,6 @@ public class MainActivity extends BaseActivity {
     private int currentUserId;
     private String currentSalaId;
 
-    // Datos de geovalla de la sala
     private double salaLatitud = 0;
     private double salaLongitud = 0;
     private double salaRadioMetros = 0;
@@ -124,7 +123,11 @@ public class MainActivity extends BaseActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 
-            if (listMessages != null && adapter != null && adapter.getCount() > 0) {
+            // 🚀 SOLUCIÓN AL SCROLL 1: Averiguamos si la recarga de pantalla es porque se ha abierto el teclado
+            boolean isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+
+            // Solo te bajamos abajo del todo si literalmente acabas de abrir el teclado para escribir
+            if (isKeyboardVisible && listMessages != null && adapter != null && adapter.getCount() > 0) {
                 listMessages.postDelayed(() -> listMessages.setSelection(adapter.getCount() - 1), 100);
             }
             return insets;
@@ -166,6 +169,8 @@ public class MainActivity extends BaseActivity {
             btnSend.setOnClickListener(v -> {
                 String mensaje = editMessage.getText().toString().trim();
                 if (!mensaje.isEmpty()) {
+                    // 🚀 SOLUCIÓN SPAM 1: Bloqueamos el botón INMEDIATAMENTE para que no puedan darle 2 veces
+                    btnSend.setEnabled(false);
                     obtenerUbicacionYEnviar(mensaje);
                 }
             });
@@ -173,12 +178,10 @@ public class MainActivity extends BaseActivity {
 
         unirseASalaEnServidor(currentSalaId);
         cargarInfoCabeceraSala();
-        obtenerMensajes();
         iniciarAutoRefresco();
         solicitarPermisoUbicacionSiNecesario();
     }
 
-    // 🔥 EL BYPASS DEFINITIVO CONTRA BASEACTIVITY 🔥
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
@@ -190,7 +193,6 @@ public class MainActivity extends BaseActivity {
                     android.graphics.Rect containerRect = new android.graphics.Rect();
                     bottomContainer.getGlobalVisibleRect(containerRect);
 
-                    // Solo si tocas FUERA de toda la barra inferior, quitamos el foco
                     if (!containerRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
                         v.clearFocus();
                         android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
@@ -201,9 +203,6 @@ public class MainActivity extends BaseActivity {
                 }
             }
         }
-
-        // ¡OJO! Ya NO usamos `return super.dispatchTouchEvent(ev);` porque nos llama al BaseActivity.
-        // Llamamos directamente al sistema para ejecutar el toque sin que BaseActivity nos sabotee.
         if (getWindow().superDispatchTouchEvent(ev)) {
             return true;
         }
@@ -238,7 +237,6 @@ public class MainActivity extends BaseActivity {
             @Override
             public void run() {
                 if (salaFinalizadaPorTiempo) return;
-                obtenerMensajes();
                 verificarTiempoSesion();
                 verificarUbicacion();
                 handler.postDelayed(this, 3000);
@@ -249,7 +247,7 @@ public class MainActivity extends BaseActivity {
 
     private void verificarTiempoSesion() {
         RetrofitClient.getChatApiServices()
-                .verificarSesionSala(currentUserId, currentSalaId)
+                .verificarSesionSala(currentUserId, currentSalaId, null, null)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -319,13 +317,15 @@ public class MainActivity extends BaseActivity {
         if (isSolicitandoPermiso) return;
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            expulsarUsuario("Permiso de ubicación revocado. Saliendo de la sala...");
+            expulsarUsuario("Permiso de ubicacion revocado. Saliendo de la sala...");
             return;
         }
 
-        if (salaLatitud == 0 && salaLongitud == 0) return;
+        if (salaLatitud == 0 && salaLongitud == 0) {
+            obtenerMensajes();
+            return;
+        }
 
-        double radioEfectivo = salaRadioMetros > 0 ? salaRadioMetros : 100.0;
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                 .setMaxUpdateAgeMillis(5000)
@@ -334,19 +334,39 @@ public class MainActivity extends BaseActivity {
         fusedLocationClient.getCurrentLocation(request, null)
                 .addOnSuccessListener(this, location -> {
                     if (location == null) return;
-
-                    float[] resultado = new float[1];
-                    Location.distanceBetween(
-                            location.getLatitude(), location.getLongitude(),
-                            salaLatitud, salaLongitud,
-                            resultado
-                    );
-
-                    float distanciaMetros = resultado[0];
-                    if (distanciaMetros > radioEfectivo) {
-                        expulsarUsuario("Has salido del área de la sala");
-                    }
+                    verificarUbicacionEnServidor(location);
                 });
+    }
+
+    private void verificarUbicacionEnServidor(Location location) {
+        RetrofitClient.getChatApiServices()
+                .verificarSesionSala(currentUserId, currentSalaId, location.getLatitude(), location.getLongitude())
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            obtenerMensajes();
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                });
+    }
+
+    private void manejarExpulsionServidor(Response<?> response) {
+        String motivo = "Has sido expulsado de la sala";
+        try {
+            String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+            if (!errorBody.isEmpty()) {
+                JSONObject json = new JSONObject(errorBody);
+                motivo = json.optString("motivo", motivo);
+            }
+        } catch (Exception ignored) {
+        }
+        expulsarUsuario(motivo);
     }
 
     private void expulsarUsuario(String motivo) {
@@ -381,22 +401,29 @@ public class MainActivity extends BaseActivity {
     private void obtenerMensajes() {
         if (salaFinalizadaPorTiempo) return;
         RetrofitClient.getChatApiServices()
-                .getMensajesGrupal(currentSalaId)
+                .getMensajesGrupal(currentSalaId, currentUserId)
                 .enqueue(new Callback<List<Mensaje>>() {
                     @Override
                     public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
                         if (response.isSuccessful() && response.body() != null) {
+
+                            List<Mensaje> nuevosMensajes = response.body();
+
+                            if (listaMensajes.size() == nuevosMensajes.size()) {
+                                return;
+                            }
+
                             int index = listMessages.getFirstVisiblePosition();
                             View v = listMessages.getChildAt(0);
                             int top = (v == null) ? 0 : (v.getTop() - listMessages.getPaddingTop());
 
-                            boolean estabaAbajoDelTodo = false;
-                            if (listMessages.getLastVisiblePosition() >= adapter.getCount() - 1) {
-                                estabaAbajoDelTodo = true;
-                            }
+                            // 🚀 SOLUCIÓN AL SCROLL 2: Ponemos un "-2" en la fórmula. Así si el teclado
+                            // te está tapando unos píxeles del último mensaje, la app sigue sabiendo
+                            // que estabas abajo del todo y scrolleará automáticamente si llegan mensajes.
+                            boolean estabaAbajoDelTodo = (listMessages.getLastVisiblePosition() >= adapter.getCount() - 2) || adapter.getCount() == 0;
 
                             listaMensajes.clear();
-                            listaMensajes.addAll(response.body());
+                            listaMensajes.addAll(nuevosMensajes);
                             adapter.notifyDataSetChanged();
 
                             if (estabaAbajoDelTodo) {
@@ -404,6 +431,8 @@ public class MainActivity extends BaseActivity {
                             } else {
                                 listMessages.setSelectionFromTop(index, top);
                             }
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
                         }
                     }
 
@@ -413,22 +442,45 @@ public class MainActivity extends BaseActivity {
     }
 
     private void obtenerUbicacionYEnviar(String mensaje) {
-        enviarMensajeAlServidor(mensaje);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Se requiere ubicacion para enviar en esta sala", Toast.LENGTH_SHORT).show();
+            // 🚀 SOLUCIÓN SPAM 2: Si por lo que sea no tiene GPS, le volvemos a encender el botón
+            btnSend.setEnabled(true);
+            return;
+        }
+
+        CurrentLocationRequest request = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setMaxUpdateAgeMillis(5000)
+                .build();
+
+        fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener(this, location -> {
+                    if (location == null) {
+                        enviarMensajeAlServidor(mensaje, null, null);
+                    } else {
+                        enviarMensajeAlServidor(mensaje, location.getLatitude(), location.getLongitude());
+                    }
+                })
+                .addOnFailureListener(e -> enviarMensajeAlServidor(mensaje, null, null));
     }
 
-    private void enviarMensajeAlServidor(String mensajeLimpio) {
+    private void enviarMensajeAlServidor(String mensajeLimpio, Double latitud, Double longitud) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
-        btnSend.setEnabled(false);
+        // El botón ya viene desactivado desde arriba, perfecto.
 
-        api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio)
+        api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio, latitud, longitud)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        // Aquí lo volvemos a reactivar porque la petición ya terminó
                         btnSend.setEnabled(true);
 
                         if (response.isSuccessful()) {
                             editMessage.setText("");
                             obtenerMensajes();
+                        } else if (response.code() == 403) {
+                            manejarExpulsionServidor(response);
                         } else {
                             Toast.makeText(MainActivity.this, "Error " + response.code() + " del servidor", Toast.LENGTH_LONG).show();
                         }
@@ -436,6 +488,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        // Aquí lo reactivamos también si falla el WiFi
                         btnSend.setEnabled(true);
                         Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }

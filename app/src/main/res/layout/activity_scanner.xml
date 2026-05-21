@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
-    <!-- CAMERA PREVIEW -->
-
 
 
     <androidx.camera.view.PreviewView
@@ -17,7 +15,6 @@
         android:background="@android:color/black"
         app:scaleType="fillCenter" />
 
-    <!-- 🌑 DIMMED OVERLAYS (Creating the "Hole" effect) -->
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -50,7 +47,6 @@
         app:layout_constraintTop_toTopOf="@id/scannerContainer"
         app:layout_constraintBottom_toBottomOf="@id/scannerContainer" />
 
-    <!-- 💎 PREMIUM HEADER -->
     <RelativeLayout
         android:id="@+id/scannerHeader"
         android:layout_width="match_parent"
@@ -79,7 +75,6 @@
             android:letterSpacing="0.1" />
     </RelativeLayout>
 
-    <!-- 🎯 SCANNER FRAME -->
     <FrameLayout
         android:id="@+id/scannerContainer"
         android:layout_width="260dp"
@@ -94,7 +89,6 @@
             android:layout_height="match_parent"
             android:background="@drawable/scanner_frame" />
 
-        <!-- Scan Line -->
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"
@@ -116,7 +110,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scannerContainer" />
 
-    <!-- ⌨️ MODERN MANUAL PANEL -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/panelManual"
         android:layout_width="match_parent"
