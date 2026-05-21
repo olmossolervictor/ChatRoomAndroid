@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <gradient
+                android:angle="270"
+                android:startColor="#0D1117"
+                android:centerColor="#05070A"
+                android:endColor="#020408"
+                android:type="linear" />
+        </shape>
+    </item>
+    <!-- Sutil resplandor en la esquina para dar profundidad -->
+    <item android:top="-200dp" android:left="-200dp">
+        <shape android:shape="oval">
+            <size android:width="500dp" android:height="500dp" />
+            <gradient
+                android:type="radial"
+                android:gradientRadius="300dp"
+                android:startColor="#1A7C4DFF"
+                android:endColor="@android:color/transparent" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,303 @@
+package com.example.chat.network;
+
+import com.example.chat.models.Mensaje;
+import com.example.chat.models.Sala;
+
+import java.util.List;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+
+public interface ChatApiServices {
+
+    // --- USUARIOS ---
+
+    @FormUrlEncoded
+    @POST("usuarios/iniciar-registro")
+    Call<ResponseBody> iniciarRegistro(
+            @Field("email") String email,
+            @Field("nombre_usuario") String nombreUsuario,
+            @Field("nombre") String nombre,
+            @Field("apellidos") String apellidos,
+            @Field("fecha_nacimiento") String fechaNacimiento,
+            @Field("telefono") String telefono,
+            @Field("password") String password,
+            @Field("foto") String foto
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/actualizar/{id_usuario}")
+    Call<ResponseBody> actualizarUsuario(
+            @Path("id_usuario") int idUsuario,
+            @Field("nombre") String nombre,
+            @Field("apellidos") String apellidos,
+            @Field("nombre_usuario") String nombreUsuario,
+            @Field("fecha_nacimiento") String fecha_nacimiento,
+            @Field("email") String email,
+            @Field("telefono") String telefono,
+            @Field("password") String password,
+            @Field("foto") String foto
+    );
+
+    @GET("usuarios/{id_usuario}")
+    Call<ResponseBody> getUsuario(
+            @Path("id_usuario") int idUsuario
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/login")
+    Call<ResponseBody> loginUsuario(
+            @Field("email") String email,
+            @Field("password") String password
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/login-google")
+    Call<ResponseBody> loginConGoogle(
+            @Field("id_token") String idToken
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/reenviar-verificacion")
+    Call<ResponseBody> reenviarVerificacionEmail(
+            @Field("email") String email
+    );
+
+    // --- SALAS ---
+
+    @GET("salas/mis-salas")
+    Call<List<Sala>> getMisSalas(
+            @Query("id_usuario") int idUsuario
+    );
+
+    @GET("salas/{id_sala}")
+    Call<Sala> getSalaInfo(
+            @Path("id_sala") String idSala
+    );
+
+    @GET("salas/{id_sala}")
+    Call<ResponseBody> getSalaInfoRaw(
+            @Path("id_sala") String idSala
+    );
+
+    // --- CHAT GRUPAL (SALA) ---
+
+    @FormUrlEncoded
+    @POST("chat/unirse")
+    Call<ResponseBody> unirseASala(
+            @Field("id_usuario") int idUsuario,
+            @Field("id_sala") String idSala
+    );
+
+    @GET("chat/mensajes/{id_sala}")
+    Call<List<Mensaje>> getMensajesGrupal(
+            @Path("id_sala") String idSala,
+            @Query("id_usuario") int idUsuario
+    );
+
+    @FormUrlEncoded
+    @POST("chat/enviar")
+    Call<ResponseBody> enviarMensajeGrupal(
+            @Field("id_sala") String idSala,
+            @Field("id_usuario") int idUsuario,
+            @Field("mensaje") String mensaje,
+            @Field("latitud") Double latitud,
+            @Field("longitud") Double longitud
+    );
+
+    @GET("chat/verificar-sesion")
+    Call<ResponseBody> verificarSesionSala(
+            @Query("id_usuario") int idUsuario,
+            @Query("id_sala") String idSala,
+            @Query("latitud") Double latitud,
+            @Query("longitud") Double longitud
+    );
+
+    @GET("usuarios/{id_usuario}/rol")
+    Call<ResponseBody> getRolUsuario(
+            @Path("id_usuario") int idUsuario
+    );
+
+    @GET("usuarios/check-email")
+    Call<ResponseBody> checkEmailExistente(
+            @Query("email") String email
+    );
+
+    @GET("usuarios/sugerir-nombre-usuario")
+    Call<ResponseBody> sugerirNombreUsuario(
+            @Query("base") String base
+    );
+
+    @GET("usuarios/buscar")
+    Call<ResponseBody> buscarUsuarios(
+            @Query("query") String query
+    );
+
+    @FormUrlEncoded
+    @POST("usuarios/cambiar-rol")
+    Call<ResponseBody> cambiarRolUsuario(
+            @Field("id_usuario_admin") int idUsuarioAdmin,
+            @Field("id_usuario") int idUsuario,
+            @Field("nuevo_rol") String nuevoRol
+    );
+
+    @FormUrlEncoded
+    @POST("chat/expulsar")
+    Call<ResponseBody> expulsarDeChat(
+            @Field("id_usuario_admin") int idUsuarioAdmin,
+            @Field("id_usuario_expulsado") int idUsuarioExpulsado,
+            @Field("id_sala") String idSala,
+            @Field("motivo") String motivo,
+            @Field("duracion_minutos") int duracionMinutos
+    );
+
+    @FormUrlEncoded
+    @POST("salas/salir")
+    Call<ResponseBody> salirDeSala(
+            @Field("id_usuario") int idUsuario,
+            @Field("id_sala") String idSala
+    );
+
+    // --- CHAT PRIVADO ---
+
+    @FormUrlEncoded
+    @POST("chat/privado/crear")
+    Call<ResponseBody> crearChatPrivado(
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2
+    );
+
+    @FormUrlEncoded
+    @POST("chat/privado/crear")
+    Call<ResponseBody> crearChatPrivadoDesdeSala(
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2,
+            @Field("id_sala_origen") String idSalaOrigen
+    );
+
+    @FormUrlEncoded
+    @POST("chat/privado/eliminar")
+    Call<ResponseBody> eliminarChatPrivado(
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2,
+            @Field("id_sala_origen") String idSalaOrigen,
+            @Field("motivo") String motivo
+    );
+
+    @FormUrlEncoded
+    @POST("chat/privado/eliminar-por-sala")
+    Call<ResponseBody> eliminarChatsPrivadosDeSala(
+            @Field("id_usuario") int idUsuario,
+            @Field("id_sala_origen") String idSalaOrigen,
+            @Field("motivo") String motivo
+    );
+
+    @GET("chat/privado/mensajes")
+    Call<List<Mensaje>> getMensajesPrivados(
+            @Query("id_usuario_1") int idUsuario1,
+            @Query("id_usuario_2") int idUsuario2
+    );
+
+    @GET("chat/privado/info")
+    Call<ResponseBody> getInfoChatPrivado(
+            @Query("id_usuario_1") int idUsuario1,
+            @Query("id_usuario_2") int idUsuario2
+    );
+
+    @FormUrlEncoded
+    @POST("chat/privado/enviar")
+    Call<ResponseBody> enviarMensajePrivado(
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2,
+            @Field("id_usuario_emisor") int idUsuarioEmisor,
+            @Field("mensaje") String mensaje
+    );
+
+    @FormUrlEncoded
+    @POST("chat/privado/enviar")
+    Call<ResponseBody> enviarMensajePrivadoDesdeSala(
+            @Field("id_usuario_1") int idUsuario1,
+            @Field("id_usuario_2") int idUsuario2,
+            @Field("id_usuario_emisor") int idUsuarioEmisor,
+            @Field("mensaje") String mensaje,
+            @Field("id_sala_origen") String idSalaOrigen
+    );
+    // Aviso de que YO estoy escribiendo
+    @FormUrlEncoded
+    @POST("chat/escribiendo")
+    Call<ResponseBody> notificarEscribiendo(
+            @Field("idRemitente") int idRemitente,
+            @Field("idDestinatario") int idDestinatario
+    );
+
+    @POST("chat/escribiendo")
+    Call<ResponseBody> notificarEscribiendoQuery(
+            @Query("idRemitente") int idRemitente,
+            @Query("idDestinatario") int idDestinatario
+    );
+
+    // Pregunto si EL OTRO está escribiendo
+    // Pregunto si EL OTRO está escribiendo
+    @GET("chat/estado/{miId}/{suId}")
+    Call<ResponseBody> getEstadoEscribiendoPath(
+            @Path("miId") int miId,
+            @Path("suId") int suId
+    );
+
+    @GET("chat/estado")
+    Call<ResponseBody> getEstadoEscribiendoQuery(
+            @Query("miId") int miId,
+            @Query("suId") int suId
+    );
+
+    // --- EMAIL VERIFICATION ---
+
+    @FormUrlEncoded
+    @POST("usuarios/verificar-codigo")
+    Call<ResponseBody> verificarCodigo(
+            @Field("email") String email,
+            @Field("code") String code
+    );
+
+
+    @FormUrlEncoded
+    @POST("usuarios/verificar-google")
+    Call<ResponseBody> verificarConGoogle(
+            @Field("id_token") String idToken
+    );
+
+    // --- DENUNCIAS ---
+
+    @FormUrlEncoded
+    @POST("denuncias/crear")
+    Call<ResponseBody> crearDenuncia(
+            @Field("id_usuario_denunciante") int idUsuarioDenunciante,
+            @Field("id_usuario_denunciado") int idUsuarioDenunciado,
+            @Field("tipo_denuncia") String tipoDenuncia,
+            @Field("razon_denuncia") String razonDenuncia
+    );
+
+    // --- NOTIFICACIONES (mensajes privados no leídos) ---
+
+    @GET("chat/privado/no-leidos")
+    Call<ResponseBody> getNoLeidosPrivados(
+            @Query("id_usuario") int idUsuario
+    );
+
+    @GET("chat/privado/resumen-notificaciones")
+    Call<ResponseBody> getResumenNotificaciones(
+            @Query("id_usuario") int idUsuario
+    );
+
+    @PUT("chat/privado/marcar-leido/{id}")
+    Call<ResponseBody> marcarLeidoPrivado(
+            @Path("id") int id
+    );
+}

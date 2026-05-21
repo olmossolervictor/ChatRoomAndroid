@@ -1,7 +1,37 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Chat" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <style name="Theme.Chat" parent="Base.Theme.Chat">
+        <item name="android:textColorHighlight">#337C4DFF</item>
+
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/bg_main</item>
+        <item name="android:navigationBarColor">@color/bg_main</item>
+        <item name="colorSurface">@color/surface_card</item>
+        <item name="colorSurfaceVariant">@color/bg_secondary</item>
+        <item name="colorOnSurfaceVariant">@color/text_medium</item>
+        <item name="colorError">@color/error_icon</item>
+        <item name="colorErrorContainer">@color/error_bg</item>
+        <item name="colorOnErrorContainer">@color/error_text</item>
+
+        <item name="alertDialogTheme">@style/ThemeOverlay.App.AlertDialog</item>
+        <item name="android:alertDialogTheme">@style/ThemeOverlay.App.AlertDialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.App.BottomSheetDialog</item>
+        <item name="materialCardViewStyle">@style/Widget.App.CardView.Night</item>
+    </style>
+
+    <style name="Widget.App.CardView.Night" parent="Widget.App.CardView">
+        <item name="cardBackgroundColor">@color/surface_card</item>
+        <item name="strokeColor">@color/border_subtle</item>
+        <item name="cardElevation">0dp</item>
+    </style>
+
+    <style name="Theme.App.DatePicker.Night" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:datePickerMode">calendar</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="android:headerBackground">@color/bg_secondary</item>
+        <item name="android:calendarTextColor">@color/text_high</item>
+        <item name="android:windowBackground">@color/dialog_background</item>
     </style>
 </resources>

@@ -1,42 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:paddingHorizontal="14dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="7dp">
 
     <LinearLayout
         android:id="@+id/containerMensaje"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp"
-        android:elevation="2dp">
+        android:minWidth="82dp"
+        android:maxWidth="294dp"
+        android:paddingStart="13dp"
+        android:paddingTop="9dp"
+        android:paddingEnd="13dp"
+        android:paddingBottom="8dp"
+        android:background="@drawable/bubble_others"
+        android:elevation="0dp">
 
         <TextView
             android:id="@+id/textNombre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="#075E54" />
+            android:textSize="11sp"
+            android:fontFamily="@font/poppins_medium"
+            android:textColor="@color/chat_sender_name"
+            android:letterSpacing="0"
+            android:textAllCaps="false"
+            android:layout_marginBottom="3dp"
+            tools:text="ALEX VIP" />
 
         <TextView
             android:id="@+id/textMensaje"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:layout_marginTop="2dp" />
+            android:textColor="@color/chat_text_received"
+            android:textSize="15sp"
+            android:lineSpacingExtra="1dp"
+            android:lineSpacingMultiplier="1.06"
+            android:fontFamily="@font/poppins_regular"
+            tools:text="¿A qué hora empieza el set de mañana?" />
 
         <TextView
             android:id="@+id/textFecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="10sp"
+            android:textSize="9sp"
             android:layout_gravity="end"
-            android:layout_marginTop="4dp"
-            android:textColor="#757575" />
+            android:layout_marginTop="5dp"
+            android:alpha="0.62"
+            android:fontFamily="@font/poppins_medium"
+            android:textColor="@color/chat_time_received"
+            tools:text="22:45" />
 
     </LinearLayout>
 

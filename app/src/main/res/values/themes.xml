@@ -1,9 +1,412 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Base.Theme.Chat" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/text_high</item>
+        <item name="colorPrimaryContainer">@color/surface_highlight</item>
+        <item name="colorOnPrimaryContainer">@color/primary</item>
+
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <item name="android:windowBackground">@color/bg_main</item>
+        <item name="android:statusBarColor">@color/bg_main</item>
+        <item name="android:navigationBarColor">@color/bg_secondary</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+
+        <item name="colorSurface">@color/bg_main</item>
+        <item name="colorOnSurface">@color/text_high</item>
+        <item name="colorSurfaceVariant">@color/bg_secondary</item>
+        <item name="colorOnSurfaceVariant">@color/text_medium</item>
+
+        <item name="android:textColorPrimary">@color/text_high</item>
+        <item name="android:textColorSecondary">@color/text_medium</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:colorControlHighlight">@color/accent_soft</item>
+        <item name="android:editTextStyle">@style/Widget.App.TextInputEditText</item>
+        <item name="android:textColorHighlight">#4D7C4DFF</item>
+
+        <item name="colorControlActivated">@color/primary</item>
+        <item name="colorControlNormal">@color/text_low</item>
+
+        <item name="colorError">@color/error_icon</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorErrorContainer">@color/error_bg</item>
+        <item name="colorOnErrorContainer">@color/error_text</item>
+
+        <item name="materialCardViewStyle">@style/Widget.App.CardView</item>
+        <item name="textInputStyle">@style/Widget.App.TextInputLayout</item>
+        <item name="android:switchStyle">@style/Widget.App.Switch</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.App.AlertDialog</item>
+        <item name="android:alertDialogTheme">@style/ThemeOverlay.App.AlertDialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.App.BottomSheetDialog</item>
+        <item name="snackbarStyle">@style/Widget.App.Snackbar</item>
+        <item name="snackbarTextViewStyle">@style/Widget.App.Snackbar.Text</item>
     </style>
 
-    <style name="Theme.Chat" parent="Base.Theme.Chat" />
+    <style name="Theme.Chat" parent="Base.Theme.Chat">
+        <item name="android:datePickerDialogTheme">@style/Theme.App.DatePicker</item>
+    </style>
+
+    <style name="Theme.App.DatePicker" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:datePickerMode">calendar</item>
+
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorAccent">@color/primary</item>
+
+        <item name="android:headerBackground">@color/primary</item>
+        <item name="android:headerMonthTextAppearance">@style/TextAppearance.App.CalendarHeader.Month</item>
+        <item name="android:headerYearTextAppearance">@style/TextAppearance.App.CalendarHeader.Year</item>
+
+        <item name="android:calendarTextColor">@color/text_high</item>
+        <item name="android:dayOfWeekBackground">@color/bg_secondary</item>
+        <item name="android:dayOfWeekTextAppearance">@style/TextAppearance.App.CalendarDayOfWeek</item>
+
+        <item name="android:numbersSelectorColor">@color/primary</item>
+        <item name="android:numbersTextColor">@color/primary</item>
+
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:textColorPrimary">@color/text_high</item>
+    </style>
+
+    <style name="TextAppearance.App.CalendarHeader.Month" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.CalendarHeader.Year" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">#CCFFFFFF</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="TextAppearance.App.CalendarDayOfWeek" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textColor">@color/text_medium</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ThemeOverlay.App.MaterialCalendar" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/text_high</item>
+        <item name="colorOnSurfaceVariant">@color/text_medium</item>
+
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Button.TextButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Button.TextButton</item>
+
+        <item name="materialCalendarStyle">@style/Widget.App.MaterialCalendar</item>
+        <item name="materialCalendarHeaderSelection">@style/Widget.App.MaterialCalendar.HeaderSelection</item>
+        <item name="materialCalendarHeaderToggleButton">@style/Widget.App.MaterialCalendar.HeaderToggleButton</item>
+    </style>
+
+    <style name="Widget.App.MaterialCalendar" parent="Widget.Material3.MaterialCalendar">
+        <item name="android:windowBackground">@color/white</item>
+    </style>
+
+    <style name="Widget.App.MaterialCalendar.HeaderSelection" parent="Widget.Material3.MaterialCalendar.HeaderSelection">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.App.MaterialCalendar.HeaderToggleButton" parent="Widget.Material3.MaterialCalendar.HeaderToggleButton">
+        <item name="android:tint">@color/white</item>
+    </style>
+
+    <style name="Widget.App.Button.TextButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+    </style>
+
+    <style name="Widget.App.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="backgroundTint">@color/button_primary_tint</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="elevation">0dp</item>
+        <item name="iconTint">@color/white</item>
+    </style>
+
+    <style name="Widget.App.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textColor">@color/text_high</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="strokeColor">@color/border_subtle</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="iconTint">@color/text_high</item>
+    </style>
+
+    <style name="Widget.App.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="cornerRadius">20dp</item>
+        <item name="iconTint">@color/primary</item>
+    </style>
+
+    <style name="Widget.App.Switch" parent="@android:style/Widget.Material.CompoundButton.Switch">
+        <item name="android:minWidth">60dp</item>
+        <item name="android:minHeight">36dp</item>
+        <item name="android:switchMinWidth">60dp</item>
+        <item name="android:thumbTextPadding">0dp</item>
+        <item name="android:showText">false</item>
+        <item name="android:splitTrack">false</item>
+        <item name="android:thumb">@drawable/switch_thumb_premium</item>
+        <item name="android:track">@drawable/switch_track_premium</item>
+        <item name="android:buttonTint">@color/switch_thumb_tint</item>
+        <item name="android:colorControlHighlight">@color/switch_ripple</item>
+    </style>
+
+    <style name="ThemeOverlay.App.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:windowBackground">@drawable/bg_dialog</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorSurface">@color/dialog_background</item>
+        <item name="colorOnSurface">@color/text_high</item>
+        <item name="colorOnSurfaceVariant">@color/text_medium</item>
+        <item name="android:textColorPrimary">@color/text_high</item>
+        <item name="android:textColorSecondary">@color/text_medium</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowMinWidthMajor">86%</item>
+        <item name="android:windowMinWidthMinor">92%</item>
+        <item name="alertDialogStyle">@style/Widget.App.AlertDialog</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Dialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Dialog.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.App.Dialog.Button.Neutral</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/Widget.App.Dialog.Button.Positive</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/Widget.App.Dialog.Button.Negative</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/Widget.App.Dialog.Button.Neutral</item>
+        <item name="materialButtonStyle">@style/Widget.App.Dialog.Button.Positive</item>
+    </style>
+
+    <style name="ThemeOverlay.App.MaterialAlertDialog" parent="ThemeOverlay.App.AlertDialog" />
+
+    <style name="Widget.App.AlertDialog" parent="MaterialAlertDialog.Material3">
+        <item name="backgroundTint">@color/dialog_background</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.Dialog</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/TextAppearance.App.Dialog.Title</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/TextAppearance.App.Dialog.Body</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Dialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Dialog.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.App.Dialog.Button.Neutral</item>
+    </style>
+
+    <style name="ShapeAppearance.App.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">22dp</item>
+    </style>
+
+    <style name="TextAppearance.App.Dialog.Title" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textColor">@color/text_high</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.App.Dialog.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_medium</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="Widget.App.Dialog.Button.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="rippleColor">@color/dialog_button_pressed</item>
+        <item name="iconTint">@color/primary</item>
+    </style>
+
+    <style name="Widget.App.Dialog.Button.Negative" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/text_medium</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="rippleColor">@color/accent_soft</item>
+        <item name="iconTint">@color/text_medium</item>
+    </style>
+
+    <style name="Widget.App.Dialog.Button.Neutral" parent="Widget.App.Dialog.Button.Negative" />
+
+    <style name="Widget.App.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="android:layout_margin">16dp</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="backgroundTint">@color/snackbar_alert_bg</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Snackbar</item>
+    </style>
+
+    <style name="ShapeAppearance.App.Snackbar" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">14dp</item>
+    </style>
+
+    <style name="Widget.App.Snackbar.Text" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textColor">@color/snackbar_alert_text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/poppins_medium</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <style name="ThemeOverlay.App.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.App.BottomSheet.Modal</item>
+        <item name="android:colorControlHighlight">@color/accent_soft</item>
+    </style>
+
+    <style name="Widget.App.BottomSheet.Modal" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/dialog_background</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.BottomSheet</item>
+    </style>
+
+    <style name="ShapeAppearance.App.BottomSheet" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">24dp</item>
+        <item name="cornerSizeTopRight">24dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="Widget.App.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/card_bg</item>
+        <item name="cardCornerRadius">18dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/border_subtle</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="Widget.App.Card.Surface" parent="Widget.App.CardView">
+        <item name="cardBackgroundColor">@color/surface_card</item>
+        <item name="cardCornerRadius">18dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/border_subtle</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="Widget.App.Card.Elevated" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/surface_card</item>
+        <item name="cardCornerRadius">18dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="strokeColor">@color/border_subtle</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="Widget.App.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/text_input_stroke</item>
+        <item name="boxStrokeErrorColor">@color/text_input_error_stroke</item>
+        <item name="boxBackgroundColor">@color/surface_input</item>
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+        <item name="hintTextColor">@color/text_input_hint</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">1.5dp</item>
+        <item name="startIconTint">@color/text_low</item>
+        <item name="endIconTint">@color/text_low</item>
+        <item name="android:textColorHint">@color/text_low</item>
+        <item name="helperTextTextColor">@color/text_low</item>
+        <item name="errorTextColor">@color/error_text</item>
+        <item name="errorTextAppearance">@style/TextAppearance.App.Error</item>
+        <item name="errorIconDrawable">@null</item>
+        <item name="errorIconTint">@color/error_icon</item>
+    </style>
+
+    <style name="TextAppearance.App.Error" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">@color/error_text</item>
+        <item name="android:fontFamily">@font/poppins_medium</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <style name="Widget.App.TextInputEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:textColor">@color/text_high</item>
+        <item name="android:textColorHint">@color/text_low</item>
+        <item name="android:textColorHighlight">#337C4DFF</item>
+        <item name="android:drawableTint">@color/error_icon</item>
+        <item name="android:fontFamily">@font/poppins_medium</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="ThemeOverlay.App.TextInputErrorPopup" parent="">
+        <item name="android:colorError">@color/error_icon</item>
+        <item name="android:textColorPrimary">@color/error_text</item>
+        <item name="android:textColorPrimaryInverse">@color/error_text</item>
+        <item name="android:textColorPrimaryInverseNoDisable">@color/error_text</item>
+        <item name="android:textColorPrimaryInverseDisableOnly">@color/error_text</item>
+    </style>
+
+    <style name="TextAppearance.App.Hint" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">@color/text_low</item>
+    </style>
+
+    <style name="TextAppearance.App.ScreenTitle" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/text_high</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="TextAppearance.App.ScreenSubtitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_medium</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="DigitFieldStyle" parent="">
+        <item name="android:background">@drawable/digit_field_border</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="Widget.App.DrawerItem" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+        <item name="android:textColor">@color/text_high</item>
+        <item name="android:drawablePadding">16dp</item>
+        <item name="android:background">@drawable/bg_drawer_item</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="DrawerItemStylePremium" parent="Widget.App.DrawerItem">
+        <item name="android:textColor">@color/text_high</item>
+    </style>
+
+    <style name="DrawerDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/border_subtle</item>
+        <item name="android:layout_marginVertical">12dp</item>
+        <item name="android:layout_marginHorizontal">16dp</item>
+    </style>
+
+    <style name="TextAppearance.App.ToolbarTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textColor">@color/text_high</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">@font/poppins_bold</item>
+    </style>
+
+    <style name="CircleImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>
