@@ -232,7 +232,7 @@
                     android:layout_gravity="center"
                     android:text="@string/login_verify_email_text"
                     android:textSize="12sp"
-                    android:visibility="gone"/>
+                    android:visibility="visible"/>
 
             </LinearLayout>
         </LinearLayout>

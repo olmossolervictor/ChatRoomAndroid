@@ -28,6 +28,7 @@ import com.example.chat.models.Mensaje;
 import com.example.chat.models.PrivateChatHistoryItem;
 import com.example.chat.models.Sala;
 import com.example.chat.network.RetrofitClient;
+import com.example.chat.utils.PrivateChatClosureStore;
 import com.example.chat.utils.PrivateChatConversationPolicy;
 import com.example.chat.utils.PrivateChatGeofenceStore;
 import com.example.chat.utils.PrivateChatHistoryStore;
@@ -335,10 +336,18 @@ public class HomeActivity extends BaseActivity {
         }
 
         textHistorialPrivadoVacio.setVisibility(View.GONE);
+        boolean hayHistorialVisible = false;
         for (PrivateChatHistoryItem item : historial) {
+            if (PrivateChatClosureStore.isExpired(this, currentUserId, item.getOtherUserId())) {
+                PrivateChatHistoryStore.removeChat(this, currentUserId, item.getOtherUserId());
+                PrivateChatGeofenceStore.remove(this, currentUserId, item.getOtherUserId());
+                continue;
+            }
+
             View row = LayoutInflater.from(this).inflate(R.layout.item_historial_privado, layoutHistorialPrivadoItems, false);
             TextView textNombre = row.findViewById(R.id.textNombreHistorialPrivado);
             TextView textInicial = row.findViewById(R.id.textInicialHistorialPrivado);
+            ImageView btnEliminarHistorial = row.findViewById(R.id.btnEliminarHistorialPrivado);
 
 
             ImageView imgFoto = row.findViewById(R.id.imgFotoHistorialPrivado);
@@ -388,8 +397,45 @@ public class HomeActivity extends BaseActivity {
                 if (esClickRapido()) return;
                 abrirChatPrivadoDesdeHistorial(item);
             });
+            row.setOnLongClickListener(v -> {
+                mostrarConfirmacionEliminarHistorialPrivado(item);
+                return true;
+            });
+            if (btnEliminarHistorial != null) {
+                btnEliminarHistorial.setOnClickListener(v -> mostrarConfirmacionEliminarHistorialPrivado(item));
+            }
             layoutHistorialPrivadoItems.addView(row);
+            hayHistorialVisible = true;
         }
+
+        if (!hayHistorialVisible) {
+            textHistorialPrivadoVacio.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void mostrarConfirmacionEliminarHistorialPrivado(PrivateChatHistoryItem item) {
+        if (item == null) return;
+
+        String nombre = item.getOtherUserName() == null || item.getOtherUserName().trim().isEmpty()
+                ? "este usuario"
+                : item.getOtherUserName().trim();
+
+        new AlertDialog.Builder(this)
+                .setTitle("Eliminar historial")
+                .setMessage("Se eliminara el acceso a tu historial privado con " + nombre + ".")
+                .setPositiveButton("ELIMINAR", (dialog, which) -> eliminarHistorialPrivado(item))
+                .setNegativeButton("CANCELAR", null)
+                .show();
+    }
+
+    private void eliminarHistorialPrivado(PrivateChatHistoryItem item) {
+        if (item == null) return;
+
+        PrivateChatHistoryStore.removeChat(this, currentUserId, item.getOtherUserId());
+        PrivateChatGeofenceStore.remove(this, currentUserId, item.getOtherUserId());
+        PrivateChatClosureStore.remove(this, currentUserId, item.getOtherUserId());
+        Toast.makeText(this, "Historial eliminado", Toast.LENGTH_SHORT).show();
+        refrescarHistorialPrivado();
     }
 
     private void abrirChatPrivadoDesdeHistorial(PrivateChatHistoryItem item) {
@@ -648,8 +694,9 @@ public class HomeActivity extends BaseActivity {
     private void confirmarAbandonoTotal(String idSala) {
         new AlertDialog.Builder(this)
                 .setTitle("¿Cerrar sesión en la sala?")
-                .setMessage("Se borrarán tus mensajes y chats privados de esta sala. Volverás al estado inicial.")
+                .setMessage("Los chats privados de esta sala quedaran bloqueados y se eliminaran en 30 minutos. Volveras al estado inicial.")
                 .setPositiveButton("SÍ, SALIR", (dialog, which) -> {
+                    marcarChatsPrivadosCerradosPorSala(idSala, crearMensajeAbandonoSala());
                     RetrofitClient.getChatApiServices().salirDeSala(currentUserId, idSala)
                             .enqueue(new Callback<ResponseBody>() {
                                 @Override
@@ -657,8 +704,13 @@ public class HomeActivity extends BaseActivity {
                                     if (response.isSuccessful()) {
                                         List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(HomeActivity.this, currentUserId, idSala);
                                         for (Integer otherId : otrosUsuarios) {
-                                            PrivateChatHistoryStore.removeChat(HomeActivity.this, currentUserId, otherId);
-                                            PrivateChatGeofenceStore.remove(HomeActivity.this, currentUserId, otherId);
+                                            PrivateChatClosureStore.closeForThirtyMinutes(
+                                                    HomeActivity.this,
+                                                    currentUserId,
+                                                    otherId,
+                                                    idSala,
+                                                    crearMensajeAbandonoSala()
+                                            );
                                         }
 
                                         Toast.makeText(HomeActivity.this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
@@ -673,5 +725,22 @@ public class HomeActivity extends BaseActivity {
                 })
                 .setNegativeButton("CANCELAR", null)
                 .show();
+    }
+
+    private void marcarChatsPrivadosCerradosPorSala(String idSala, String motivo) {
+        List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(this, currentUserId, idSala);
+        for (Integer otherId : otrosUsuarios) {
+            if (otherId == null || otherId <= 0) continue;
+            PrivateChatClosureStore.closeForThirtyMinutes(this, currentUserId, otherId, idSala, motivo);
+        }
+    }
+
+    private String crearMensajeAbandonoSala() {
+        SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
+        String nombre = pref.getString("nombre", "");
+        if (nombre == null || nombre.trim().isEmpty()) {
+            nombre = "El usuario";
+        }
+        return nombre.trim() + " ha abandonado la sala principal. No se pueden enviar mas mensajes en este chat privado.";
     }
 }

@@ -30,6 +30,7 @@ import com.example.chat.utils.AlertHelper;
 import com.example.chat.utils.AlertHelper.AlertType;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Patterns;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
@@ -455,6 +456,10 @@ public class LoginActivity extends BaseActivity {
                         Toast.makeText(this, "Introduce un correo", Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        Toast.makeText(this, "Introduce un correo valido", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     enviarCodigoVerificacion(email);
                 })
                 .setNegativeButton("Cancelar", null)
@@ -473,7 +478,8 @@ public class LoginActivity extends BaseActivity {
                     if (esEmailYaVerificado(body)) {
                         Toast.makeText(LoginActivity.this, "Este correo ya está verificado", Toast.LENGTH_SHORT).show();
                     } else if (response.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this, "Código de verificación enviado a " + email, Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, "Codigo de verificacion enviado a " + email, Toast.LENGTH_LONG).show();
+                        abrirPantallaVerificacion(email);
                     } else {
                         Toast.makeText(LoginActivity.this, "No se encontró ese correo o no se pudo enviar", Toast.LENGTH_SHORT).show();
                     }
@@ -496,6 +502,13 @@ public class LoginActivity extends BaseActivity {
                 || lower.contains("ya verificado")
                 || lower.contains("ya está verificado")
                 || lower.contains("email_verified");
+    }
+
+    private void abrirPantallaVerificacion(String email) {
+        pendingVerificationEmail = email;
+        Intent intent = new Intent(this, VerificacionEmailActivity.class);
+        intent.putExtra("VERIFICACION_EMAIL", email);
+        startActivity(intent);
     }
 
     private void reenviarVerificacion() {
