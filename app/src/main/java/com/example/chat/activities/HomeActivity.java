@@ -1,8 +1,10 @@
 package com.example.chat.activities;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.chat.R;
@@ -32,6 +35,7 @@ import com.example.chat.utils.PrivateChatClosureStore;
 import com.example.chat.utils.PrivateChatConversationPolicy;
 import com.example.chat.utils.PrivateChatGeofenceStore;
 import com.example.chat.utils.PrivateChatHistoryStore;
+import com.google.android.material.button.MaterialButton;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -587,43 +591,119 @@ public class HomeActivity extends BaseActivity {
     }
     private void mostrarDialogoNotificacionesPrivadas(List<NotificacionPrivada> notificaciones) {
         ScrollView scrollView = new ScrollView(this);
+        scrollView.setBackgroundColor(ContextCompat.getColor(this, R.color.dialog_background));
         LinearLayout container = new LinearLayout(this);
         container.setOrientation(LinearLayout.VERTICAL);
-        container.setPadding(24, 16, 24, 8);
+        container.setPadding(dp(18), dp(12), dp(18), dp(8));
         scrollView.addView(container);
         final AlertDialog[] dialogRef = new AlertDialog[1];
         for (NotificacionPrivada notificacion : notificaciones) {
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.VERTICAL);
-            item.setPadding(0, 12, 0, 16);
-            TextView text = new TextView(this);
-            text.setText(notificacion.nombreRemitente + ": " + notificacion.contenido);
-            text.setTextSize(15);
-            text.setTextColor(android.graphics.Color.parseColor("#222222"));
-            item.addView(text);
+            item.setPadding(dp(16), dp(14), dp(16), dp(14));
+            item.setBackgroundResource(R.drawable.bg_notification_card);
+
+            LinearLayout header = new LinearLayout(this);
+            header.setOrientation(LinearLayout.HORIZONTAL);
+            header.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+            View accent = new View(this);
+            LinearLayout.LayoutParams accentParams = new LinearLayout.LayoutParams(dp(4), dp(22));
+            accentParams.setMargins(0, 0, dp(10), 0);
+            accent.setLayoutParams(accentParams);
+            accent.setBackgroundResource(R.drawable.bg_notification_accent);
+            header.addView(accent);
+
+            TextView sender = new TextView(this);
+            sender.setText(notificacion.nombreRemitente);
+            sender.setTextSize(15);
+            sender.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            sender.setTextColor(ContextCompat.getColor(this, R.color.notification_text_primary));
+            sender.setSingleLine(false);
+            header.addView(sender, new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            ));
+            item.addView(header);
+
+            TextView message = new TextView(this);
+            message.setText(notificacion.contenido);
+            message.setTextSize(14);
+            message.setLineSpacing(dp(2), 1.0f);
+            message.setTextColor(ContextCompat.getColor(this, R.color.notification_text_secondary));
+            LinearLayout.LayoutParams messageParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            messageParams.setMargins(dp(14), dp(8), 0, 0);
+            item.addView(message, messageParams);
+
             LinearLayout acciones = new LinearLayout(this);
             acciones.setGravity(android.view.Gravity.END);
             acciones.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout.LayoutParams accionesParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            accionesParams.setMargins(0, dp(12), 0, 0);
             if (notificacion.estado == PrivateChatConversationPolicy.State.PENDING_INCOMING) {
-                Button btnRechazar = new Button(this);
+                MaterialButton btnRechazar = crearBotonNotificacion(false);
                 btnRechazar.setText("Rechazar");
                 btnRechazar.setOnClickListener(v -> responderNotificacionPrivada(dialogRef[0], notificacion, false));
                 acciones.addView(btnRechazar);
-                Button btnAceptar = new Button(this);
+                MaterialButton btnAceptar = crearBotonNotificacion(true);
                 btnAceptar.setText("Aceptar");
                 btnAceptar.setOnClickListener(v -> responderNotificacionPrivada(dialogRef[0], notificacion, true));
                 acciones.addView(btnAceptar);
             } else {
-                Button btnAbrir = new Button(this);
+                MaterialButton btnAbrir = crearBotonNotificacion(true);
                 btnAbrir.setText("Abrir");
                 btnAbrir.setOnClickListener(v -> abrirNotificacionPrivada(dialogRef[0], notificacion));
                 acciones.addView(btnAbrir);
             }
-            item.addView(acciones);
-            container.addView(item);
+            item.addView(acciones, accionesParams);
+
+            LinearLayout.LayoutParams itemParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            itemParams.setMargins(0, 0, 0, dp(12));
+            container.addView(item, itemParams);
         }
         dialogRef[0] = new AlertDialog.Builder(this).setTitle("Notificaciones").setView(scrollView).setPositiveButton("Cerrar", null).create();
         dialogRef[0].show();
+    }
+
+    private MaterialButton crearBotonNotificacion(boolean primary) {
+        MaterialButton button = new MaterialButton(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                dp(40)
+        );
+        params.setMargins(dp(8), 0, 0, 0);
+        button.setLayoutParams(params);
+        button.setAllCaps(false);
+        button.setTextSize(13);
+        button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        button.setMinHeight(0);
+        button.setMinimumHeight(0);
+        button.setMinWidth(0);
+        button.setMinimumWidth(0);
+        button.setInsetTop(0);
+        button.setInsetBottom(0);
+        button.setCornerRadius(dp(14));
+        button.setStrokeWidth(primary ? 0 : dp(1));
+        button.setTextColor(ContextCompat.getColor(this, primary ? R.color.white : R.color.notification_text_primary));
+        button.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(
+                this,
+                primary ? R.color.notification_accent : R.color.notification_button_secondary_bg
+        )));
+        button.setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.notification_card_border)));
+        return button;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
     private void abrirNotificacionPrivada(AlertDialog dialog, NotificacionPrivada notificacion) {
         if (dialog != null) dialog.dismiss();

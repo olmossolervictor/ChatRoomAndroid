@@ -58,6 +58,12 @@
     <color name="dialog_surface">#2A2A2A</color>
     <color name="dialog_border">#353535</color>
     <color name="dialog_button_pressed">#8B5CF6</color>
+    <color name="notification_card_bg">#2A2A2A</color>
+    <color name="notification_card_border">#353535</color>
+    <color name="notification_text_primary">#FFFFFF</color>
+    <color name="notification_text_secondary">#B8B8B8</color>
+    <color name="notification_accent">#8B5CF6</color>
+    <color name="notification_button_secondary_bg">#232323</color>
     <color name="error">#FF9A9A</color>
     <color name="snackbar_alert_bg">#2A2024</color>
     <color name="snackbar_alert_text">#FFB3B3</color>
