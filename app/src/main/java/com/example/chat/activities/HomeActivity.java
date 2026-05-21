@@ -194,8 +194,6 @@ public class HomeActivity extends BaseActivity {
         super.onResume();
         cargarPerfilDrawer();
 
-        // 🚀 OJO AQUÍ: cargarMisSalas ahora es el que dispara notificaciones e historial
-        // cuando responde el servidor, para saber seguro si estamos en una sala o no.
         cargarMisSalas();
         iniciarRefrescoHistorialPrivado();
     }
@@ -266,7 +264,7 @@ public class HomeActivity extends BaseActivity {
                             }
                         }
 
-                        // 🚀 REGLA DE ORO: SI NO HAY SALA GENERAL...
+
                         if (listaMisSalas.isEmpty()) {
                             btnAbandonarGlobal.setVisibility(View.GONE);
                             drawerNotificaciones.setVisibility(View.GONE); // Desaparecen notificaciones del menú
@@ -278,7 +276,7 @@ public class HomeActivity extends BaseActivity {
                         salaAdapter.notifyDataSetChanged();
                         actualizarVistasSalas();
 
-                        // 🚀 Lanzamos esto solo DESPUÉS de saber si estamos en una sala
+
                         actualizarBadgeNotificaciones();
                         refrescarHistorialPrivado();
                     }
@@ -325,7 +323,7 @@ public class HomeActivity extends BaseActivity {
         if (layoutHistorialPrivadoItems == null || textHistorialPrivadoVacio == null) return;
         layoutHistorialPrivadoItems.removeAllViews();
 
-        // 🚀 CORTAFUEGOS: Si no hay sala, no se procesa ni se muestra el historial
+
         if (listaMisSalas.isEmpty()) {
             textHistorialPrivadoVacio.setVisibility(View.GONE);
             return;
@@ -351,7 +349,7 @@ public class HomeActivity extends BaseActivity {
             TextView textInicial = row.findViewById(R.id.textInicialHistorialPrivado);
             ImageView btnEliminarHistorial = row.findViewById(R.id.btnEliminarHistorialPrivado);
 
-            // 🚀 NUEVO: Enlazamos el ImageView de la foto (debe existir en el XML)
+
             ImageView imgFoto = row.findViewById(R.id.imgFotoHistorialPrivado);
 
             String nombreUsuario = item.getOtherUserName();
@@ -360,7 +358,7 @@ public class HomeActivity extends BaseActivity {
             }
             textNombre.setText(item.getOtherUserName());
 
-            // 🚀 LÓGICA PARA CARGAR LA FOTO DE PERFIL
+
             if (imgFoto != null) {
                 // Por defecto, ocultamos la foto y mostramos la letra inicial
                 imgFoto.setVisibility(View.GONE);
@@ -535,7 +533,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void actualizarBadgeNotificaciones() {
-        // 🚀 CORTAFUEGOS: Si no hay sala, cortamos la petición a la API
+
         if (listaMisSalas.isEmpty() || !getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("notificaciones", true)) {
             drawerNotifBadge.setVisibility(View.GONE);
             return;

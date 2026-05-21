@@ -8,7 +8,6 @@
     android:background="@color/bg_main"
     android:fitsSystemWindows="true">
 
-    <!-- Subtle Background Elements -->
     <View
         android:layout_width="400dp"
         android:layout_height="400dp"
@@ -35,7 +34,6 @@
             android:paddingBottom="48dp"
             android:gravity="center_horizontal">
 
-            <!-- Logo Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="100dp"
                 android:layout_height="100dp"
@@ -77,7 +75,6 @@
                 android:layout_marginTop="40dp"
                 android:orientation="vertical">
 
-                <!-- 🚀 EMAIL INPUT (Adaptativo) -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilEmail"
                     style="@style/Widget.App.TextInputLayout"
@@ -101,7 +98,6 @@
                         android:fontFamily="@font/poppins_medium" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- 🚀 PASSWORD INPUT (Adaptativo) -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilPassword"
                     style="@style/Widget.App.TextInputLayout"
@@ -182,7 +178,6 @@
                         android:background="@color/border_subtle" />
                 </LinearLayout>
 
-                <!-- 🚀 GOOGLE LOGIN (Icono en Default/Colores originales) -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGoogleLogin"
                     style="@style/Widget.App.Button.Secondary"

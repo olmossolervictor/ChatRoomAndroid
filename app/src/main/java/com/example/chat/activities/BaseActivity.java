@@ -26,8 +26,6 @@ public class BaseActivity extends AppCompatActivity {
             if (v instanceof EditText) {
                 android.graphics.Rect outRect = new android.graphics.Rect();
                 v.getGlobalVisibleRect(outRect);
-
-                // Si el usuario toca fuera del cuadro de texto actual
                 if (!outRect.contains((int) event.getRawX(), (int) event.getRawY())) {
                     v.clearFocus();
                     InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);

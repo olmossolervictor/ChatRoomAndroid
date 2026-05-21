@@ -36,8 +36,8 @@ import com.example.chat.adapters.MensajeAdapter;
 import com.example.chat.models.Mensaje;
 import com.example.chat.network.ChatApiServices;
 import com.example.chat.network.RetrofitClient;
-import com.example.chat.utils.PrivateChatClosureStore;
 import com.example.chat.utils.PrivateChatGeofenceStore;
+import com.example.chat.utils.PrivateChatHistoryStore;
 import com.google.android.gms.location.CurrentLocationRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -82,7 +82,6 @@ public class MainActivity extends BaseActivity {
     private double salaRadioMetros = 0;
     private String salaNombreMostrado;
     private boolean salaFinalizadaPorTiempo = false;
-    private boolean chatsPrivadosCerradosPorSalida = false;
 
     private boolean isSolicitandoPermiso = false;
 
@@ -372,11 +371,9 @@ public class MainActivity extends BaseActivity {
 
     private void expulsarUsuario(String motivo) {
         if (salaFinalizadaPorTiempo) return;
-        if (refreshRunnable != null) {
-            handler.removeCallbacks(refreshRunnable);
-        }
+        handler.removeCallbacks(refreshRunnable);
         Toast.makeText(this, motivo.toUpperCase(), Toast.LENGTH_LONG).show();
-        limpiarChatsPrivadosDeSalaActual(crearMensajeAbandonoSala());
+        limpiarChatsPrivadosDeSalaActual(motivo);
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
@@ -386,43 +383,19 @@ public class MainActivity extends BaseActivity {
     }
 
     private void limpiarChatsPrivadosDeSalaActual(String motivo) {
-        if (chatsPrivadosCerradosPorSalida) return;
-        chatsPrivadosCerradosPorSalida = true;
-
         List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(this, currentUserId, currentSalaId);
         for (Integer otherUserId : otrosUsuarios) {
             if (otherUserId == null || otherUserId <= 0) continue;
-            PrivateChatClosureStore.closeForThirtyMinutes(this, currentUserId, otherUserId, currentSalaId, motivo);
-        }
-    }
-
-    private void salirVoluntariamenteDeSala() {
-        if (salaFinalizadaPorTiempo) {
-            finish();
-            return;
+            PrivateChatHistoryStore.removeChat(this, currentUserId, otherUserId);
+            PrivateChatGeofenceStore.remove(this, currentUserId, otherUserId);
         }
 
-        if (refreshRunnable != null) {
-            handler.removeCallbacks(refreshRunnable);
-        }
-        String mensajeAbandono = crearMensajeAbandonoSala();
-        limpiarChatsPrivadosDeSalaActual(mensajeAbandono);
-        RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
+        RetrofitClient.getChatApiServices()
+                .eliminarChatsPrivadosDeSala(currentUserId, currentSalaId, motivo)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
                     @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
                 });
-        Toast.makeText(this, "Has abandonado la sala", Toast.LENGTH_SHORT).show();
-        finish();
-    }
-
-    private String crearMensajeAbandonoSala() {
-        SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
-        String nombre = pref.getString("nombre", "");
-        if (nombre == null || nombre.trim().isEmpty()) {
-            nombre = "El usuario";
-        }
-        return nombre.trim() + " ha abandonado la sala principal. No se pueden enviar mas mensajes en este chat privado.";
     }
 
     private void obtenerMensajes() {
@@ -761,8 +734,6 @@ public class MainActivity extends BaseActivity {
         }
         textTiempoRestante.setVisibility(View.GONE);
 
-        limpiarChatsPrivadosDeSalaActual(mensaje);
-
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
@@ -925,16 +896,9 @@ public class MainActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            volverAlMenuPrincipal();
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void volverAlMenuPrincipal() {
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(intent);
-        finish();
     }
 }

@@ -48,25 +48,18 @@ import retrofit2.Response;
 public class LoginActivity extends BaseActivity {
 
     private static final String PREF_GOOGLE_PROFILE_SETUP_DONE = "google_profile_setup_done_";
-
-    // Componentes de la interfaz de usuario
     private EditText editEmail, editPassword;
     private Button btnLogin, btnGoogleLogin, textResendVerification, btnVerificarCorreoLogin;
     private TextView textGoToRegister;
-
-    // Servicios de red y gestión de credenciales
     private ChatApiServices api;
     private CredentialManager credentialManager;
     private Executor mainExecutor;
-
-    // Variables de estado temporal
     private String pendingVerificationEmail = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Verificación de sesión activa para redirección automática
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         if (pref.getInt("id_usuario", -1) != -1) {
             startActivity(new Intent(this, HomeActivity.class));
@@ -76,7 +69,6 @@ public class LoginActivity extends BaseActivity {
 
         setContentView(R.layout.activity_login);
 
-        // Inicialización de servicios y componentes
         api = RetrofitClient.getChatApiServices();
         credentialManager = CredentialManager.create(this);
         mainExecutor = ContextCompat.getMainExecutor(this);
@@ -86,9 +78,6 @@ public class LoginActivity extends BaseActivity {
         configurarValidacionDinamica();
     }
 
-    /**
-     * Vincula las variables con los componentes del layout XML.
-     */
     private void inicializarVistas() {
         editEmail = findViewById(R.id.editEmail);
         editPassword = findViewById(R.id.editPassword);
@@ -99,11 +88,7 @@ public class LoginActivity extends BaseActivity {
         btnVerificarCorreoLogin = findViewById(R.id.btnVerificarCorreoLogin);
     }
 
-    /**
-     * Configura los eventos de click para los elementos interactivos.
-     */
     private void configurarListeners() {
-        // Carga de datos previos si existen en el Intent
         String prefillEmail = getIntent().getStringExtra("PREFILL_EMAIL");
         boolean showVerificationHint = getIntent().getBooleanExtra("SHOW_VERIFICATION_HINT", false);
 
@@ -127,9 +112,7 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    /**
-     * Limpia los estados de error de forma reactiva mientras el usuario escribe.
-     */
+
     private void configurarValidacionDinamica() {
         TextWatcher watcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
