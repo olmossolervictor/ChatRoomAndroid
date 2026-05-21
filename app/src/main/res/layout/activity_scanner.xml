@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
-
-
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
@@ -47,42 +45,33 @@
         app:layout_constraintTop_toTopOf="@id/scannerContainer"
         app:layout_constraintBottom_toBottomOf="@id/scannerContainer" />
 
-    <RelativeLayout
-        android:id="@+id/scannerHeader"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarScanner"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@drawable/bg_header_premium"
-        android:paddingHorizontal="24dp"
-        android:paddingTop="32dp"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:elevation="0dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_camera"
-            app:tint="@color/primary"
-            android:layout_centerVertical="true"
-            android:alpha="0.8" />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarScanner"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="ACCESO POR QR"
+            app:titleTextColor="@color/text_high"
+            app:navigationIconTint="@color/text_high" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="ACCESO POR QR"
-            android:textColor="@color/text_high"
-            android:textSize="18sp"
-            android:fontFamily="@font/poppins_bold"
-            android:letterSpacing="0.1" />
-    </RelativeLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
         android:id="@+id/scannerContainer"
         android:layout_width="260dp"
         android:layout_height="260dp"
-        app:layout_constraintBottom_toTopOf="@+id/panelManual"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scannerHeader">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.45">
 
         <View
             android:layout_width="match_parent"
@@ -95,105 +84,27 @@
             android:layout_gravity="center"
             android:layout_marginHorizontal="20dp"
             android:background="@drawable/scanner_line" />
-
     </FrameLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="32dp"
         android:text="Escanea el código de la entrada"
         android:textColor="@color/secondary"
-        android:textSize="14sp"
+        android:textSize="15sp"
         android:fontFamily="@font/poppins_medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scannerContainer" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/panelManual"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="24dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="@color/surface_card"
-        app:strokeWidth="1dp"
-        app:strokeColor="@color/border_subtle"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="¿ENTRADA MANUAL?"
-                android:textColor="@color/text_medium"
-                android:textSize="10sp"
-                android:fontFamily="@font/poppins_bold"
-                android:letterSpacing="0.1" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Escribe el nombre de la sala"
-                android:textColor="@color/text_low"
-                android:textSize="13sp"
-                android:layout_marginBottom="16dp"
-                android:fontFamily="@font/poppins_regular" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:orientation="horizontal"
-                android:background="@drawable/bg_chat_input_capsule"
-                android:padding="4dp"
-                android:gravity="center_vertical">
-
-                <EditText
-                    android:id="@+id/editSalaManual"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:hint="Ej: GENERAL"
-                    android:inputType="textCapCharacters"
-                    android:textColor="@color/text_high"
-                    android:textColorHint="@color/text_low"
-                    android:background="@android:color/transparent"
-                    android:paddingHorizontal="20dp"
-                    android:imeOptions="actionDone"
-                    android:singleLine="true"
-                    android:fontFamily="@font/poppins_bold"
-                    android:textSize="15sp"/>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEntrarManual"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="ACCEDER"
-                    android:fontFamily="@font/poppins_bold"
-                    android:textSize="12sp"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@null"
-                    android:background="@drawable/bg_button"
-                    app:cornerRadius="16dp"
-                    app:elevation="0dp" />
-
-            </LinearLayout>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
     <ProgressBar
         android:id="@+id/progressScanner"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_marginTop="24dp"
         android:visibility="gone"
         android:indeterminateTint="@color/secondary"
-        app:layout_constraintBottom_toTopOf="@+id/panelManual"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scannerContainer" />

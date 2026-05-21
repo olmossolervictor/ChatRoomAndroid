@@ -19,14 +19,12 @@
         <item name="materialCardViewStyle">@style/Widget.App.CardView.Night</item>
     </style>
 
-    <!-- Estilo de tarjeta específico para modo noche -->
     <style name="Widget.App.CardView.Night" parent="Widget.App.CardView">
         <item name="cardBackgroundColor">@color/surface_card</item>
         <item name="strokeColor">@color/border_subtle</item>
         <item name="cardElevation">0dp</item>
     </style>
 
-    <!-- Ajuste de DatePicker para modo noche -->
     <style name="Theme.App.DatePicker.Night" parent="Theme.Material3.DayNight.Dialog">
         <item name="android:datePickerMode">calendar</item>
         <item name="colorPrimary">@color/primary</item>

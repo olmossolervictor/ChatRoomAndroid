@@ -78,10 +78,9 @@
         </LinearLayout>
 
         <ImageView
-            android:layout_width="38dp"
-            android:layout_height="31dp"
+            android:layout_width="40dp"
+            android:layout_height="44dp"
             android:layout_marginStart="80dp"
-            android:src="@drawable/icon_sala"
             app:layout_constraintBottom_toBottomOf="@id/btnEnterContainer"
             app:layout_constraintEnd_toEndOf="@+id/btnEnterContainer"
             app:layout_constraintHorizontal_bias="1.0"

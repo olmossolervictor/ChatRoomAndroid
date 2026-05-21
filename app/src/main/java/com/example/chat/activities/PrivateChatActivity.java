@@ -498,10 +498,27 @@ public class PrivateChatActivity extends BaseActivity {
                     @Override
                     public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
                         if (response.isSuccessful() && response.body() != null) {
+
+                            int currentFirstVisible = listMessagesPrivate.getFirstVisiblePosition();
+                            View v = listMessagesPrivate.getChildAt(0);
+                            int currentTop = (v == null) ? 0 : (v.getTop() - listMessagesPrivate.getPaddingTop());
+
+                            int currentLastVisible = listMessagesPrivate.getLastVisiblePosition();
+                            int currentCount = adapter.getCount();
+
+                            boolean estabaAbajoDelTodo = (currentCount == 0) || (currentLastVisible >= currentCount - 1);
+
                             listaMensajes.clear();
                             listaMensajes.addAll(response.body());
                             adapter.notifyDataSetChanged();
                             aplicarEstadoConversacion();
+
+                            if (estabaAbajoDelTodo) {
+                                listMessagesPrivate.setSelection(adapter.getCount() - 1);
+                            } else {
+                                listMessagesPrivate.setSelectionFromTop(currentFirstVisible, currentTop);
+                            }
+
                         } else if (response.code() == 410) {
                             cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
                         }

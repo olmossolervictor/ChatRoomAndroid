@@ -197,7 +197,7 @@
                     android:layout_gravity="center"
                     android:layout_marginTop="16dp"
                     android:text="@string/login_resend_prompt"
-                    android:visibility="visible" />
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

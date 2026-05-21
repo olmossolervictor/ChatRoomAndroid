@@ -166,6 +166,7 @@ public class MainActivity extends BaseActivity {
             btnSend.setOnClickListener(v -> {
                 String mensaje = editMessage.getText().toString().trim();
                 if (!mensaje.isEmpty()) {
+                    btnSend.setEnabled(false);
                     obtenerUbicacionYEnviar(mensaje);
                 }
             });
@@ -177,7 +178,6 @@ public class MainActivity extends BaseActivity {
         solicitarPermisoUbicacionSiNecesario();
     }
 
-    // 🔥 EL BYPASS DEFINITIVO CONTRA BASEACTIVITY 🔥
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
@@ -189,7 +189,6 @@ public class MainActivity extends BaseActivity {
                     android.graphics.Rect containerRect = new android.graphics.Rect();
                     bottomContainer.getGlobalVisibleRect(containerRect);
 
-                    // Solo si tocas FUERA de toda la barra inferior, quitamos el foco
                     if (!containerRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
                         v.clearFocus();
                         android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
@@ -200,9 +199,6 @@ public class MainActivity extends BaseActivity {
                 }
             }
         }
-
-        // ¡OJO! Ya NO usamos `return super.dispatchTouchEvent(ev);` porque nos llama al BaseActivity.
-        // Llamamos directamente al sistema para ejecutar el toque sin que BaseActivity nos sabotee.
         if (getWindow().superDispatchTouchEvent(ev)) {
             return true;
         }
@@ -406,14 +402,15 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void onResponse(Call<List<Mensaje>> call, Response<List<Mensaje>> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            int index = listMessages.getFirstVisiblePosition();
-                            View v = listMessages.getChildAt(0);
-                            int top = (v == null) ? 0 : (v.getTop() - listMessages.getPaddingTop());
 
-                            boolean estabaAbajoDelTodo = false;
-                            if (listMessages.getLastVisiblePosition() >= adapter.getCount() - 1) {
-                                estabaAbajoDelTodo = true;
-                            }
+                            int currentFirstVisible = listMessages.getFirstVisiblePosition();
+                            View v = listMessages.getChildAt(0);
+                            int currentTop = (v == null) ? 0 : (v.getTop() - listMessages.getPaddingTop());
+
+                            int currentLastVisible = listMessages.getLastVisiblePosition();
+                            int currentCount = adapter.getCount();
+
+                            boolean estabaAbajoDelTodo = (currentCount == 0) || (currentLastVisible >= currentCount - 1);
 
                             listaMensajes.clear();
                             listaMensajes.addAll(response.body());
@@ -422,8 +419,9 @@ public class MainActivity extends BaseActivity {
                             if (estabaAbajoDelTodo) {
                                 listMessages.setSelection(adapter.getCount() - 1);
                             } else {
-                                listMessages.setSelectionFromTop(index, top);
+                                listMessages.setSelectionFromTop(currentFirstVisible, currentTop);
                             }
+
                         } else if (response.code() == 403) {
                             manejarExpulsionServidor(response);
                         }
@@ -437,6 +435,7 @@ public class MainActivity extends BaseActivity {
     private void obtenerUbicacionYEnviar(String mensaje) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "Se requiere ubicacion para enviar en esta sala", Toast.LENGTH_SHORT).show();
+            btnSend.setEnabled(true);
             return;
         }
 
@@ -453,12 +452,13 @@ public class MainActivity extends BaseActivity {
                         enviarMensajeAlServidor(mensaje, location.getLatitude(), location.getLongitude());
                     }
                 })
-                .addOnFailureListener(e -> enviarMensajeAlServidor(mensaje, null, null));
+                .addOnFailureListener(e -> {
+                    enviarMensajeAlServidor(mensaje, null, null);
+                });
     }
 
     private void enviarMensajeAlServidor(String mensajeLimpio, Double latitud, Double longitud) {
         ChatApiServices api = RetrofitClient.getChatApiServices();
-        btnSend.setEnabled(false);
 
         api.enviarMensajeGrupal(currentSalaId.trim(), currentUserId, mensajeLimpio, latitud, longitud)
                 .enqueue(new Callback<ResponseBody>() {
@@ -472,14 +472,14 @@ public class MainActivity extends BaseActivity {
                         } else if (response.code() == 403) {
                             manejarExpulsionServidor(response);
                         } else {
-                            Toast.makeText(MainActivity.this, "Error " + response.code() + " del servidor", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Error " + response.code(), Toast.LENGTH_LONG).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         btnSend.setEnabled(true);
-                        Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

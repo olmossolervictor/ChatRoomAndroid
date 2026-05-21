@@ -2,20 +2,19 @@ package com.example.chat.activities;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar; // Importa Toolbar de androidx
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
@@ -34,8 +33,9 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,11 +51,13 @@ public class ScannerActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_CODE = 1001;
     private static final String TAG = "ScannerActivity";
+
     private PreviewView previewView;
     private ProgressBar progressBar;
     private ExecutorService cameraExecutor;
     private ImageAnalysis imageAnalysisRef;
     private ProcessCameraProvider cameraProviderRef;
+
     private final BarcodeScanner barcodeScanner = BarcodeScanning.getClient(
             new BarcodeScannerOptions.Builder()
                     .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
@@ -70,38 +72,19 @@ public class ScannerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scanner);
 
+        Toolbar toolbar = findViewById(R.id.toolbarScanner);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
+        }
+
         previewView = findViewById(R.id.previewView);
         progressBar = findViewById(R.id.progressScanner);
         cameraExecutor = Executors.newSingleThreadExecutor();
 
         currentUserId = getSharedPreferences("ChatPrefs", MODE_PRIVATE)
                 .getInt("id_usuario", -1);
-
-        EditText editSalaManual = findViewById(R.id.editSalaManual);
-        Button btnEntrarManual = findViewById(R.id.btnEntrarManual);
-
-        btnEntrarManual.setOnClickListener(v -> {
-            String sala = editSalaManual.getText().toString().trim().toUpperCase();
-            if (sala.isEmpty()) {
-                Toast.makeText(this, "Escribe el nombre de la sala", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            ocultarTeclado(editSalaManual);
-            if (procesando.compareAndSet(false, true)) {
-                imageAnalysisRef = imageAnalysisRef != null ? imageAnalysisRef : null;
-                if (imageAnalysisRef != null) imageAnalysisRef.clearAnalyzer();
-                progressBar.setVisibility(View.VISIBLE);
-                procesarQR(sala);
-            }
-        });
-
-        editSalaManual.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                btnEntrarManual.performClick();
-                return true;
-            }
-            return false;
-        });
 
         if (allPermissionsGranted()) {
             startCamera();
@@ -111,14 +94,23 @@ public class ScannerActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     private boolean allPermissionsGranted() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
     private void startCamera() {
-        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (isDestroyed() || isFinishing()) return;
+
             ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(this);
             future.addListener(() -> {
                 try {
@@ -147,14 +139,17 @@ public class ScannerActivity extends AppCompatActivity {
 
         CameraSelector cameraSelector;
         if (!cameraProvider.getAvailableCameraInfos().isEmpty()) {
-            boolean tieneTraser = false;
-            try { tieneTraser = cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA); } catch (Exception ignored) {}
-            cameraSelector = tieneTraser
+            boolean tieneCamaraTrasera = false;
+            try {
+                tieneCamaraTrasera = cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA);
+            } catch (Exception ignored) {}
+
+            cameraSelector = tieneCamaraTrasera
                     ? CameraSelector.DEFAULT_BACK_CAMERA
                     : CameraSelector.DEFAULT_FRONT_CAMERA;
         } else {
             cameraSelector = new CameraSelector.Builder()
-                    .addCameraFilter(list -> new ArrayList<>(list))
+                    .addCameraFilter(ArrayList::new)
                     .build();
         }
 
@@ -190,14 +185,16 @@ public class ScannerActivity extends AppCompatActivity {
                     for (Barcode barcode : barcodes) {
                         String rawValue = barcode.getRawValue();
                         if (rawValue != null && !rawValue.isEmpty()) {
+                            // Bloqueamos para que no lea más códigos mientras procesa este
                             if (procesando.compareAndSet(false, true)) {
                                 String idSala = rawValue.trim().toUpperCase();
                                 Log.d(TAG, "QR detectado: " + idSala);
+
                                 runOnUiThread(() -> {
                                     imageAnalysisRef.clearAnalyzer();
-                                    Toast.makeText(this, "QR leído: " + idSala, Toast.LENGTH_SHORT).show();
                                     progressBar.setVisibility(View.VISIBLE);
                                 });
+
                                 procesarQR(idSala);
                             }
                         }
@@ -212,15 +209,15 @@ public class ScannerActivity extends AppCompatActivity {
                 .unirseASala(currentUserId, idSala)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.code() == 403) {
                             try {
                                 String body = response.errorBody() != null ? response.errorBody().string() : "";
-                                org.json.JSONObject json = new org.json.JSONObject(body);
+                                JSONObject json = new JSONObject(body);
                                 String motivo = json.optString("motivo", "");
                                 String msg = motivo.isEmpty()
                                         ? "Has sido expulsado de esta sala"
-                                        : "Has sido expulsado de esta sala por: " + motivo;
+                                        : "Expulsado de la sala: " + motivo;
                                 mostrarError(msg);
                             } catch (Exception e) {
                                 mostrarError("Has sido expulsado de esta sala");
@@ -231,8 +228,8 @@ public class ScannerActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        mostrarError("Error de red: " + t.getMessage());
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                        mostrarError("Error de red: Comprueba tu conexión");
                     }
                 });
     }
@@ -242,7 +239,7 @@ public class ScannerActivity extends AppCompatActivity {
                 .getSalaInfo(idSala)
                 .enqueue(new Callback<Sala>() {
                     @Override
-                    public void onResponse(Call<Sala> call, Response<Sala> response) {
+                    public void onResponse(@NonNull Call<Sala> call, @NonNull Response<Sala> response) {
                         Intent result = new Intent();
                         result.putExtra("ID_SALA", idSala);
                         if (response.isSuccessful() && response.body() != null) {
@@ -256,7 +253,7 @@ public class ScannerActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<Sala> call, Throwable t) {
+                    public void onFailure(@NonNull Call<Sala> call, @NonNull Throwable t) {
                         Intent result = new Intent();
                         result.putExtra("ID_SALA", idSala);
                         setResult(RESULT_OK, result);
@@ -270,7 +267,7 @@ public class ScannerActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
             Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
             procesando.set(false);
-            activarAnalizador();
+            activarAnalizador(); // Reactivamos el escáner si hubo un error (ej: sala incorrecta)
         });
     }
 
@@ -279,17 +276,13 @@ public class ScannerActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (allPermissionsGranted()) startCamera();
-            else {
-                Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+            if (allPermissionsGranted()) {
+                startCamera();
+            } else {
+                Toast.makeText(this, "Permiso de cámara denegado. No se puede escanear.", Toast.LENGTH_SHORT).show();
                 finish();
             }
         }
-    }
-
-    private void ocultarTeclado(View view) {
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        if (imm != null) imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override

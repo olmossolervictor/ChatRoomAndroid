@@ -1,8 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-
-
     <style name="Base.Theme.Chat" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/text_high</item>
         <item name="colorPrimaryContainer">@color/surface_highlight</item>
@@ -27,7 +26,9 @@
         <item name="android:colorControlHighlight">@color/accent_soft</item>
         <item name="android:editTextStyle">@style/Widget.App.TextInputEditText</item>
         <item name="android:textColorHighlight">#4D7C4DFF</item>
+
         <item name="colorControlActivated">@color/primary</item>
+        <item name="colorControlNormal">@color/text_low</item>
 
         <item name="colorError">@color/error_icon</item>
         <item name="colorOnError">@color/white</item>
@@ -96,7 +97,6 @@
         <item name="colorOnSurface">@color/text_high</item>
         <item name="colorOnSurfaceVariant">@color/text_medium</item>
 
-        <!-- Botones integrados -->
         <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Button.TextButton</item>
         <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Button.TextButton</item>
 
@@ -332,14 +332,13 @@
         <item name="android:lineSpacingExtra">2dp</item>
     </style>
 
-    <style name="Widget.App.TextInputEditText" parent="">
+    <style name="Widget.App.TextInputEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
         <item name="android:textColor">@color/text_high</item>
         <item name="android:textColorHint">@color/text_low</item>
         <item name="android:textColorHighlight">#337C4DFF</item>
         <item name="android:drawableTint">@color/error_icon</item>
         <item name="android:fontFamily">@font/poppins_medium</item>
         <item name="android:textSize">15sp</item>
-        <item name="android:textCursorDrawable">@null</item>
     </style>
 
     <style name="ThemeOverlay.App.TextInputErrorPopup" parent="">

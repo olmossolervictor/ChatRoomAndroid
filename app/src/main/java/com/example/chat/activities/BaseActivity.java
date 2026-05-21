@@ -11,7 +11,6 @@ public class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(android.os.Bundle savedInstanceState) {
-        // Por defecto, seguimos al sistema (MODE_NIGHT_FOLLOW_SYSTEM)
         int modo = getSharedPreferences("AjustesPrefs", MODE_PRIVATE)
                 .getInt("modo_noche", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         AppCompatDelegate.setDefaultNightMode(modo);
