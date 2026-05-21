@@ -20,32 +20,30 @@ import com.example.chat.utils.AlertHelper.AlertType;
 
 public class AjustesActivity extends BaseActivity {
 
-    static final String PREFS = "AjustesPrefs";
+    private static final String PREFS = "AjustesPrefs";
 
     private Switch switchGps, switchCamara;
-    private RadioGroup radioTamanoFuente, radioTema;
-    private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ajustes);
 
-        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
         androidx.appcompat.widget.Toolbar toolbarAjustes = findViewById(R.id.toolbarAjustes);
         toolbarAjustes.setNavigationOnClickListener(v -> finish());
 
         switchGps = findViewById(R.id.switchGps);
         switchCamara = findViewById(R.id.switchCamara);
-        radioTema = findViewById(R.id.radioTema);
-        radioTamanoFuente = findViewById(R.id.radioTamanoFuente);
+
+        RadioGroup radioTema = findViewById(R.id.radioTema);
+        RadioGroup radioTamanoFuente = findViewById(R.id.radioTamanoFuente);
 
         int modoNoche = prefs.getInt("modo_noche", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         if (modoNoche == AppCompatDelegate.MODE_NIGHT_YES) radioTema.check(R.id.radioTemaOscuro);
         else if (modoNoche == AppCompatDelegate.MODE_NIGHT_NO) radioTema.check(R.id.radioTemaClaro);
         else radioTema.check(R.id.radioTemaSistema);
-
 
         int tamano = prefs.getInt("tamano_fuente", 15);
         if (tamano == 13) radioTamanoFuente.check(R.id.radioFuentePequena);
@@ -61,7 +59,6 @@ public class AjustesActivity extends BaseActivity {
             prefs.edit().putInt("modo_noche", mode).apply();
             AppCompatDelegate.setDefaultNightMode(mode);
         });
-
 
         radioTamanoFuente.setOnCheckedChangeListener((group, checkedId) -> {
             int size = 15;

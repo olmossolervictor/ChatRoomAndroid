@@ -60,30 +60,24 @@ public class MainActivity extends BaseActivity {
     private Button btnSend;
     private ListView listMessages;
     private LinearLayout layoutInputMessage;
-
     private boolean isAdmin = false;
     private TextView textTiempoRestante;
     private TextView textSalaTitulo;
-
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
-
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
-
     private FusedLocationProviderClient fusedLocationClient;
-
     private int currentUserId;
     private String currentSalaId;
-
-    // Datos de geovalla de la sala
     private double salaLatitud = 0;
     private double salaLongitud = 0;
     private double salaRadioMetros = 0;
     private String salaNombreMostrado;
     private boolean salaFinalizadaPorTiempo = false;
-
     private boolean isSolicitandoPermiso = false;
+    private com.google.android.material.card.MaterialCardView timerPill;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,14 +93,12 @@ public class MainActivity extends BaseActivity {
             finish();
             return;
         }
-
         currentSalaId = getIntent().getStringExtra("ID_SALA_QR");
         if (currentSalaId == null || currentSalaId.isEmpty()) {
             Toast.makeText(this, "Error: No se especificó sala", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-
         salaLatitud = getIntent().getDoubleExtra("SALA_LATITUD", 0);
         salaLongitud = getIntent().getDoubleExtra("SALA_LONGITUD", 0);
         salaRadioMetros = getIntent().getDoubleExtra("SALA_RADIO", 0);
@@ -117,7 +109,6 @@ public class MainActivity extends BaseActivity {
         if (getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("mantener_pantalla", false)) {
             getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout), (v, insets) -> {
@@ -141,6 +132,7 @@ public class MainActivity extends BaseActivity {
         btnSend = findViewById(R.id.btnSend);
         listMessages = findViewById(R.id.listMessages);
         layoutInputMessage = findViewById(R.id.layoutInputMessage);
+        timerPill = findViewById(R.id.timerPill);
         textTiempoRestante = findViewById(R.id.textTiempoRestante);
         textSalaTitulo = findViewById(R.id.textSalaTitulo);
         salaNombreMostrado = currentSalaId;
@@ -177,7 +169,6 @@ public class MainActivity extends BaseActivity {
         iniciarAutoRefresco();
         solicitarPermisoUbicacionSiNecesario();
     }
-
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
@@ -284,28 +275,31 @@ public class MainActivity extends BaseActivity {
 
     private void actualizarTimerSesion(long minutos) {
         if (minutos < 0) {
-            textTiempoRestante.setVisibility(View.GONE);
+            timerPill.setVisibility(View.GONE); // Ocultamos la tarjeta entera
             return;
         }
+
         if (minutos == 0) {
             finalizarSalaPorTiempo("El chat general ha terminado tras 2 horas.");
             return;
         }
-        textTiempoRestante.setVisibility(View.VISIBLE);
+
+        timerPill.setVisibility(View.VISIBLE); // Mostramos la tarjeta entera
 
         long horas = minutos / 60;
         long mins = minutos % 60;
         String texto = horas > 0
                 ? String.format("%dh %02dm", horas, mins)
                 : String.format("%dm", mins);
+
         textTiempoRestante.setText(texto);
 
         if (minutos >= 60) {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#388E3C"));
+            timerPill.setCardBackgroundColor(Color.parseColor("#388E3C")); // Verde
         } else if (minutos >= 30) {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#F57C00"));
+            timerPill.setCardBackgroundColor(Color.parseColor("#F57C00")); // Naranja
         } else {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#D32F2F"));
+            timerPill.setCardBackgroundColor(Color.parseColor("#D32F2F")); // Rojo
         }
     }
 

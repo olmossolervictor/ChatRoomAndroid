@@ -3,6 +3,7 @@ package com.example.chat.activities;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,7 +11,9 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -55,7 +58,7 @@ public class PrivateChatActivity extends BaseActivity {
 
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
     private Runnable refreshRunnable;
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -73,7 +76,6 @@ public class PrivateChatActivity extends BaseActivity {
 
     // VARIABLES PARA LA ANIMACIÓN
     private long ultimoAvisoEscribiendo = 0;
-    private LinearLayout layoutTyping;
     private View layoutSolicitudPrivada;
     private LinearLayout layoutBotonesSolicitudPrivada;
     private TextView textEstadoConversacionPrivada;
@@ -115,13 +117,11 @@ public class PrivateChatActivity extends BaseActivity {
         listMessagesPrivate = findViewById(R.id.listMessagesPrivate);
         editMessagePrivate = findViewById(R.id.editMessagePrivate);
         btnSendPrivate = findViewById(R.id.btnSendPrivate);
-        layoutTyping = findViewById(R.id.layoutTyping);
         layoutSolicitudPrivada = findViewById(R.id.layoutSolicitudPrivada);
         layoutBotonesSolicitudPrivada = findViewById(R.id.layoutBotonesSolicitudPrivada);
         textEstadoConversacionPrivada = findViewById(R.id.textEstadoConversacionPrivada);
         btnAcceptPrivateRequest = findViewById(R.id.btnAcceptPrivateRequest);
         btnRejectPrivateRequest = findViewById(R.id.btnRejectPrivateRequest);
-
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessagesPrivate.setAdapter(adapter);
 
@@ -138,18 +138,15 @@ public class PrivateChatActivity extends BaseActivity {
         editMessagePrivate.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 0) {
                     long tiempoActual = System.currentTimeMillis();
                     if (tiempoActual - ultimoAvisoEscribiendo > 2000) {
                         ultimoAvisoEscribiendo = tiempoActual;
-                        notificarEscribiendoAlServidor();
                     }
                 }
             }
-
             @Override
             public void afterTextChanged(Editable s) {}
         });
@@ -164,34 +161,24 @@ public class PrivateChatActivity extends BaseActivity {
         iniciarAutoRefresco();
     }
 
-    // 🔥 EL BYPASS DEFINITIVO CONTRA BASEACTIVITY 🔥
     @Override
-    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
-        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
             if (v instanceof EditText) {
                 View bottomContainer = findViewById(R.id.layoutInputMessageContainer);
-
                 if (bottomContainer != null) {
-                    android.graphics.Rect containerRect = new android.graphics.Rect();
+                    Rect containerRect = new Rect();
                     bottomContainer.getGlobalVisibleRect(containerRect);
-
                     if (!containerRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
                         v.clearFocus();
-                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-                        if (imm != null) {
-                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                        }
+                        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                        if (imm != null) imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                     }
                 }
             }
         }
-
-        // Llamada directa al sistema operativo, evitando el BaseActivity
-        if (getWindow().superDispatchTouchEvent(ev)) {
-            return true;
-        }
-        return onTouchEvent(ev);
+        return super.dispatchTouchEvent(ev);
     }
 
     private void cargarFotoOtroUsuario(CircleImageView imageView) {
@@ -232,7 +219,6 @@ public class PrivateChatActivity extends BaseActivity {
             @Override
             public void run() {
                 obtenerMensajesPrivados();
-                comprobarSiElOtroEscribe();
                 verificarUbicacionPrivada(false);
                 handler.postDelayed(this, 3000);
             }
@@ -240,53 +226,8 @@ public class PrivateChatActivity extends BaseActivity {
         handler.postDelayed(refreshRunnable, 3000);
     }
 
-    private void notificarEscribiendoAlServidor() {
-        RetrofitClient.getChatApiServices()
-                .notificarEscribiendo(currentUserId, otherUserId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                });
-    }
 
-    private void comprobarSiElOtroEscribe() {
-        RetrofitClient.getChatApiServices()
-                .getEstadoEscribiendoPath(currentUserId, otherUserId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (layoutTyping != null && response.isSuccessful() && response.body() != null) {
-                            layoutTyping.setVisibility(parsearEstadoEscribiendo(response.body()) ? View.VISIBLE : View.GONE);
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                });
-    }
 
-    private boolean parsearEstadoEscribiendo(ResponseBody body) {
-        if (body == null) return false;
-        try {
-            String raw = body.string();
-            if (raw == null) return false;
-            String value = raw.trim();
-            if (value.isEmpty()) return false;
-            if ("true".equalsIgnoreCase(value) || "1".equals(value)) return true;
-            if ("false".equalsIgnoreCase(value) || "0".equals(value)) return false;
-
-            JSONObject json = new JSONObject(value);
-            if (json.has("escribiendo")) return json.optBoolean("escribiendo", false);
-            if (json.has("typing")) return json.optBoolean("typing", false);
-            if (json.has("estado")) {
-                String estado = json.optString("estado", "");
-                return "escribiendo".equalsIgnoreCase(estado) || "typing".equalsIgnoreCase(estado);
-            }
-        } catch (Exception ignored) {
-        }
-        return false;
-    }
 
     private void cargarInfoGeofenceSiHaceFalta() {
         if (!necesitaInfoGeofenceRemota()) {
@@ -632,7 +573,6 @@ public class PrivateChatActivity extends BaseActivity {
                             otherUserId,
                             otherUserName
                     );
-                    marcarMensajesEntrantesLeidos();
                     obtenerMensajesPrivados();
                 } else if (response.code() == 410) {
                     cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
@@ -648,20 +588,6 @@ public class PrivateChatActivity extends BaseActivity {
                 Toast.makeText(PrivateChatActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void marcarMensajesEntrantesLeidos() {
-        for (Mensaje mensaje : listaMensajes) {
-            if (mensaje.getIdUsuario() == otherUserId
-                    && !PrivateChatConversationPolicy.isControlMessage(mensaje.getMensaje())) {
-                RetrofitClient.getChatApiServices()
-                        .marcarLeidoPrivado(mensaje.getId())
-                        .enqueue(new Callback<ResponseBody>() {
-                            @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
-                            @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                        });
-            }
-        }
     }
 
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -24,7 +25,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.chat.R;
 import com.example.chat.adapters.SalaAdapter;
-import com.example.chat.models.Mensaje;
 import com.example.chat.models.PrivateChatHistoryItem;
 import com.example.chat.models.Sala;
 import com.example.chat.network.RetrofitClient;
@@ -46,21 +46,16 @@ import retrofit2.Response;
 
 public class HomeActivity extends BaseActivity {
 
+    private static final String TAG = "HomeActivity";
     private static final int SCAN_QR_REQUEST_CODE = 2000;
 
-    private DrawerLayout drawerLayout;
-    private ListView listSalas;
-    private com.google.android.material.button.MaterialButton btnMenuDrawer, drawerAjustes, drawerGestionUsuarios, drawerTerminos;
+    // Solo quedan las vistas que se modifican en otros métodos
+    private com.google.android.material.button.MaterialButton drawerGestionUsuarios;
+    private com.google.android.material.button.MaterialButton btnAbandonarGlobal;
 
     private LinearLayout layoutConSalas, layoutSinSalas;
-    private Button btnScanQRHomeAbajo, btnScanQRHomeCentro;
-
     private ImageView imgDrawerFoto;
     private TextView textDrawerNombre;
-
-    private com.google.android.material.button.MaterialButton drawerEditarPerfil;
-    private com.google.android.material.button.MaterialButton drawerCerrarSesion;
-    private com.google.android.material.button.MaterialButton btnAbandonarGlobal;
 
     private RelativeLayout drawerNotificaciones;
     private TextView drawerNotifBadge;
@@ -90,26 +85,28 @@ public class HomeActivity extends BaseActivity {
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         currentUserId = pref.getInt("id_usuario", -1);
 
-        drawerLayout = findViewById(R.id.drawerLayout);
-        listSalas = findViewById(R.id.listSalas);
-        btnMenuDrawer = findViewById(R.id.btnMenuDrawer);
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
+        ListView listSalas = findViewById(R.id.listSalas);
 
         layoutConSalas = findViewById(R.id.layoutConSalas);
         layoutSinSalas = findViewById(R.id.layoutSinSalas);
-        btnScanQRHomeAbajo = findViewById(R.id.btnScanQRHomeAbajo);
-        btnScanQRHomeCentro = findViewById(R.id.btnScanQRHomeCentro);
 
         imgDrawerFoto = findViewById(R.id.imgDrawerFoto);
         textDrawerNombre = findViewById(R.id.textDrawerNombre);
-        drawerEditarPerfil = findViewById(R.id.drawerEditarPerfil);
-        drawerAjustes = findViewById(R.id.drawerAjustes);
         drawerGestionUsuarios = findViewById(R.id.drawerGestionUsuarios);
-        drawerTerminos = findViewById(R.id.drawerTerminos);
-        drawerCerrarSesion = findViewById(R.id.drawerCerrarSesion);
+        btnAbandonarGlobal = findViewById(R.id.btnAbandonarGlobal);
         drawerNotificaciones = findViewById(R.id.drawerNotificaciones);
         drawerNotifBadge = findViewById(R.id.drawerNotifBadge);
 
-        configurarFooterHistorialPrivado();
+        com.google.android.material.button.MaterialButton btnMenuDrawer = findViewById(R.id.btnMenuDrawer);
+        Button btnScanQRHomeAbajo = findViewById(R.id.btnScanQRHomeAbajo);
+        Button btnScanQRHomeCentro = findViewById(R.id.btnScanQRHomeCentro);
+        com.google.android.material.button.MaterialButton drawerEditarPerfil = findViewById(R.id.drawerEditarPerfil);
+        com.google.android.material.button.MaterialButton drawerAjustes = findViewById(R.id.drawerAjustes);
+        com.google.android.material.button.MaterialButton drawerTerminos = findViewById(R.id.drawerTerminos);
+        com.google.android.material.button.MaterialButton drawerCerrarSesion = findViewById(R.id.drawerCerrarSesion);
+
+        configurarFooterHistorialPrivado(listSalas);
 
         salaAdapter = new SalaAdapter(this, listaMisSalas);
         listSalas.setAdapter(salaAdapter);
@@ -135,6 +132,7 @@ public class HomeActivity extends BaseActivity {
                 startActivityForResult(new Intent(this, ScannerActivity.class), SCAN_QR_REQUEST_CODE);
             }
         };
+
         btnScanQRHomeAbajo.setOnClickListener(scanAction);
         btnScanQRHomeCentro.setOnClickListener(scanAction);
 
@@ -145,7 +143,6 @@ public class HomeActivity extends BaseActivity {
             startActivity(intent);
         });
 
-        btnAbandonarGlobal = findViewById(R.id.btnAbandonarGlobal);
         btnAbandonarGlobal.setOnClickListener(v -> {
             if (listaMisSalas != null && !listaMisSalas.isEmpty()) {
                 Sala sala = listaMisSalas.get(0);
@@ -171,7 +168,6 @@ public class HomeActivity extends BaseActivity {
 
         drawerNotificaciones.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
-            // 🚀 EXTRA SEGURIDAD: Si logran hacer clic, comprobamos que haya sala
             if (listaMisSalas.isEmpty()) {
                 Toast.makeText(this, "Debes entrar a una sala general primero", Toast.LENGTH_SHORT).show();
                 return;
@@ -193,7 +189,6 @@ public class HomeActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         cargarPerfilDrawer();
-
         cargarMisSalas();
         iniciarRefrescoHistorialPrivado();
     }
@@ -235,18 +230,21 @@ public class HomeActivity extends BaseActivity {
                                         byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
                                         imgDrawerFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
                                     } catch (Exception e) {
+                                        Log.e(TAG, "Error decodificando foto de perfil", e);
                                         imgDrawerFoto.setImageResource(R.drawable.defecto);
                                     }
                                 } else {
                                     imgDrawerFoto.setImageResource(R.drawable.defecto);
                                 }
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                Log.e(TAG, "Error leyendo JSON del perfil", e);
                             }
                         }
                     }
+
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    }
                 });
     }
 
@@ -264,19 +262,16 @@ public class HomeActivity extends BaseActivity {
                             }
                         }
 
-                        // 🚀 REGLA DE ORO: SI NO HAY SALA GENERAL...
                         if (listaMisSalas.isEmpty()) {
                             btnAbandonarGlobal.setVisibility(View.GONE);
-                            drawerNotificaciones.setVisibility(View.GONE); // Desaparecen notificaciones del menú
+                            drawerNotificaciones.setVisibility(View.GONE);
                         } else {
                             btnAbandonarGlobal.setVisibility(View.VISIBLE);
-                            drawerNotificaciones.setVisibility(View.VISIBLE); // Aparecen notificaciones
+                            drawerNotificaciones.setVisibility(View.VISIBLE);
                         }
 
                         salaAdapter.notifyDataSetChanged();
                         actualizarVistasSalas();
-
-
                         actualizarBadgeNotificaciones();
                         refrescarHistorialPrivado();
                     }
@@ -289,7 +284,6 @@ public class HomeActivity extends BaseActivity {
                     }
                 });
     }
-
     private boolean debeMostrarSala(Sala sala) {
         if (sala == null) return false;
         String estado = sala.getEstado();
@@ -299,30 +293,26 @@ public class HomeActivity extends BaseActivity {
         long minutosRestantes = sala.getMinutosRestantes();
         return minutosRestantes == -1 || minutosRestantes > 0;
     }
-
-    private void configurarFooterHistorialPrivado() {
+    private void configurarFooterHistorialPrivado(ListView listSalas) {
         View footerView = LayoutInflater.from(this).inflate(R.layout.footer_historial_privado, listSalas, false);
         layoutHistorialPrivadoItems = footerView.findViewById(R.id.layoutHistorialPrivadoItems);
         textHistorialPrivadoVacio = footerView.findViewById(R.id.textHistorialPrivadoVacio);
         listSalas.addFooterView(footerView, null, false);
     }
-
     private void iniciarRefrescoHistorialPrivado() {
         historialHandler.removeCallbacksAndMessages(null);
         historialRefreshRunnable = new Runnable() {
             @Override
             public void run() {
-                cargarMisSalas(); // Cargar salas dispara todo lo demás en cadena
+                cargarMisSalas();
                 historialHandler.postDelayed(this, 30_000L);
             }
         };
         historialHandler.post(historialRefreshRunnable);
     }
-
     private void refrescarHistorialPrivado() {
         if (layoutHistorialPrivadoItems == null || textHistorialPrivadoVacio == null) return;
         layoutHistorialPrivadoItems.removeAllViews();
-
 
         if (listaMisSalas.isEmpty()) {
             textHistorialPrivadoVacio.setVisibility(View.GONE);
@@ -348,8 +338,6 @@ public class HomeActivity extends BaseActivity {
             TextView textNombre = row.findViewById(R.id.textNombreHistorialPrivado);
             TextView textInicial = row.findViewById(R.id.textInicialHistorialPrivado);
             ImageView btnEliminarHistorial = row.findViewById(R.id.btnEliminarHistorialPrivado);
-
-
             ImageView imgFoto = row.findViewById(R.id.imgFotoHistorialPrivado);
 
             String nombreUsuario = item.getOtherUserName();
@@ -358,13 +346,10 @@ public class HomeActivity extends BaseActivity {
             }
             textNombre.setText(item.getOtherUserName());
 
-
             if (imgFoto != null) {
-                // Por defecto, ocultamos la foto y mostramos la letra inicial
                 imgFoto.setVisibility(View.GONE);
                 textInicial.setVisibility(View.VISIBLE);
 
-                // Pedimos los datos del usuario al servidor para ver si tiene foto
                 RetrofitClient.getChatApiServices().getUsuario(item.getOtherUserId())
                         .enqueue(new Callback<ResponseBody>() {
                             @Override
@@ -374,22 +359,21 @@ public class HomeActivity extends BaseActivity {
                                         JSONObject json = new JSONObject(response.body().string());
                                         String foto = json.optString("foto", "");
 
-                                        // Si tiene foto, la decodificamos y la mostramos
                                         if (!foto.isEmpty() && !foto.equalsIgnoreCase("null")) {
                                             byte[] decoded = Base64.decode(foto, Base64.DEFAULT);
                                             imgFoto.setImageBitmap(BitmapFactory.decodeByteArray(decoded, 0, decoded.length));
-
-                                            // Hacemos visible la foto y ocultamos el círculo de la letra
                                             imgFoto.setVisibility(View.VISIBLE);
                                             textInicial.setVisibility(View.GONE);
                                         }
                                     } catch (Exception e) {
-                                        e.printStackTrace();
+                                        Log.e(TAG, "Error al cargar la foto de historial", e);
                                     }
                                 }
                             }
+
                             @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            }
                         });
             }
 
@@ -412,7 +396,6 @@ public class HomeActivity extends BaseActivity {
             textHistorialPrivadoVacio.setVisibility(View.VISIBLE);
         }
     }
-
     private void mostrarConfirmacionEliminarHistorialPrivado(PrivateChatHistoryItem item) {
         if (item == null) return;
 
@@ -427,7 +410,6 @@ public class HomeActivity extends BaseActivity {
                 .setNegativeButton("CANCELAR", null)
                 .show();
     }
-
     private void eliminarHistorialPrivado(PrivateChatHistoryItem item) {
         if (item == null) return;
 
@@ -437,7 +419,6 @@ public class HomeActivity extends BaseActivity {
         Toast.makeText(this, "Historial eliminado", Toast.LENGTH_SHORT).show();
         refrescarHistorialPrivado();
     }
-
     private void abrirChatPrivadoDesdeHistorial(PrivateChatHistoryItem item) {
         PrivateChatHistoryStore.touchChat(this, currentUserId, item.getOtherUserId(), item.getOtherUserName());
         RetrofitClient.getChatApiServices().crearChatPrivado(currentUserId, item.getOtherUserId())
@@ -451,6 +432,7 @@ public class HomeActivity extends BaseActivity {
                         PrivateChatGeofenceStore.attachExtrasIfAvailable(HomeActivity.this, intent, currentUserId, item.getOtherUserId());
                         startActivity(intent);
                     }
+
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         Toast.makeText(HomeActivity.this, "Error al abrir chat", Toast.LENGTH_SHORT).show();
@@ -473,6 +455,7 @@ public class HomeActivity extends BaseActivity {
                         }
                         startActivity(intent);
                     }
+
                     @Override
                     public void onFailure(Call<Sala> call, Throwable t) {
                         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
@@ -514,11 +497,15 @@ public class HomeActivity extends BaseActivity {
                                 String nombreRol = json.optString("rol", "usuario").toLowerCase();
                                 pref.edit().putString("rol", nombreRol).apply();
                                 drawerGestionUsuarios.setVisibility((idRol == 1 || "owner".equals(nombreRol)) ? View.VISIBLE : View.GONE);
-                            } catch (Exception e) { e.printStackTrace(); }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error interpretando el rol", e);
+                            }
                         }
                     }
+
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    }
                 });
     }
 
@@ -533,12 +520,10 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void actualizarBadgeNotificaciones() {
-
-        if (listaMisSalas.isEmpty() || !getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("notificaciones", true)) {
+        if (listaMisSalas.isEmpty()) {
             drawerNotifBadge.setVisibility(View.GONE);
             return;
         }
-
         RetrofitClient.getChatApiServices().getResumenNotificaciones(currentUserId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -548,14 +533,18 @@ public class HomeActivity extends BaseActivity {
                         int count = array.length();
                         drawerNotifBadge.setText(String.valueOf(count));
                         drawerNotifBadge.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
-                    } catch (Exception e) { drawerNotifBadge.setVisibility(View.GONE); }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parseando número de notificaciones", e);
+                        drawerNotifBadge.setVisibility(View.GONE);
+                    }
                 }
             }
+
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {}
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
         });
     }
-
     private void mostrarNotificacionesConSolicitud() {
         RetrofitClient.getChatApiServices().getResumenNotificaciones(currentUserId).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -580,21 +569,22 @@ public class HomeActivity extends BaseActivity {
                     } else {
                         mostrarDialogoNotificacionesPrivadas(notificaciones);
                     }
-                } catch (Exception e) { e.printStackTrace(); }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error procesando el array de notificaciones", e);
+                }
             }
+
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(HomeActivity.this, "Error al cargar notificaciones", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
     private PrivateChatConversationPolicy.State estadoDesdeServidor(String estado) {
         if ("ACEPTADO".equalsIgnoreCase(estado)) return PrivateChatConversationPolicy.State.ACCEPTED;
         if ("RECHAZADO".equalsIgnoreCase(estado)) return PrivateChatConversationPolicy.State.REJECTED;
         return PrivateChatConversationPolicy.State.PENDING_INCOMING;
     }
-
     private void mostrarDialogoNotificacionesPrivadas(List<NotificacionPrivada> notificaciones) {
         ScrollView scrollView = new ScrollView(this);
         LinearLayout container = new LinearLayout(this);
@@ -635,13 +625,11 @@ public class HomeActivity extends BaseActivity {
         dialogRef[0] = new AlertDialog.Builder(this).setTitle("Notificaciones").setView(scrollView).setPositiveButton("Cerrar", null).create();
         dialogRef[0].show();
     }
-
     private void abrirNotificacionPrivada(AlertDialog dialog, NotificacionPrivada notificacion) {
         if (dialog != null) dialog.dismiss();
         marcarMensajePrivadoLeido(notificacion.idMensaje);
         abrirChatPrivado(notificacion.idRemitente, notificacion.nombreRemitente);
     }
-
     private void responderNotificacionPrivada(AlertDialog dialog, NotificacionPrivada notificacion, boolean aceptada) {
         if (dialog != null) dialog.dismiss();
         String controlMessage = aceptada ? PrivateChatConversationPolicy.acceptedMessage() : PrivateChatConversationPolicy.rejectedMessage();
@@ -655,18 +643,22 @@ public class HomeActivity extends BaseActivity {
                     if (aceptada) abrirChatPrivado(notificacion.idRemitente, notificacion.nombreRemitente);
                 }
             }
+
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {}
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
         });
     }
-
     private void marcarMensajePrivadoLeido(int idMensaje) {
         if (idMensaje != -1) RetrofitClient.getChatApiServices().marcarLeidoPrivado(idMensaje).enqueue(new Callback<ResponseBody>() {
-            @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
-            @Override public void onFailure(Call<ResponseBody> call, Throwable t) {}
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
         });
     }
-
     private void abrirChatPrivado(int idRemitente, String nombreRemitente) {
         RetrofitClient.getChatApiServices().crearChatPrivado(currentUserId, idRemitente).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -679,18 +671,18 @@ public class HomeActivity extends BaseActivity {
                 PrivateChatGeofenceStore.attachExtrasIfAvailable(HomeActivity.this, intent, currentUserId, idRemitente);
                 startActivity(intent);
             }
+
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {}
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
         });
     }
-
     private boolean esClickRapido() {
         long tiempoActual = System.currentTimeMillis();
         if (tiempoActual - ultimoClickTime < 1000) return true;
         ultimoClickTime = tiempoActual;
         return false;
     }
-
     private void confirmarAbandonoTotal(String idSala) {
         new AlertDialog.Builder(this)
                 .setTitle("¿Cerrar sesión en la sala?")
@@ -717,6 +709,7 @@ public class HomeActivity extends BaseActivity {
                                         cargarMisSalas();
                                     }
                                 }
+
                                 @Override
                                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                                     Toast.makeText(HomeActivity.this, "Error al conectar", Toast.LENGTH_SHORT).show();
@@ -726,7 +719,6 @@ public class HomeActivity extends BaseActivity {
                 .setNegativeButton("CANCELAR", null)
                 .show();
     }
-
     private void marcarChatsPrivadosCerradosPorSala(String idSala, String motivo) {
         List<Integer> otrosUsuarios = PrivateChatGeofenceStore.getOtherUserIdsForSala(this, currentUserId, idSala);
         for (Integer otherId : otrosUsuarios) {
@@ -734,7 +726,6 @@ public class HomeActivity extends BaseActivity {
             PrivateChatClosureStore.closeForThirtyMinutes(this, currentUserId, otherId, idSala, motivo);
         }
     }
-
     private String crearMensajeAbandonoSala() {
         SharedPreferences pref = getSharedPreferences("ChatPrefs", MODE_PRIVATE);
         String nombre = pref.getString("nombre", "");
