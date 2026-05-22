@@ -115,7 +115,6 @@ public class PrivateChatActivity extends BaseActivity {
         listMessagesPrivate = findViewById(R.id.listMessagesPrivate);
         editMessagePrivate = findViewById(R.id.editMessagePrivate);
         btnSendPrivate = findViewById(R.id.btnSendPrivate);
-        layoutTyping = findViewById(R.id.layoutTyping);
         layoutSolicitudPrivada = findViewById(R.id.layoutSolicitudPrivada);
         layoutBotonesSolicitudPrivada = findViewById(R.id.layoutBotonesSolicitudPrivada);
         textEstadoConversacionPrivada = findViewById(R.id.textEstadoConversacionPrivada);
@@ -145,7 +144,6 @@ public class PrivateChatActivity extends BaseActivity {
                     long tiempoActual = System.currentTimeMillis();
                     if (tiempoActual - ultimoAvisoEscribiendo > 2000) {
                         ultimoAvisoEscribiendo = tiempoActual;
-                        notificarEscribiendoAlServidor();
                     }
                 }
             }
@@ -164,7 +162,6 @@ public class PrivateChatActivity extends BaseActivity {
         iniciarAutoRefresco();
     }
 
-    // 🔥 EL BYPASS DEFINITIVO CONTRA BASEACTIVITY 🔥
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
@@ -187,7 +184,6 @@ public class PrivateChatActivity extends BaseActivity {
             }
         }
 
-        // Llamada directa al sistema operativo, evitando el BaseActivity
         if (getWindow().superDispatchTouchEvent(ev)) {
             return true;
         }
@@ -232,60 +228,11 @@ public class PrivateChatActivity extends BaseActivity {
             @Override
             public void run() {
                 obtenerMensajesPrivados();
-                comprobarSiElOtroEscribe();
                 verificarUbicacionPrivada(false);
                 handler.postDelayed(this, 3000);
             }
         };
         handler.postDelayed(refreshRunnable, 3000);
-    }
-
-    private void notificarEscribiendoAlServidor() {
-        RetrofitClient.getChatApiServices()
-                .notificarEscribiendo(currentUserId, otherUserId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {}
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                });
-    }
-
-    private void comprobarSiElOtroEscribe() {
-        RetrofitClient.getChatApiServices()
-                .getEstadoEscribiendoPath(currentUserId, otherUserId)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (layoutTyping != null && response.isSuccessful() && response.body() != null) {
-                            layoutTyping.setVisibility(parsearEstadoEscribiendo(response.body()) ? View.VISIBLE : View.GONE);
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {}
-                });
-    }
-
-    private boolean parsearEstadoEscribiendo(ResponseBody body) {
-        if (body == null) return false;
-        try {
-            String raw = body.string();
-            if (raw == null) return false;
-            String value = raw.trim();
-            if (value.isEmpty()) return false;
-            if ("true".equalsIgnoreCase(value) || "1".equals(value)) return true;
-            if ("false".equalsIgnoreCase(value) || "0".equals(value)) return false;
-
-            JSONObject json = new JSONObject(value);
-            if (json.has("escribiendo")) return json.optBoolean("escribiendo", false);
-            if (json.has("typing")) return json.optBoolean("typing", false);
-            if (json.has("estado")) {
-                String estado = json.optString("estado", "");
-                return "escribiendo".equalsIgnoreCase(estado) || "typing".equalsIgnoreCase(estado);
-            }
-        } catch (Exception ignored) {
-        }
-        return false;
     }
 
     private void cargarInfoGeofenceSiHaceFalta() {

@@ -60,14 +60,14 @@
 
                     <TextView
                         android:id="@+id/textTiempoRestante"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_bold"
                         android:paddingHorizontal="12dp"
                         android:paddingVertical="6dp"
                         android:text="00:00"
                         android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/poppins_bold" />
+                        android:textSize="12sp" />
                 </com.google.android.material.card.MaterialCardView>
             </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>

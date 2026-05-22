@@ -100,33 +100,6 @@
             android:orientation="vertical"
             android:padding="8dp">
 
-            <LinearLayout
-                android:id="@+id/layoutTyping"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:indeterminateTint="@color/primary" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Escribiendo..."
-                    android:textSize="11sp"
-                    android:fontFamily="@font/poppins_regular"
-                    android:layout_marginStart="6dp"
-                    android:textColor="@color/text_medium" />
-            </LinearLayout>
-
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/layoutSolicitudPrivada"
                 android:layout_width="match_parent"
@@ -231,5 +204,4 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
