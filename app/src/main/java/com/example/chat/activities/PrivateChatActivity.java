@@ -165,7 +165,7 @@ public class PrivateChatActivity extends BaseActivity {
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
-            if (v instanceof EditText) {
+            if (v == editMessagePrivate) {
                 View bottomContainer = findViewById(R.id.layoutInputMessageContainer);
                 if (bottomContainer != null) {
                     Rect containerRect = new Rect();

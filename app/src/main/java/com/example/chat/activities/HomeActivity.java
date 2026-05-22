@@ -261,18 +261,13 @@ public class HomeActivity extends BaseActivity {
                             }
                         }
 
-                        if (listaMisSalas.isEmpty()) {
-                            btnAbandonarGlobal.setVisibility(View.GONE);
-                            drawerNotificaciones.setVisibility(View.GONE);
-                        } else {
-                            btnAbandonarGlobal.setVisibility(View.VISIBLE);
-                            drawerNotificaciones.setVisibility(View.VISIBLE);
-                        }
+                        actualizarAccionesSalas();
 
                         salaAdapter.notifyDataSetChanged();
                         actualizarVistasSalas();
                         actualizarBadgeNotificaciones();
                         refrescarHistorialPrivado();
+                        refrescarMinutosRestantesSalas();
                     }
 
                     @Override
@@ -282,6 +277,55 @@ public class HomeActivity extends BaseActivity {
                         drawerNotificaciones.setVisibility(View.GONE);
                     }
                 });
+    }
+
+    private void refrescarMinutosRestantesSalas() {
+        for (Sala sala : new ArrayList<>(listaMisSalas)) {
+            String idSala = sala.getIdSala() != null ? sala.getIdSala() : sala.getNombre();
+            if (idSala == null || idSala.trim().isEmpty()) continue;
+
+            RetrofitClient.getChatApiServices()
+                    .verificarSesionSala(currentUserId, idSala, null, null)
+                    .enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (!response.isSuccessful() || response.body() == null) return;
+                            try {
+                                JSONObject json = new JSONObject(response.body().string());
+                                long minutos = json.optLong("minutos_restantes", sala.getMinutosRestantes());
+                                String estadoSala = json.optString("estado_sala", json.optString("estado", ""));
+
+                                if ("finalizada".equalsIgnoreCase(estadoSala)
+                                        || "expirada".equalsIgnoreCase(estadoSala)
+                                        || "cerrada".equalsIgnoreCase(estadoSala)
+                                        || minutos == 0) {
+                                    listaMisSalas.remove(sala);
+                                    actualizarAccionesSalas();
+                                    actualizarVistasSalas();
+                                } else {
+                                    sala.setMinutosRestantes(minutos);
+                                }
+                                salaAdapter.notifyDataSetChanged();
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error actualizando minutos restantes de sala", e);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        }
+                    });
+        }
+    }
+
+    private void actualizarAccionesSalas() {
+        if (listaMisSalas.isEmpty()) {
+            btnAbandonarGlobal.setVisibility(View.GONE);
+            drawerNotificaciones.setVisibility(View.GONE);
+        } else {
+            btnAbandonarGlobal.setVisibility(View.VISIBLE);
+            drawerNotificaciones.setVisibility(View.VISIBLE);
+        }
     }
     private boolean debeMostrarSala(Sala sala) {
         if (sala == null) return false;

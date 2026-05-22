@@ -173,7 +173,7 @@ public class MainActivity extends BaseActivity {
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
-            if (v instanceof EditText) {
+            if (v == editMessage) {
                 View bottomContainer = findViewById(R.id.layoutInputMessageContainer);
 
                 if (bottomContainer != null) {

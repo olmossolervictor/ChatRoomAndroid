@@ -90,24 +90,14 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
 
             if (fechaCompleta != null) {
                 try {
-
-                    java.text.SimpleDateFormat sdfOriginal =
-                            new java.text.SimpleDateFormat(
-                                    "yyyy-MM-dd HH:mm:ss",
-                                    java.util.Locale.getDefault()
-                            );
-
-                    java.util.Date date = sdfOriginal.parse(fechaCompleta);
-
-                    java.util.Calendar calendar = java.util.Calendar.getInstance();
-                    calendar.setTime(date);
-                    calendar.add(java.util.Calendar.HOUR_OF_DAY, 2);
+                    java.util.Date date = parseFechaServidor(fechaCompleta);
                     java.text.SimpleDateFormat sdfNuevo =
                             new java.text.SimpleDateFormat(
                                     "HH:mm",
                                     java.util.Locale.getDefault()
                             );
-                    textFecha.setText(sdfNuevo.format(calendar.getTime()));
+                    sdfNuevo.setTimeZone(java.util.TimeZone.getTimeZone("Europe/Madrid"));
+                    textFecha.setText(sdfNuevo.format(date));
                 } catch (Exception e) {
                     if (fechaCompleta.length() >= 16) {
                         textFecha.setText(fechaCompleta.substring(11, 16));
@@ -136,5 +126,21 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
         }
 
         return convertView;
+    }
+
+    private java.util.Date parseFechaServidor(String fechaCompleta) throws java.text.ParseException {
+        String fecha = fechaCompleta.trim().replace("T", " ");
+        if (fecha.endsWith("Z")) {
+            fecha = fecha.substring(0, fecha.length() - 1);
+        }
+        int puntoMillis = fecha.indexOf('.');
+        if (puntoMillis >= 0) {
+            fecha = fecha.substring(0, puntoMillis);
+        }
+
+        java.text.SimpleDateFormat sdfOriginal =
+                new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
+        sdfOriginal.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        return sdfOriginal.parse(fecha);
     }
 }
