@@ -26,7 +26,6 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
     private int currentUserId;
     private int tamanoFuente;
 
-    // --- NUEVO: INTERFAZ Y SETTER PARA EL CLIC DEL NOMBRE ---
     public interface OnNombreClickListener {
         void onNombreClick(Mensaje mensaje);
     }
@@ -36,8 +35,6 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
     public void setOnNombreClickListener(OnNombreClickListener listener) {
         this.listener = listener;
     }
-    // --------------------------------------------------------
-
     public MensajeAdapter(@NonNull Context context, @NonNull List<Mensaje> objects) {
         super(context, 0, objects);
         SharedPreferences pref = context.getSharedPreferences("ChatPrefs", Context.MODE_PRIVATE);
@@ -81,42 +78,35 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
             textFecha.setVisibility(View.VISIBLE);
             textMensaje.setGravity(Gravity.START);
 
-            // --- NUEVO: DETECTAR CLIC SOLO EN EL NOMBRE ---
             textNombre.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onNombreClick(mensaje);
                 }
             });
-            // ----------------------------------------------
 
             textMensaje.setText(mensaje.getMensaje());
 
-            // --- MAGIA DEL FORMATO DE HORA ---
             String fechaCompleta = mensaje.getFechaHora();
+
             if (fechaCompleta != null) {
                 try {
-                    // 1. Leemos el formato completo que manda tu servidor
-                    java.text.SimpleDateFormat sdfOriginal = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
-                    java.util.Date date = sdfOriginal.parse(fechaCompleta);
-
-                    // 2. Lo pasamos al formato corto (solo HH:mm)
-                    java.text.SimpleDateFormat sdfNuevo = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+                    java.util.Date date = parseFechaServidor(fechaCompleta);
+                    java.text.SimpleDateFormat sdfNuevo =
+                            new java.text.SimpleDateFormat(
+                                    "HH:mm",
+                                    java.util.Locale.getDefault()
+                            );
+                    sdfNuevo.setTimeZone(java.util.TimeZone.getTimeZone("Europe/Madrid"));
                     textFecha.setText(sdfNuevo.format(date));
-
                 } catch (Exception e) {
-                    // Plan B: Si falla, recortamos las letras a la fuerza (Ej: de "2026-03-30 16:45:22" coge "16:45")
                     if (fechaCompleta.length() >= 16) {
                         textFecha.setText(fechaCompleta.substring(11, 16));
                     } else {
-                        textFecha.setText(fechaCompleta); // Si no se puede hacer nada, lo pone tal cual
+                        textFecha.setText(fechaCompleta);
                     }
                 }
-            } else {
-                textFecha.setText("");
             }
-            // ---------------------------------
 
-            // Aplicamos el tamaño de fuente al texto del mensaje (¡pero NO sobrescribimos la fecha!)
             textMensaje.setTextSize(tamanoFuente);
 
             if (mensaje.getIdUsuario() == currentUserId) {
@@ -136,5 +126,21 @@ public class MensajeAdapter extends ArrayAdapter<Mensaje> {
         }
 
         return convertView;
+    }
+
+    private java.util.Date parseFechaServidor(String fechaCompleta) throws java.text.ParseException {
+        String fecha = fechaCompleta.trim().replace("T", " ");
+        if (fecha.endsWith("Z")) {
+            fecha = fecha.substring(0, fecha.length() - 1);
+        }
+        int puntoMillis = fecha.indexOf('.');
+        if (puntoMillis >= 0) {
+            fecha = fecha.substring(0, puntoMillis);
+        }
+
+        java.text.SimpleDateFormat sdfOriginal =
+                new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
+        sdfOriginal.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        return sdfOriginal.parse(fecha);
     }
 }

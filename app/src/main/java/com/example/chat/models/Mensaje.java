@@ -21,7 +21,6 @@ public class Mensaje {
     public int getId() { return id; }
     public int getIdUsuario() { return id_usuario; }
     public String getNombre() {
-        // Priorizar nombre_usuario si está disponible, fallback a nombre
         return (nombre_usuario != null && !nombre_usuario.isEmpty()) ? nombre_usuario : nombre;
     }
     public String getMensaje() { return mensaje; }

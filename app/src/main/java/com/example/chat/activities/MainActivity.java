@@ -60,30 +60,24 @@ public class MainActivity extends BaseActivity {
     private Button btnSend;
     private ListView listMessages;
     private LinearLayout layoutInputMessage;
-
     private boolean isAdmin = false;
     private TextView textTiempoRestante;
     private TextView textSalaTitulo;
-
     private MensajeAdapter adapter;
     private List<Mensaje> listaMensajes = new ArrayList<>();
-
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
-
     private FusedLocationProviderClient fusedLocationClient;
-
     private int currentUserId;
     private String currentSalaId;
-
-    // Datos de geovalla de la sala
     private double salaLatitud = 0;
     private double salaLongitud = 0;
     private double salaRadioMetros = 0;
     private String salaNombreMostrado;
     private boolean salaFinalizadaPorTiempo = false;
-
     private boolean isSolicitandoPermiso = false;
+    private com.google.android.material.card.MaterialCardView timerPill;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,14 +93,12 @@ public class MainActivity extends BaseActivity {
             finish();
             return;
         }
-
         currentSalaId = getIntent().getStringExtra("ID_SALA_QR");
         if (currentSalaId == null || currentSalaId.isEmpty()) {
             Toast.makeText(this, "Error: No se especificó sala", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-
         salaLatitud = getIntent().getDoubleExtra("SALA_LATITUD", 0);
         salaLongitud = getIntent().getDoubleExtra("SALA_LONGITUD", 0);
         salaRadioMetros = getIntent().getDoubleExtra("SALA_RADIO", 0);
@@ -117,7 +109,6 @@ public class MainActivity extends BaseActivity {
         if (getSharedPreferences("AjustesPrefs", MODE_PRIVATE).getBoolean("mantener_pantalla", false)) {
             getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout), (v, insets) -> {
@@ -141,6 +132,7 @@ public class MainActivity extends BaseActivity {
         btnSend = findViewById(R.id.btnSend);
         listMessages = findViewById(R.id.listMessages);
         layoutInputMessage = findViewById(R.id.layoutInputMessage);
+        timerPill = findViewById(R.id.timerPill);
         textTiempoRestante = findViewById(R.id.textTiempoRestante);
         textSalaTitulo = findViewById(R.id.textSalaTitulo);
         salaNombreMostrado = currentSalaId;
@@ -177,12 +169,11 @@ public class MainActivity extends BaseActivity {
         iniciarAutoRefresco();
         solicitarPermisoUbicacionSiNecesario();
     }
-
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
-            if (v instanceof EditText) {
+            if (v == editMessage) {
                 View bottomContainer = findViewById(R.id.layoutInputMessageContainer);
 
                 if (bottomContainer != null) {
@@ -284,28 +275,31 @@ public class MainActivity extends BaseActivity {
 
     private void actualizarTimerSesion(long minutos) {
         if (minutos < 0) {
-            textTiempoRestante.setVisibility(View.GONE);
+            timerPill.setVisibility(View.GONE); // Ocultamos la tarjeta entera
             return;
         }
+
         if (minutos == 0) {
             finalizarSalaPorTiempo("El chat general ha terminado tras 2 horas.");
             return;
         }
-        textTiempoRestante.setVisibility(View.VISIBLE);
+
+        timerPill.setVisibility(View.VISIBLE); // Mostramos la tarjeta entera
 
         long horas = minutos / 60;
         long mins = minutos % 60;
         String texto = horas > 0
                 ? String.format("%dh %02dm", horas, mins)
                 : String.format("%dm", mins);
+
         textTiempoRestante.setText(texto);
 
         if (minutos >= 60) {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#388E3C"));
+            timerPill.setCardBackgroundColor(Color.parseColor("#388E3C")); // Verde
         } else if (minutos >= 30) {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#F57C00"));
+            timerPill.setCardBackgroundColor(Color.parseColor("#F57C00")); // Naranja
         } else {
-            textTiempoRestante.setBackgroundColor(Color.parseColor("#D32F2F"));
+            timerPill.setCardBackgroundColor(Color.parseColor("#D32F2F")); // Rojo
         }
     }
 
@@ -745,11 +739,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
-        final String[] tiposDenuncia = {
-                "Información falsa",
-                "Comentario obsceno",
-                "Otro"
-        };
+        final String[] tiposDenuncia = {"Información falsa", "Comentario obsceno", "Otro"};
         final String[] tipoDenunciaSeleccionado = {""};
         final EditText[] editRazon = {null};
 
@@ -765,6 +755,7 @@ public class MainActivity extends BaseActivity {
                 this, android.R.layout.simple_spinner_item, tiposDenuncia);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipo.setAdapter(adapter);
+
         spinnerTipo.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
@@ -773,11 +764,20 @@ public class MainActivity extends BaseActivity {
                     if (editRazon[0] == null) {
                         editRazon[0] = new EditText(MainActivity.this);
                         editRazon[0].setHint("Explica la razón de tu denuncia");
-                        editRazon[0].setVisibility(View.VISIBLE);
                         layoutDenuncia.addView(editRazon[0]);
-                    } else {
-                        editRazon[0].setVisibility(View.VISIBLE);
                     }
+                    editRazon[0].setVisibility(View.VISIBLE);
+
+                    editRazon[0].requestFocus();
+                    editRazon[0].post(new Runnable() {
+                        @Override
+                        public void run() {
+                            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                            if (imm != null) {
+                                imm.showSoftInput(editRazon[0], android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                            }
+                        }
+                    });
                 } else {
                     if (editRazon[0] != null) {
                         editRazon[0].setVisibility(View.GONE);
@@ -791,20 +791,16 @@ public class MainActivity extends BaseActivity {
         layoutDenuncia.addView(spinnerTipo);
 
         builder.setView(layoutDenuncia);
-        builder.setPositiveButton("Enviar", (dialog, which) -> {
-            if (tipoDenunciaSeleccionado[0].isEmpty()) {
-                Toast.makeText(MainActivity.this, "Selecciona un tipo de denuncia", Toast.LENGTH_SHORT).show();
-                return;
-            }
 
-            String razon = "";
-            if (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) {
-                razon = editRazon[0].getText().toString().trim();
-            }
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
+        builder.setPositiveButton("Enviar", (d, which) -> {
+            if (tipoDenunciaSeleccionado[0].isEmpty()) return;
+            String razon = (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) ? editRazon[0].getText().toString().trim() : "";
             enviarDenuncia(idUsuarioDenunciado, tipoDenunciaSeleccionado[0], razon);
         });
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton("Cancelar", (d, which) -> d.dismiss());
         builder.show();
     }
 
