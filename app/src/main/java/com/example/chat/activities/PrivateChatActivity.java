@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
@@ -73,8 +74,6 @@ public class PrivateChatActivity extends BaseActivity {
     private boolean chatCerradoPorGeofence = false;
 
     private boolean isSolicitandoPermiso = false;
-
-    // VARIABLES PARA LA ANIMACIÓN
     private long ultimoAvisoEscribiendo = 0;
     private LinearLayout layoutTyping;
     private View layoutSolicitudPrivada;
@@ -82,6 +81,7 @@ public class PrivateChatActivity extends BaseActivity {
     private TextView textEstadoConversacionPrivada;
     private Button btnAcceptPrivateRequest;
     private Button btnRejectPrivateRequest;
+    private boolean isEnviandoMensaje = false;
     private PrivateChatConversationPolicy.State conversationState = PrivateChatConversationPolicy.State.EMPTY;
 
     @Override
@@ -129,9 +129,12 @@ public class PrivateChatActivity extends BaseActivity {
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() | androidx.core.view.WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-
             if (listMessagesPrivate != null && adapter != null && adapter.getCount() > 0) {
-                listMessagesPrivate.postDelayed(() -> listMessagesPrivate.setSelection(adapter.getCount() - 1), 100);
+                int lastVisible = listMessagesPrivate.getLastVisiblePosition();
+                boolean estabaCercaDelFondo = lastVisible >= adapter.getCount() - 2;
+                if (estabaCercaDelFondo) {
+                    listMessagesPrivate.postDelayed(() -> listMessagesPrivate.setSelection(adapter.getCount() - 1), 100);
+                }
             }
             return insets;
         });
@@ -161,13 +164,18 @@ public class PrivateChatActivity extends BaseActivity {
         verificarUbicacionPrivada(true);
         iniciarAutoRefresco();
     }
-
+    private void restaurarInput(String mensajeAnterior) {
+        isEnviandoMensaje = false;
+        btnSendPrivate.setEnabled(true);
+        editMessagePrivate.setText(mensajeAnterior);
+        editMessagePrivate.setSelection(mensajeAnterior.length()); // Deja el cursor al final
+    }
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
             if (v == editMessagePrivate) {
-                View bottomContainer = findViewById(R.id.layoutInputMessageContainer);
+                View bottomContainer = findViewById(R.id.inputContainer);
                 if (bottomContainer != null) {
                     Rect containerRect = new Rect();
                     bottomContainer.getGlobalVisibleRect(containerRect);
@@ -179,7 +187,10 @@ public class PrivateChatActivity extends BaseActivity {
                 }
             }
         }
-        return super.dispatchTouchEvent(ev);
+        if (getWindow().superDispatchTouchEvent(ev)) {
+            return true;
+        }
+        return onTouchEvent(ev);
     }
 
     private void cargarFotoOtroUsuario(CircleImageView imageView) {
@@ -322,51 +333,6 @@ public class PrivateChatActivity extends BaseActivity {
         return salaRadioMetros > 0 ? salaRadioMetros : 100.0;
     }
 
-    private void ejecutarConUbicacionValida(Runnable accionSiValida) {
-        if (!tieneGeofencePrivada()) {
-            if (accionSiValida != null) accionSiValida.run();
-            return;
-        }
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (!isSolicitandoPermiso) {
-                isSolicitandoPermiso = true;
-                ActivityCompat.requestPermissions(
-                        this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        LOCATION_PERMISSION_PRIVATE_CHAT_REQUEST
-                );
-            }
-            return;
-        }
-
-        CurrentLocationRequest request = new CurrentLocationRequest.Builder()
-                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                .setMaxUpdateAgeMillis(5000)
-                .build();
-
-        fusedLocationClient.getCurrentLocation(request, null)
-                .addOnSuccessListener(this, location -> {
-                    if (location == null) return;
-
-                    float[] resultado = new float[1];
-                    Location.distanceBetween(
-                            location.getLatitude(),
-                            location.getLongitude(),
-                            salaLatitud,
-                            salaLongitud,
-                            resultado
-                    );
-
-                    if (resultado[0] > getRadioPrivadoEfectivo()) {
-                        cerrarChatPrivadoPorGeofence("Has salido del área de la sala. Chat privado eliminado.");
-                        return;
-                    }
-
-                    if (accionSiValida != null) accionSiValida.run();
-                });
-    }
-
     private void cerrarChatPrivadoPorGeofence(String mensaje) {
         if (chatCerradoPorGeofence) {
             return;
@@ -444,7 +410,7 @@ public class PrivateChatActivity extends BaseActivity {
                             int currentLastVisible = listMessagesPrivate.getLastVisiblePosition();
                             int currentCount = adapter.getCount();
 
-                            boolean estabaAbajoDelTodo = (currentCount == 0) || (currentLastVisible >= currentCount - 1);
+                            boolean estabaAbajoDelTodo = (currentCount == 0) || (currentLastVisible >= currentCount - 2);
 
                             listaMensajes.clear();
                             listaMensajes.addAll(response.body());
@@ -467,6 +433,8 @@ public class PrivateChatActivity extends BaseActivity {
     }
 
     private void enviarMensajePrivado() {
+        if (isEnviandoMensaje) return;
+
         String mensaje = editMessagePrivate.getText().toString().trim();
         if (mensaje.isEmpty()) return;
         if (chatCerradoPorGeofence) return;
@@ -475,7 +443,14 @@ public class PrivateChatActivity extends BaseActivity {
             return;
         }
 
-        ejecutarConUbicacionValida(() -> enviarMensajePrivadoValidado(mensaje));
+        isEnviandoMensaje = true;
+        btnSendPrivate.setEnabled(false);
+        editMessagePrivate.setText("");
+
+        ejecutarConUbicacionValida(
+                () -> enviarMensajePrivadoValidado(mensaje),
+                () -> restaurarInput(mensaje)
+        );
     }
 
     private void enviarMensajePrivadoValidado(String mensaje) {
@@ -488,8 +463,10 @@ public class PrivateChatActivity extends BaseActivity {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                isEnviandoMensaje = false;
+                btnSendPrivate.setEnabled(true);
+
                 if (response.isSuccessful()) {
-                    editMessagePrivate.setText("");
                     PrivateChatHistoryStore.touchChat(
                             PrivateChatActivity.this,
                             currentUserId,
@@ -499,11 +476,15 @@ public class PrivateChatActivity extends BaseActivity {
                     obtenerMensajesPrivados();
                 } else if (response.code() == 410) {
                     cerrarChatPrivadoPorGeofence("Este chat privado ha sido eliminado.");
+                } else {
+                    Toast.makeText(PrivateChatActivity.this, "Error al enviar", Toast.LENGTH_SHORT).show();
+                    restaurarInput(mensaje);
                 }
             }
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(PrivateChatActivity.this, "Error al enviar", Toast.LENGTH_SHORT).show();
+                Toast.makeText(PrivateChatActivity.this, "Error de red al enviar", Toast.LENGTH_SHORT).show();
+                restaurarInput(mensaje);
             }
         });
     }
@@ -588,48 +569,82 @@ public class PrivateChatActivity extends BaseActivity {
     }
 
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
+        com.google.android.material.bottomsheet.BottomSheetDialog bottomSheetDialog =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.layout_denuncia_options, null);
+
+        android.widget.Spinner spinnerTipo = view.findViewById(R.id.spinnerTipoDenuncia);
+        EditText editRazon = view.findViewById(R.id.editRazonDenuncia);
+        Button btnCancelar = view.findViewById(R.id.btnCancelarDenuncia);
+        Button btnEnviar = view.findViewById(R.id.btnEnviarDenuncia);
+
         final String[] tiposDenuncia = {"Información falsa", "Comentario obsceno", "Otro"};
         final String[] tipoDenunciaSeleccionado = {""};
-        final EditText[] editRazon = {null};
 
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
-        builder.setTitle("Enviar Denuncia");
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item, tiposDenuncia);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTipo.setAdapter(adapter);
+        Runnable validarBoton = () -> {
+            if ("Otro".equals(tipoDenunciaSeleccionado[0])) {
+                boolean tieneTexto = !editRazon.getText().toString().trim().isEmpty();
+                btnEnviar.setEnabled(tieneTexto);
+                btnEnviar.setAlpha(tieneTexto ? 1.0f : 0.5f);
+            } else {
+                btnEnviar.setEnabled(true);
+                btnEnviar.setAlpha(1.0f);
+            }
+        };
+        editRazon.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(android.text.Editable s) {
+                validarBoton.run();
+            }
+        });
 
-        android.widget.LinearLayout layoutDenuncia = new android.widget.LinearLayout(this);
-        layoutDenuncia.setOrientation(android.widget.LinearLayout.VERTICAL);
-        layoutDenuncia.setPadding(16, 16, 16, 16);
-
-        android.widget.Spinner spinnerTipo = new android.widget.Spinner(this);
-        android.widget.ArrayAdapter<String> adapterSpinner = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tiposDenuncia);
-        adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTipo.setAdapter(adapterSpinner);
         spinnerTipo.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+            public void onItemSelected(android.widget.AdapterView<?> parent, View v, int position, long id) {
                 tipoDenunciaSeleccionado[0] = tiposDenuncia[position];
                 if (position == 2) {
-                    if (editRazon[0] == null) {
-                        editRazon[0] = new EditText(PrivateChatActivity.this);
-                        editRazon[0].setHint("Explica la razón de tu denuncia");
-                        layoutDenuncia.addView(editRazon[0]);
+                    editRazon.setVisibility(View.VISIBLE);
+                    editRazon.requestFocus();
+                    editRazon.postDelayed(() -> {
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.showSoftInput(editRazon, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                        }
+                    }, 200);
+                } else {
+                    editRazon.setVisibility(View.GONE);
+                    editRazon.clearFocus();
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(editRazon.getWindowToken(), 0);
                     }
-                    editRazon[0].setVisibility(View.VISIBLE);
-                } else if (editRazon[0] != null) {
-                    editRazon[0].setVisibility(View.GONE);
                 }
+                validarBoton.run();
             }
             @Override
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
-        layoutDenuncia.addView(spinnerTipo);
-        builder.setView(layoutDenuncia);
-        builder.setPositiveButton("Enviar", (dialog, which) -> {
-            String razon = (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) ? editRazon[0].getText().toString().trim() : "";
+        btnEnviar.setOnClickListener(v -> {
+            if (tipoDenunciaSeleccionado[0].isEmpty()) return;
+            String razon = tipoDenunciaSeleccionado[0].equals("Otro") ? editRazon.getText().toString().trim() : "";
             enviarDenuncia(idUsuarioDenunciado, tipoDenunciaSeleccionado[0], razon);
+            bottomSheetDialog.dismiss();
         });
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
-        builder.show();
+
+        btnCancelar.setOnClickListener(v -> {
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            if (imm != null) imm.hideSoftInputFromWindow(editRazon.getWindowToken(), 0);
+            bottomSheetDialog.dismiss();
+        });
+        bottomSheetDialog.setContentView(view);
+        bottomSheetDialog.getBehavior().setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+        bottomSheetDialog.show();
     }
 
     private void enviarDenuncia(int idUsuarioDenunciado, String tipo, String razon) {
@@ -660,5 +675,60 @@ public class PrivateChatActivity extends BaseActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    private void ejecutarConUbicacionValida(Runnable accionSiValida) {
+        ejecutarConUbicacionValida(accionSiValida, null);
+    }
+    private void ejecutarConUbicacionValida(Runnable accionSiValida, Runnable accionSiFalla) {
+        if (!tieneGeofencePrivada()) {
+            if (accionSiValida != null) accionSiValida.run();
+            return;
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (!isSolicitandoPermiso) {
+                isSolicitandoPermiso = true;
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_PRIVATE_CHAT_REQUEST
+                );
+            }
+            if (accionSiFalla != null) accionSiFalla.run();
+            return;
+        }
+
+        CurrentLocationRequest request = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setMaxUpdateAgeMillis(5000)
+                .build();
+
+        fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener(this, location -> {
+                    if (location == null) {
+                        if (accionSiFalla != null) accionSiFalla.run();
+                        return;
+                    }
+
+                    float[] resultado = new float[1];
+                    Location.distanceBetween(
+                            location.getLatitude(),
+                            location.getLongitude(),
+                            salaLatitud,
+                            salaLongitud,
+                            resultado
+                    );
+
+                    if (resultado[0] > getRadioPrivadoEfectivo()) {
+                        cerrarChatPrivadoPorGeofence("Has salido del área de la sala. Chat privado eliminado.");
+                        if (accionSiFalla != null) accionSiFalla.run();
+                        return;
+                    }
+
+                    if (accionSiValida != null) accionSiValida.run();
+                })
+                .addOnFailureListener(this, e -> {
+                    if (accionSiFalla != null) accionSiFalla.run();
+                });
     }
 }

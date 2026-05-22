@@ -739,18 +739,19 @@ public class MainActivity extends BaseActivity {
     }
 
     private void mostrarDialogoDenuncias(int idUsuarioDenunciado) {
+        com.google.android.material.bottomsheet.BottomSheetDialog bottomSheetDialog =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+
+        View view = getLayoutInflater().inflate(R.layout.layout_denuncia_options, null);
+
+        android.widget.Spinner spinnerTipo = view.findViewById(R.id.spinnerTipoDenuncia);
+        EditText editRazon = view.findViewById(R.id.editRazonDenuncia);
+        Button btnCancelar = view.findViewById(R.id.btnCancelarDenuncia);
+        Button btnEnviar = view.findViewById(R.id.btnEnviarDenuncia);
+
         final String[] tiposDenuncia = {"Información falsa", "Comentario obsceno", "Otro"};
         final String[] tipoDenunciaSeleccionado = {""};
-        final EditText[] editRazon = {null};
 
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
-        builder.setTitle("Enviar Denuncia");
-
-        LinearLayout layoutDenuncia = new LinearLayout(this);
-        layoutDenuncia.setOrientation(LinearLayout.VERTICAL);
-        layoutDenuncia.setPadding(16, 16, 16, 16);
-
-        Spinner spinnerTipo = new Spinner(this);
         android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_item, tiposDenuncia);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -758,29 +759,24 @@ public class MainActivity extends BaseActivity {
 
         spinnerTipo.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(android.widget.AdapterView<?> parent, View v, int position, long id) {
                 tipoDenunciaSeleccionado[0] = tiposDenuncia[position];
                 if (position == 2) {
-                    if (editRazon[0] == null) {
-                        editRazon[0] = new EditText(MainActivity.this);
-                        editRazon[0].setHint("Explica la razón de tu denuncia");
-                        layoutDenuncia.addView(editRazon[0]);
-                    }
-                    editRazon[0].setVisibility(View.VISIBLE);
+                    editRazon.setVisibility(View.VISIBLE);
+                    editRazon.requestFocus();
 
-                    editRazon[0].requestFocus();
-                    editRazon[0].post(new Runnable() {
-                        @Override
-                        public void run() {
-                            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-                            if (imm != null) {
-                                imm.showSoftInput(editRazon[0], android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
-                            }
+                    editRazon.postDelayed(() -> {
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.showSoftInput(editRazon, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
                         }
-                    });
+                    }, 200);
                 } else {
-                    if (editRazon[0] != null) {
-                        editRazon[0].setVisibility(View.GONE);
+                    editRazon.setVisibility(View.GONE);
+                    editRazon.clearFocus();
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(editRazon.getWindowToken(), 0);
                     }
                 }
             }
@@ -788,20 +784,24 @@ public class MainActivity extends BaseActivity {
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
-        layoutDenuncia.addView(spinnerTipo);
-
-        builder.setView(layoutDenuncia);
-
-        AlertDialog dialog = builder.create();
-        dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-
-        builder.setPositiveButton("Enviar", (d, which) -> {
+        btnEnviar.setOnClickListener(v -> {
             if (tipoDenunciaSeleccionado[0].isEmpty()) return;
-            String razon = (tipoDenunciaSeleccionado[0].equals("Otro") && editRazon[0] != null) ? editRazon[0].getText().toString().trim() : "";
+            String razon = tipoDenunciaSeleccionado[0].equals("Otro") ? editRazon.getText().toString().trim() : "";
             enviarDenuncia(idUsuarioDenunciado, tipoDenunciaSeleccionado[0], razon);
+            bottomSheetDialog.dismiss();
         });
-        builder.setNegativeButton("Cancelar", (d, which) -> d.dismiss());
-        builder.show();
+
+        btnCancelar.setOnClickListener(v -> {
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            if (imm != null) imm.hideSoftInputFromWindow(editRazon.getWindowToken(), 0);
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetDialog.setContentView(view);
+
+        bottomSheetDialog.getBehavior().setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+
+        bottomSheetDialog.show();
     }
 
     private void enviarDenuncia(int idUsuarioDenunciado, String tipo, String razon) {

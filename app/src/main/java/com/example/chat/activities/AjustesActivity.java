@@ -22,7 +22,6 @@ public class AjustesActivity extends BaseActivity {
 
     private static final String PREFS = "AjustesPrefs";
 
-    private Switch switchGps, switchCamara;
     private Switch switchGps;
     private Switch switchCamara;
 
