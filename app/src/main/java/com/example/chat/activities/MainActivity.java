@@ -78,7 +78,6 @@ public class MainActivity extends BaseActivity {
     private boolean isSolicitandoPermiso = false;
     private com.google.android.material.card.MaterialCardView timerPill;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,33 +141,26 @@ public class MainActivity extends BaseActivity {
 
         adapter.setOnNombreClickListener(msg -> {
             if (msg.getIdUsuario() != currentUserId) {
-                if (isAdmin) {
-                    mostrarDialogoExpulsion(msg.getIdUsuario(), msg.getNombre());
-                } else {
-                    mostrarPerfilUsuario(msg.getIdUsuario(), msg.getNombre());
-                }
+                mostrarPerfilUsuario(msg.getIdUsuario(), msg.getNombre());
             }
         });
 
         listMessages.setAdapter(adapter);
 
-        if (isAdmin) {
-            layoutInputMessage.setVisibility(View.GONE);
-        } else {
-            btnSend.setOnClickListener(v -> {
-                String mensaje = editMessage.getText().toString().trim();
-                if (!mensaje.isEmpty()) {
-                    btnSend.setEnabled(false);
-                    obtenerUbicacionYEnviar(mensaje);
-                }
-            });
-        }
+        btnSend.setOnClickListener(v -> {
+            String mensaje = editMessage.getText().toString().trim();
+            if (!mensaje.isEmpty()) {
+                btnSend.setEnabled(false);
+                obtenerUbicacionYEnviar(mensaje);
+            }
+        });
 
         unirseASalaEnServidor(currentSalaId);
         cargarInfoCabeceraSala();
         iniciarAutoRefresco();
         solicitarPermisoUbicacionSiNecesario();
     }
+
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
@@ -275,7 +267,7 @@ public class MainActivity extends BaseActivity {
 
     private void actualizarTimerSesion(long minutos) {
         if (minutos < 0) {
-            timerPill.setVisibility(View.GONE); // Ocultamos la tarjeta entera
+            timerPill.setVisibility(View.GONE);
             return;
         }
 
@@ -284,7 +276,7 @@ public class MainActivity extends BaseActivity {
             return;
         }
 
-        timerPill.setVisibility(View.VISIBLE); // Mostramos la tarjeta entera
+        timerPill.setVisibility(View.VISIBLE);
 
         long horas = minutos / 60;
         long mins = minutos % 60;
@@ -485,6 +477,7 @@ public class MainActivity extends BaseActivity {
         TextView textApellidos = dialogView.findViewById(R.id.dialogTextApellidos);
         Button btnChatPrivado = dialogView.findViewById(R.id.dialogBtnChatPrivado);
         Button btnDenunciar = dialogView.findViewById(R.id.dialogBtnDenunciar);
+        Button btnExpulsar = dialogView.findViewById(R.id.dialogBtnExpulsar);
 
         textNombre.setText(otherUserName);
 
@@ -524,6 +517,14 @@ public class MainActivity extends BaseActivity {
             dialog.dismiss();
             mostrarDialogoDenuncias(otherUserId);
         });
+
+        if (isAdmin) {
+            btnExpulsar.setVisibility(View.VISIBLE);
+            btnExpulsar.setOnClickListener(v -> {
+                dialog.dismiss();
+                mostrarDialogoExpulsion(otherUserId, otherUserName);
+            });
+        }
 
         dialog.show();
     }

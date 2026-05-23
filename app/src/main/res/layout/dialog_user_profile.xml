@@ -54,10 +54,22 @@
         android:id="@+id/dialogBtnDenunciar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/bg_dialog_destructive_button"
         android:fontFamily="@font/poppins_bold"
         android:text="Denunciar"
         android:textAllCaps="false"
         android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/dialogBtnExpulsar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:backgroundTint="#B71C1C"
+        android:fontFamily="@font/poppins_bold"
+        android:text="Expulsar de la Sala (Admin)"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:visibility="gone" />
 
 </LinearLayout>

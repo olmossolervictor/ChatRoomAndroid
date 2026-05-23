@@ -126,18 +126,17 @@ public class PrivateChatActivity extends BaseActivity {
         adapter = new MensajeAdapter(this, listaMensajes);
         listMessagesPrivate.setAdapter(adapter);
 
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_private), (v, insets) -> {
             androidx.core.graphics.Insets systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() | androidx.core.view.WindowInsetsCompat.Type.ime());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+
             if (listMessagesPrivate != null && adapter != null && adapter.getCount() > 0) {
-                int lastVisible = listMessagesPrivate.getLastVisiblePosition();
-                boolean estabaCercaDelFondo = lastVisible >= adapter.getCount() - 2;
-                if (estabaCercaDelFondo) {
-                    listMessagesPrivate.postDelayed(() -> listMessagesPrivate.setSelection(adapter.getCount() - 1), 100);
-                }
+                listMessagesPrivate.postDelayed(() -> listMessagesPrivate.setSelection(adapter.getCount() - 1), 100);
             }
             return insets;
         });
+
+        listMessagesPrivate.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
 
         editMessagePrivate.addTextChangedListener(new TextWatcher() {
             @Override
@@ -164,12 +163,14 @@ public class PrivateChatActivity extends BaseActivity {
         verificarUbicacionPrivada(true);
         iniciarAutoRefresco();
     }
+
     private void restaurarInput(String mensajeAnterior) {
         isEnviandoMensaje = false;
         btnSendPrivate.setEnabled(true);
         editMessagePrivate.setText(mensajeAnterior);
         editMessagePrivate.setSelection(mensajeAnterior.length()); // Deja el cursor al final
     }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
@@ -237,6 +238,7 @@ public class PrivateChatActivity extends BaseActivity {
         };
         handler.postDelayed(refreshRunnable, 3000);
     }
+
     private void cargarInfoGeofenceSiHaceFalta() {
         if (!necesitaInfoGeofenceRemota()) {
             return;
@@ -446,6 +448,10 @@ public class PrivateChatActivity extends BaseActivity {
         isEnviandoMensaje = true;
         btnSendPrivate.setEnabled(false);
         editMessagePrivate.setText("");
+
+        if (adapter != null && adapter.getCount() > 0) {
+            listMessagesPrivate.setSelection(adapter.getCount() - 1);
+        }
 
         ejecutarConUbicacionValida(
                 () -> enviarMensajePrivadoValidado(mensaje),
@@ -676,9 +682,11 @@ public class PrivateChatActivity extends BaseActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     private void ejecutarConUbicacionValida(Runnable accionSiValida) {
         ejecutarConUbicacionValida(accionSiValida, null);
     }
+
     private void ejecutarConUbicacionValida(Runnable accionSiValida, Runnable accionSiFalla) {
         if (!tieneGeofencePrivada()) {
             if (accionSiValida != null) accionSiValida.run();
