@@ -354,6 +354,10 @@ public class MainActivity extends BaseActivity {
     private void expulsarUsuario(String motivo) {
         if (salaFinalizadaPorTiempo) return;
         handler.removeCallbacks(refreshRunnable);
+
+        if (motivo != null && motivo.toLowerCase().contains("geovalla")) {
+            motivo = "Has salido del perímetro del establecimiento";
+        }
         Toast.makeText(this, motivo.toUpperCase(), Toast.LENGTH_LONG).show();
         limpiarChatsPrivadosDeSalaActual(motivo);
         RetrofitClient.getChatApiServices().salirDeSala(currentUserId, currentSalaId)
