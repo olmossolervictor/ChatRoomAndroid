@@ -58,8 +58,8 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="ACCESO POR QR"
-            app:titleTextColor="@color/text_high"
-            app:navigationIconTint="@color/text_high" />
+            app:titleTextColor="@android:color/white"
+            app:navigationIconTint="@android:color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

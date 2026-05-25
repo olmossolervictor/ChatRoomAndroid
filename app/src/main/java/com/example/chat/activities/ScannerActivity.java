@@ -12,9 +12,10 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar; // Importa Toolbar de androidx
+import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
@@ -22,10 +23,14 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.chat.R;
 import com.example.chat.models.Sala;
 import com.example.chat.network.RetrofitClient;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
@@ -70,9 +75,23 @@ public class ScannerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_scanner);
 
+        AppBarLayout appBarScanner = findViewById(R.id.appBarScanner);
         Toolbar toolbar = findViewById(R.id.toolbarScanner);
+        int margenExtraDp = 16;
+        float density = getResources().getDisplayMetrics().density;
+        int extraMarginPx = (int) (margenExtraDp * density);
+
+        ViewCompat.setOnApplyWindowInsetsListener(appBarScanner, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            v.setPadding(0, systemBars.top + extraMarginPx, 0, 0);
+            return insets;
+        });
+
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -102,6 +121,7 @@ public class ScannerActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     private boolean allPermissionsGranted() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED;
