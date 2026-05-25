@@ -67,7 +67,7 @@
         android:layout_height="48dp"
         android:backgroundTint="#B71C1C"
         android:fontFamily="@font/poppins_bold"
-        android:text="Expulsar de la Sala (Admin)"
+        android:text="Expulsar de la Sala"
         android:textAllCaps="false"
         android:textColor="@android:color/white"
         android:visibility="gone" />
