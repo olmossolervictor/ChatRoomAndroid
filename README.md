@@ -62,8 +62,4 @@ com.example.chat
 4.  **Google Services**:
     - Para el login con Google, es necesario configurar el archivo `google-services.json` en la carpeta `app/`.
 
-## 📸 Capturas de Pantalla
-*(Próximamente)*
-
----
 Desarrollado como proyecto de mensajería avanzada para Android.
